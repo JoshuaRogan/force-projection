@@ -1,0 +1,161 @@
+/* === Design Tokens === */
+:root {
+  /* Background & surface — deeper, richer dark palette */
+  --bg-dark: #0a0d12;
+  --bg-surface: #12161f;
+  --bg-card: #1a1f2c;
+  --bg-elevated: #222940;
+  --bg-hover: #2a3250;
+  --border-subtle: #2a3148;
+  --border-accent: #4a5580;
+
+  /* Text */
+  --text-primary: #e8ecf4;
+  --text-secondary: #a0aac4;
+  --text-muted: #717c96;
+
+  /* Budget Lines */
+  --color-air: #60a5fa;
+  --color-sea: #34d399;
+  --color-exp: #f59e0b;
+  --color-space: #a78bfa;
+  --color-sustain: #94a3b8;
+
+  /* Secondary Resources */
+  --color-manpower: #f87171;
+  --color-logistics: #fb923c;
+  --color-intel: #818cf8;
+  --color-polcap: #fbbf24;
+
+  /* Program Domains */
+  --color-domain-air: var(--color-air);
+  --color-domain-sea: var(--color-sea);
+  --color-domain-exp: var(--color-exp);
+  --color-domain-space-cyber: var(--color-space);
+
+  /* Directorate colors */
+  --color-navsea: #34d399;
+  --color-aircom: #60a5fa;
+  --color-marfor: #f59e0b;
+  --color-spacecy: #a78bfa;
+  --color-transcom: #94a3b8;
+
+  /* Semantic */
+  --color-si: #fbbf24;
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --color-info: #60a5fa;
+
+  /* Card type accents */
+  --color-card-program: #3b82f6;
+  --color-card-contract: #22c55e;
+  --color-card-agenda: #a855f7;
+  --color-card-crisis: #ef4444;
+
+  /* Spacing */
+  --space-2xs: 0.125rem;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
+  --space-2xl: 2rem;
+
+  /* Card sizes */
+  --card-width: 200px;
+  --card-height: 280px;
+  --card-radius: 8px;
+
+  /* Typography */
+  --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+  --font-size-2xs: 0.75rem;
+  --font-size-xs: 0.8125rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-md: 1.0625rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.3125rem;
+  --font-size-2xl: 1.5625rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-glow-si: 0 0 12px rgba(251, 191, 36, 0.15);
+  --shadow-glow-info: 0 0 12px rgba(59, 130, 246, 0.15);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.5);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+
+  /* Transitions */
+  --transition-fast: 100ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 350ms ease;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+}
+
+/* === Reset === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-body);
+  font-size: 14px;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-accent);
+}
+
+/* === Utility classes === */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-A { background: color-mix(in srgb, var(--color-air) 18%, transparent); color: var(--color-air); }
+.badge-S { background: color-mix(in srgb, var(--color-sea) 18%, transparent); color: var(--color-sea); }
+.badge-E { background: color-mix(in srgb, var(--color-exp) 18%, transparent); color: var(--color-exp); }
+.badge-X { background: color-mix(in srgb, var(--color-space) 18%, transparent); color: var(--color-space); }
+.badge-U { background: color-mix(in srgb, var(--color-sustain) 18%, transparent); color: var(--color-sustain); }
+.badge-M { background: color-mix(in srgb, var(--color-manpower) 18%, transparent); color: var(--color-manpower); }
+.badge-L { background: color-mix(in srgb, var(--color-logistics) 18%, transparent); color: var(--color-logistics); }
+.badge-I { background: color-mix(in srgb, var(--color-intel) 18%, transparent); color: var(--color-intel); }
+.badge-PC { background: color-mix(in srgb, var(--color-polcap) 18%, transparent); color: var(--color-polcap); }

@@ -1,0 +1,21 @@
+{
+  "name": "@fp/simulation",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "sim": "node dist/run.js",
+    "test": "node --test dist/**/*.test.js"
+  },
+  "dependencies": {
+    "@fp/shared": "*",
+    "@fp/engine": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^5.7.0"
+  }
+}

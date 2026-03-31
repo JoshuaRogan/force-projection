@@ -1,0 +1,125 @@
+/* === Theater Board === */
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+@media (max-width: 900px) {
+  .board {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Single theater tile */
+.theater {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast);
+}
+
+.theater:hover {
+  border-color: var(--border-accent);
+}
+
+.theaterHeader {
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.theaterName {
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.02em;
+}
+
+.theaterEmpty {
+  font-size: var(--font-size-2xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Player presence rows */
+.presenceList {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-xs);
+  gap: 2px;
+}
+
+.presenceRow {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-xs);
+  padding: 4px var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  transition: background var(--transition-fast);
+}
+
+.presenceRow:hover {
+  background: var(--bg-hover);
+}
+
+.presencePlayer {
+  font-weight: 600;
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.presenceDetails {
+  color: var(--text-secondary);
+  font-size: var(--font-size-2xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.presenceStrength {
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  min-width: 20px;
+  text-align: right;
+}
+
+/* Strength leader highlight */
+.strengthLeader {
+  background: color-mix(in srgb, var(--color-si) 8%, transparent);
+}
+
+.strengthLeader .presenceStrength {
+  color: var(--color-si);
+}
+
+/* Human player highlight */
+.humanRow {
+  font-weight: 700;
+}
+
+/* Strength bar visual */
+.strengthBar {
+  height: 3px;
+  border-radius: 1.5px;
+  background: var(--border-subtle);
+  margin-top: 1px;
+}
+
+.strengthBarFill {
+  height: 100%;
+  border-radius: 1.5px;
+  transition: width var(--transition-normal);
+}

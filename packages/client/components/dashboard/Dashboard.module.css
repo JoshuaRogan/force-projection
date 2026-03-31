@@ -1,0 +1,629 @@
+/* === Player Dashboard === */
+.dashboard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+/* Header with player info */
+.playerHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--bg-card);
+}
+
+.playerInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.playerName {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.directorate {
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 1px;
+}
+
+.siBadge {
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  background: color-mix(in srgb, var(--color-si) 15%, transparent);
+  border: 2px solid color-mix(in srgb, var(--color-si) 40%, transparent);
+  border-radius: var(--radius-md);
+  min-width: 60px;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.siBadge:hover {
+  background: color-mix(in srgb, var(--color-si) 22%, transparent);
+  border-color: var(--color-si);
+  transform: translateY(-1px);
+}
+
+.siValue {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  color: var(--color-si);
+  line-height: 1;
+}
+
+.siLabel {
+  font-size: var(--font-size-2xs);
+  color: var(--color-si);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* === Sections === */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-card);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-2xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.sectionTitleBtn {
+  all: unset;
+  font-size: var(--font-size-2xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color var(--transition-fast);
+}
+
+.sectionTitleBtn:hover {
+  color: var(--text-primary);
+}
+
+.infoIcon {
+  font-size: var(--font-size-xs);
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.sectionTitleBtn:hover .infoIcon {
+  opacity: 1;
+}
+
+/* === Resource Info Modal === */
+.resourceInfoOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.resourceInfoPanel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: min(480px, calc(100vw - 2rem));
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.resourceInfoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+}
+
+.resourceInfoTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+}
+
+.resourceInfoClose {
+  all: unset;
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.resourceInfoClose:hover {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+.resourceInfoIntro {
+  margin: 0;
+  padding: var(--space-sm) var(--space-lg);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+}
+
+.resourceInfoList {
+  overflow-y: auto;
+  padding: var(--space-sm) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.resourceInfoItem {
+  padding: var(--space-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resourceInfoItemHeader {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.resourceInfoKey {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.resourceInfoName {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.resourceInfoDesc {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+}
+
+.resourceInfoUsed {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.resourceInfoBody {
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.resourceStatusRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+}
+
+.resourceStatusBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.resourceStatusValue {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.resourceStatusLabel {
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.resourceStatusDivider {
+  width: 1px;
+  height: 40px;
+  background: var(--border-subtle);
+}
+
+.resourceInfoUsedBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resourceInfoUsedLabel {
+  font-size: var(--font-size-2xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.siEarnList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.siEarnItem {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: baseline;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.siEarnIcon {
+  color: var(--color-si);
+  font-size: 8px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+/* === Readiness === */
+.readinessBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.readinessValue {
+  font-weight: 700;
+  font-size: var(--font-size-md);
+  width: 1.5rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.readinessTrack {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-elevated);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: var(--shadow-inset);
+}
+
+.readinessFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width var(--transition-normal);
+}
+
+/* === Resource Grid === */
+.resourceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.resourceGridSecondary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+
+.resourceCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 2px 4px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  gap: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.resourceCell::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--stripe-color, var(--border-subtle));
+}
+
+.resourceValue {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.resourceLabel {
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.resourceProduction {
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.resourceCellClickable {
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.resourceCellClickable:hover {
+  background: var(--bg-card);
+  transform: translateY(-1px);
+}
+
+/* === Portfolio === */
+.portfolioGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.portfolioSlot {
+  min-height: 40px;
+  min-width: 0;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-2xs);
+  color: var(--text-muted);
+  padding: 3px 4px;
+  transition: border-color var(--transition-fast);
+  overflow: hidden;
+}
+
+.portfolioSlotFilled {
+  border-style: solid;
+  background: var(--bg-elevated);
+  flex-direction: column;
+  gap: 1px;
+  color: var(--text-primary);
+}
+
+.portfolioSlotClickable {
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.portfolioSlotClickable:hover {
+  background: var(--bg-card);
+  border-color: var(--border-accent);
+}
+
+.slotName {
+  font-weight: 600;
+  font-size: var(--font-size-2xs);
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.slotDomain {
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+}
+
+/* === Contracts === */
+.contractSlot {
+  padding: 6px var(--space-sm);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--color-card-contract);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs);
+}
+
+.contractCard {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.contractCardClickable {
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.contractCardClickable:hover {
+  border-color: var(--color-card-contract);
+  background: color-mix(in srgb, var(--color-card-contract) 5%, var(--bg-card));
+}
+
+.contractHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-xs);
+}
+
+.contractReqs {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.contractReq {
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.contractName {
+  font-weight: 600;
+  font-size: var(--font-size-xs);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contractReward {
+  font-size: var(--font-size-xs);
+  color: var(--color-si);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* === Hand Tray === */
+.handTray {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-sm) var(--space-md);
+  box-shadow: var(--shadow-md);
+}
+
+.handTrayHeader {
+  font-size: var(--font-size-2xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-xs);
+}
+
+.handList {
+  display: flex;
+  gap: var(--space-sm);
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.handCard {
+  flex-shrink: 0;
+  width: 200px;
+  padding: var(--space-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: default;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.handCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--stripe-color, var(--border-subtle));
+}
+
+.handCard:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.handCardName {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.handCardMeta {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.handCardDomain {
+  font-size: var(--font-size-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.handCardCosts {
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.handCardEffects {
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+  max-height: 2.8em;
+  overflow: hidden;
+}

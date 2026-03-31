@@ -1,0 +1,7 @@
+{
+  "name": "force-projection",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
+}

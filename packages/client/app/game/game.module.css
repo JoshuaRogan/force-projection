@@ -1,0 +1,165 @@
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  grid-template-rows: auto auto 1fr auto;
+  grid-template-areas:
+    "topbar   topbar"
+    "timeline timeline"
+    "center   sidebar"
+    "hand     hand";
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* === Top bar === */
+.topBar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-xs) var(--space-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  min-height: 40px;
+}
+
+.title {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.topBarRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-left: auto;
+  overflow-x: auto;
+}
+
+.opponentChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.opponentDir {
+  color: var(--text-muted);
+  font-size: var(--font-size-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.opponentSI {
+  color: var(--color-si);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+}
+
+.newGameBtn {
+  padding: 4px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.newGameBtn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-accent);
+  color: var(--text-primary);
+}
+
+.agendaBtn {
+  padding: 4px 12px;
+  background: color-mix(in srgb, var(--color-card-agenda) 10%, var(--bg-card));
+  border: 1px solid color-mix(in srgb, var(--color-card-agenda) 35%, transparent);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agendaBtn:hover {
+  background: color-mix(in srgb, var(--color-card-agenda) 18%, var(--bg-card));
+  border-color: var(--color-card-agenda);
+}
+
+/* === Timeline row === */
+.timelineRow {
+  grid-area: timeline;
+}
+
+/* === Center content === */
+.center {
+  grid-area: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  padding-right: var(--space-xs);
+}
+
+.phasePanel {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
+}
+
+/* === Right sidebar === */
+.sidebar {
+  grid-area: sidebar;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  overflow-x: hidden;
+  overflow-y: hidden;
+  min-height: 0;
+}
+
+.playerDashboardArea {
+  overflow-y: auto;
+  flex-shrink: 1;
+  min-height: 0;
+}
+
+.eventFeedWrapper {
+  flex: 1;
+  min-height: 100px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+/* === Bottom hand tray === */
+.handArea {
+  grid-area: hand;
+  min-height: 0;
+}
