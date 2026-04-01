@@ -9,17 +9,20 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@fp/shared": "*",
     "@fp/engine": "*",
+    "@fp/shared": "*",
     "@fp/simulation": "*",
     "next": "^15.3.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-simple-maps": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "typescript": "^5.7.0"
+    "@types/react-simple-maps": "^3.0.0",
+    "typescript": "^5.7.0",
+    "world-atlas": "^2.0.2"
   }
 }
