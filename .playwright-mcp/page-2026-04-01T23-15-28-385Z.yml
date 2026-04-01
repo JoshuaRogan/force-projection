@@ -1,0 +1,47 @@
+- generic [ref=e2]:
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e12]: // Force Projection Command Network
+      - generic [ref=e13]: "|"
+      - generic [ref=e14]: FPJC-REFORGED
+    - generic [ref=e15]:
+      - generic [ref=e16]: "AUTH LEVEL: UNRESTRICTED"
+      - generic [ref=e17]: "|"
+      - generic [ref=e18]: "NODE: PENTAGON-7"
+  - main [ref=e19]:
+    - generic [ref=e20]: // Operational Simulation — Reforged Edition
+    - generic [ref=e21]:
+      - generic [ref=e22]: Force Projection
+      - generic [ref=e27]: Joint Command
+    - generic [ref=e28]: — Reforged Edition —
+    - paragraph [ref=e29]:
+      - text: Command joint military operations across
+      - emphasis [ref=e30]: six theaters
+      - text: . Build programs, project force, outmaneuver rival directorates.
+      - text: Every order shapes the balance of power.
+    - generic [ref=e31]:
+      - link "▶ New Game" [ref=e32] [cursor=pointer]:
+        - /url: /game
+      - link "How to Play" [ref=e33] [cursor=pointer]:
+        - /url: /tutorial
+      - link "Card Gallery" [ref=e34] [cursor=pointer]:
+        - /url: /gallery
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: Theaters
+        - generic [ref=e38]: "6"
+      - generic [ref=e40]:
+        - generic [ref=e41]: Players
+        - generic [ref=e42]: 1–4
+      - generic [ref=e44]:
+        - generic [ref=e45]: Directorates
+        - generic [ref=e46]: "5"
+      - generic [ref=e48]:
+        - generic [ref=e49]: Domains
+        - generic [ref=e50]: "4"
+      - generic [ref=e52]:
+        - generic [ref=e53]: Years
+        - generic [ref=e54]: "4"
+  - generic [ref=e56]:
+    - generic [ref=e57]: SYS READY — AWAITING COMMANDER INPUT
+    - generic [ref=e59]: © FORCE PROJECTION SYSTEMS

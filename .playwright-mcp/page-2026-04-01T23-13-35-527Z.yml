@@ -1,0 +1,12 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - 'heading "Force Projection: Joint Command" [level=1] [ref=e3]'
+    - paragraph [ref=e4]: Reforged Edition
+    - generic [ref=e5]:
+      - link "New Game" [ref=e6] [cursor=pointer]:
+        - /url: /game
+      - link "How to Play" [ref=e7] [cursor=pointer]:
+        - /url: /tutorial
+      - link "Card Gallery" [ref=e8] [cursor=pointer]:
+        - /url: /gallery
+  - alert [ref=e9]

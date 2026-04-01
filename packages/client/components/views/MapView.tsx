@@ -192,7 +192,7 @@ function ScoreBoard({ gameState, humanPlayerId }: { gameState: GameState; humanP
           >
             <span className={styles.scoreRank}>{i + 1}</span>
             <div className={styles.scoreInfo}>
-              <span className={styles.scoreName}>{isHuman ? `${p.name} (you)` : p.name}</span>
+              <span className={styles.scoreName}>{p.name}{isHuman ? ' ★' : ''}</span>
               <span className={styles.scoreDir}>{p.directorate}</span>
             </div>
             <span className={styles.scoreValue}>{p.si}</span>

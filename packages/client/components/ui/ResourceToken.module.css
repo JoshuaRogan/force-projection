@@ -1,0 +1,84 @@
+/* ── Pill modes (chip + labeled) ────────────────────────────────────── */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-radius: 3px;
+  border: 1px solid color-mix(in srgb, var(--token-color) 35%, transparent);
+  background: color-mix(in srgb, var(--token-color) 8%, transparent);
+  color: var(--token-color);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: default;
+}
+
+.pillChip {
+  padding: 1px 5px 1px 3px;
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+}
+
+.pillLabeled {
+  padding: 2px 7px 2px 5px;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.pillIcon {
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.pillCount {
+  /* slightly larger than the label so "2" reads before "Air" */
+  font-size: 1em;
+}
+
+.pillLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Cell mode ──────────────────────────────────────────────────────── */
+
+.cellMode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--token-color);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.cellIcon {
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.cellKey {
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.cellSep {
+  opacity: 0.3;
+  font-weight: 400;
+  flex-shrink: 0;
+}
+
+.cellName {
+  opacity: 0.65;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

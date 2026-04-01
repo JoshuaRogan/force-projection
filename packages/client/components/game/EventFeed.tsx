@@ -43,8 +43,10 @@ function formatEvent(event: GameEvent, state: GameState): string | null {
       return `${playerName(state, event.playerId)} failed a contract (-${event.penalty} SI)`;
     case 'contractTaken':
       return `${playerName(state, event.playerId)} took a contract`;
-    case 'crisisRevealed':
-      return `Crisis revealed: ${event.crisisId}`;
+    case 'crisisRevealed': {
+      const crisisName = state.currentCrisis?.name ?? event.crisisId;
+      return `Crisis: ${crisisName}`;
+    }
     case 'agendaResult':
       return `Agenda ${event.passed ? 'PASSED' : 'FAILED'}`;
     case 'theaterControlScored': {

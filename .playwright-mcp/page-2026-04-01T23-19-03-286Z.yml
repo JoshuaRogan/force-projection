@@ -1,0 +1,153 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]: // Force Projection
+      - generic [ref=e5]:
+        - button "01 COMMAND" [ref=e6] [cursor=pointer]:
+          - generic [ref=e7]: "01"
+          - text: COMMAND
+        - button "02 PERSONAL" [ref=e8] [cursor=pointer]:
+          - generic [ref=e9]: "02"
+          - text: PERSONAL
+        - button "03 STRATEGIC" [active] [ref=e10] [cursor=pointer]:
+          - generic [ref=e11]: "03"
+          - text: STRATEGIC
+      - 'button "Agenda: Defense Spending Increase" [ref=e12] [cursor=pointer]'
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - generic [ref=e15]: Bot 1
+          - generic [ref=e16]: TRANSCOM
+          - generic [ref=e17]: "0"
+        - generic [ref=e18]:
+          - generic [ref=e19]: Bot 3
+          - generic [ref=e20]: AIRCOM
+          - generic [ref=e21]: "0"
+        - generic [ref=e22]:
+          - generic [ref=e23]: Bot 2
+          - generic [ref=e24]: MARFOR
+          - generic [ref=e25]: "0"
+        - button "New Game" [ref=e26] [cursor=pointer]
+    - generic [ref=e538]:
+      - generic [ref=e540]:
+        - generic [ref=e541]: Year 1/4
+        - generic [ref=e542]:
+          - generic "Congress" [ref=e544]:
+            - generic [ref=e545]: ✓
+            - generic [ref=e546]: Vote
+          - generic "Contracts" [ref=e549]:
+            - generic [ref=e550]: ✓
+            - generic [ref=e551]: Market
+          - generic "Quarter 1" [ref=e554]:
+            - generic [ref=e556]:
+              - text: Q1
+              - generic [ref=e557]: Plan Orders
+          - generic "Quarter 2" [ref=e560]:
+            - generic [ref=e562]: Q2
+          - generic "Quarter 3" [ref=e565]:
+            - generic [ref=e567]: Q3
+          - generic "Quarter 4" [ref=e570]:
+            - generic [ref=e572]: Q4
+          - generic "Year End" [ref=e575]:
+            - generic [ref=e577]: Score
+      - generic [ref=e578]:
+        - complementary [ref=e579]:
+          - generic [ref=e580]:
+            - generic [ref=e581]:
+              - generic [ref=e582]: FY1
+              - generic [ref=e583]: Q1 — Orders
+            - generic [ref=e584]: Players planning orders
+          - generic [ref=e585]:
+            - generic [ref=e586]:
+              - generic [ref=e587]: "0"
+              - generic [ref=e588]: COVERAGE
+            - generic [ref=e590]:
+              - generic [ref=e591]: "0"
+              - generic [ref=e592]: READINESS
+            - generic [ref=e594]:
+              - generic [ref=e595]: "0"
+              - generic [ref=e596]: TECH EDGE
+          - generic [ref=e597]:
+            - generic [ref=e598]:
+              - generic [ref=e599]:
+                - generic [ref=e600]: ACTIVE AGENDA
+                - generic [ref=e601]: PASSED
+              - button "full card →" [ref=e602] [cursor=pointer]
+            - generic [ref=e603]: Defense Spending Increase
+            - paragraph [ref=e604]: Congress approves a major budget increase.
+            - generic [ref=e605]:
+              - generic [ref=e606]: IF PASSED
+              - list [ref=e607]:
+                - listitem [ref=e608]: ▸ All players gain +2U
+            - generic [ref=e609]:
+              - generic [ref=e610]: IF FAILED
+              - list [ref=e611]:
+                - listitem [ref=e612]: ▸ Reprogramming costs +1 PC this year
+            - generic [ref=e616]:
+              - generic [ref=e617]: 1 support
+              - generic [ref=e618]: 0 oppose
+          - generic [ref=e619]:
+            - generic [ref=e620]:
+              - generic [ref=e621]: ACTIVE CRISIS
+              - button "full card →" [ref=e622] [cursor=pointer]
+            - generic [ref=e623]: Regional Flare-Up
+            - paragraph [ref=e624]: Forward Ops costs +1 L this Quarter.
+            - generic [ref=e625]:
+              - generic [ref=e626]: Response
+              - paragraph [ref=e627]: Players with Forward Ops in Middle East gain +1 SI.
+          - generic [ref=e628]:
+            - generic [ref=e629]: INFLUENCE INDEX
+            - generic [ref=e630]:
+              - generic [ref=e631]: "1"
+              - generic [ref=e632]:
+                - generic [ref=e633]: Bot 1
+                - generic [ref=e634]: TRANSCOM
+              - generic [ref=e635]: "0"
+            - generic [ref=e636]:
+              - generic [ref=e637]: "2"
+              - generic [ref=e638]:
+                - generic [ref=e639]: You (you)
+                - generic [ref=e640]: NAVSEA
+              - generic [ref=e641]: "0"
+            - generic [ref=e642]:
+              - generic [ref=e643]: "3"
+              - generic [ref=e644]:
+                - generic [ref=e645]: Bot 3
+                - generic [ref=e646]: AIRCOM
+              - generic [ref=e647]: "0"
+            - generic [ref=e648]:
+              - generic [ref=e649]: "4"
+              - generic [ref=e650]:
+                - generic [ref=e651]: Bot 2
+                - generic [ref=e652]: MARFOR
+              - generic [ref=e653]: "0"
+          - generic [ref=e655]:
+            - generic [ref=e656]: Activity Log
+            - generic [ref=e657]:
+              - generic [ref=e658]:
+                - generic [ref=e659]: ⚖
+                - generic [ref=e660]: Agenda PASSED
+              - generic [ref=e661]:
+                - generic [ref=e662]: ✉
+                - generic [ref=e663]: Bot 1 took a contract
+              - generic [ref=e664]:
+                - generic [ref=e665]: ✉
+                - generic [ref=e666]: Bot 3 took a contract
+              - generic [ref=e667]:
+                - generic [ref=e668]: ⚠
+                - generic [ref=e669]: "Crisis: Regional Flare-Up"
+        - generic [ref=e671]:
+          - img [ref=e672]:
+            - generic [ref=e851]:
+              - generic: ARCTIC
+            - generic [ref=e852]:
+              - generic: HOMELAND
+            - generic [ref=e853]:
+              - generic: NORTH ATLANTIC
+            - generic [ref=e854]:
+              - generic: MIDDLE EAST
+            - generic [ref=e855]:
+              - generic: INDO-PACIFIC
+          - generic [ref=e857]: SPACE & CYBER DOMAIN
+  - button "Open Next.js Dev Tools" [ref=e863] [cursor=pointer]:
+    - img [ref=e864]
+  - alert [ref=e537]

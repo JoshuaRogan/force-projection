@@ -27,13 +27,13 @@ export function CongressPanel({
   return (
     <div className={styles.panel}>
       <div className={styles.panelTitle}>Congressional Budget Vote</div>
-      <AgendaCard card={agenda.agenda} />
+      <div className={styles.voteLayout}>
+        <AgendaCard card={agenda.agenda} />
 
-      {alreadyVoted ? (
-        <p className={styles.mutedText}>Vote submitted. Waiting for resolution...</p>
-      ) : (
-        <div className={styles.voteControls}>
-          <div className={styles.voteRow}>
+        {alreadyVoted ? (
+          <p className={styles.mutedText}>Vote submitted. Waiting for resolution...</p>
+        ) : (
+          <div className={styles.voteControls}>
             <div className={styles.voteSection}>
               <div className={styles.voteSectionLabel}>Position</div>
               <div className={styles.voteToggle}>
@@ -68,13 +68,13 @@ export function CongressPanel({
                 ))}
               </div>
             </div>
-          </div>
 
-          <button onClick={() => onVote(amount, support)} className={styles.btnPrimary}>
-            Submit Vote
-          </button>
-        </div>
-      )}
+            <button onClick={() => onVote(amount, support)} className={styles.btnPrimary}>
+              Submit Vote
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
