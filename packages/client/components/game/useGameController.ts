@@ -2,11 +2,32 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { GameState, GameEvent, OrderChoice, DirectorateId } from '@fp/shared';
-import { DIRECTORATE_IDS } from '@fp/shared';
+import { DIRECTORATE_IDS, PROGRAM_CARDS, CONTRACT_CARDS, AGENDA_CARDS, CRISIS_CARDS } from '@fp/shared';
 import { GameEngine, SeededRNG } from '@fp/engine';
 import { Bot, PERSONALITIES } from '@fp/simulation';
 
 const STORAGE_KEY = 'fp-game-state';
+
+// Lookup map to re-attach prose to cards deserialized from localStorage
+// (prose is not re-saved if state was stored before prose was generated)
+const _proseMap: Record<string, string | undefined> = {};
+for (const c of [...PROGRAM_CARDS, ...CONTRACT_CARDS, ...AGENDA_CARDS, ...CRISIS_CARDS]) {
+  if (c.prose) _proseMap[c.id] = c.prose;
+}
+
+function withProse<T extends { id: string; prose?: string }>(card: T): T {
+  const prose = _proseMap[card.id];
+  return prose && !card.prose ? { ...card, prose } : card;
+}
+
+function hydrateStateProse(state: GameState): GameState {
+  for (const player of Object.values(state.players)) {
+    if (player.hand?.length) {
+      (player as any).hand = player.hand.map(withProse);
+    }
+  }
+  return state;
+}
 
 /** How long to show the resolution summary before auto-advancing (ms) */
 const RESOLUTION_DISPLAY_MS = 3000;
@@ -42,7 +63,7 @@ function loadState(): GameState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as GameState;
+    return hydrateStateProse(JSON.parse(raw) as GameState);
   } catch {
     return null;
   }

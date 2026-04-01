@@ -1,0 +1,327 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+/* === Modal Shell === */
+.modal {
+  width: 480px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 0 48px color-mix(in srgb, var(--accent, #3b82f6) 12%, transparent);
+  position: relative;
+}
+
+/* Thin accent bar at very top */
+.accentBar {
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent, #3b82f6), color-mix(in srgb, var(--accent, #3b82f6) 40%, transparent));
+}
+
+/* === Art Hero === */
+.artHero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--bg-elevated);
+}
+
+.artImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  display: block;
+}
+
+.artFallback {
+  width: 100%;
+  height: 100%;
+  background: color-mix(in srgb, var(--accent, #3b82f6) 8%, var(--bg-elevated));
+}
+
+/* Subtle scanline texture over art */
+.artScanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.05) 3px,
+    rgba(0, 0, 0, 0.05) 4px
+  );
+  pointer-events: none;
+}
+
+/* Gradient: art fades into card background at bottom */
+.artGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 15%,
+    color-mix(in srgb, #0a0d12 40%, transparent) 55%,
+    rgba(10, 13, 18, 0.96) 100%
+  );
+  pointer-events: none;
+}
+
+/* Name / type sits at the bottom of the art hero */
+.nameOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0 var(--space-xl) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 1;
+}
+
+.typePill {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent, #3b82f6);
+}
+
+.cardName {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 2.375rem;
+  line-height: 0.95;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.9);
+}
+
+/* === Body === */
+.body {
+  padding: var(--space-lg) var(--space-xl) var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Prose callout — the highlighted intel section */
+.prose {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: var(--space-sm) var(--space-md);
+  border-left: 2px solid var(--accent, #3b82f6);
+  background: color-mix(in srgb, var(--accent, #3b82f6) 6%, transparent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.proseLabel {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--accent, #3b82f6);
+}
+
+.proseText {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 2px 0;
+}
+
+/* === Section label + content === */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sectionLabel {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+/* Effects list */
+.effectList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.effectList li {
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  padding-left: 1.1em;
+  position: relative;
+  line-height: 1.5;
+}
+
+.effectList li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent, #3b82f6);
+  opacity: 0.75;
+}
+
+/* Requirements list */
+.requireList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.requireList li {
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  padding-left: 1.4em;
+  position: relative;
+  line-height: 1.5;
+}
+
+.requireList li::before {
+  content: '☐';
+  position: absolute;
+  left: 0;
+  color: var(--text-muted);
+}
+
+/* Cost data grid */
+.costGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+.costCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.costCellLabel {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.costCellValue {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Tags */
+.tagsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* Station info */
+.stationNote {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+/* Agenda description */
+.descriptionText {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.favoredRow {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* Crisis */
+.crisisRule {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  line-height: 1.55;
+  padding: var(--space-sm) var(--space-md);
+  background: color-mix(in srgb, var(--color-danger) 7%, transparent);
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 22%, transparent);
+  font-style: italic;
+}
+
+.crisisNote {
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+}
+
+/* === Footer === */
+.footer {
+  padding: var(--space-sm) var(--space-xl);
+  border-top: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.siBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-si) 14%, transparent);
+  color: var(--color-si);
+  box-shadow: var(--shadow-glow-si);
+}
+
+.footerMuted {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+}

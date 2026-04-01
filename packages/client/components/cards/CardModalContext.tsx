@@ -2,10 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import type { ProgramCard, ContractCard, CrisisCard, AgendaCard } from '@fp/shared';
-import { ProgramCard as ProgramCardComp } from './ProgramCard';
-import { ContractCard as ContractCardComp } from './ContractCard';
-import { CrisisCard as CrisisCardComp } from './CrisisCard';
-import { AgendaCard as AgendaCardComp } from './AgendaCard';
+import { CardDetailModal } from './CardDetailModal';
 import styles from './Cards.module.css';
 
 export type CardModalData =
@@ -41,10 +38,7 @@ function CardModalOverlay({ data, onClose }: { data: CardModalData; onClose: () 
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
         <button className={styles.modalClose} onClick={onClose} aria-label="Close">✕</button>
-        {data.type === 'program' && <ProgramCardComp card={data.card} />}
-        {data.type === 'contract' && <ContractCardComp card={data.card} />}
-        {data.type === 'crisis' && <CrisisCardComp card={data.card} />}
-        {data.type === 'agenda' && <AgendaCardComp card={data.card} />}
+        <CardDetailModal data={data} />
       </div>
     </div>
   );

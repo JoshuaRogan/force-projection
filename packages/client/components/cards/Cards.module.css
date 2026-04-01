@@ -1,7 +1,6 @@
 /* === Shared Card Shell === */
 .card {
-  width: var(--card-width);
-  min-height: var(--card-height);
+  width: var(--card-width, 220px);
   border-radius: var(--radius-lg);
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -12,6 +11,20 @@
   font-size: var(--font-size-sm);
   cursor: default;
   box-shadow: var(--shadow-card);
+}
+
+/* Horizontal layout: image left, details right (used in modal) */
+.cardHorizontal {
+  --card-art-width: 200px;
+  flex-direction: row;
+}
+
+/* Right-side column: header + body + footer */
+.cardDetails {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .card:hover {
@@ -139,11 +152,11 @@
 .agendaCard { border-top: 3px solid var(--color-card-agenda); }
 .crisisCard { border-top: 3px solid var(--color-card-crisis); }
 
-/* Domain stripe color overrides */
-.domainAIR .cardHeader { border-left: 3px solid var(--color-domain-air); }
-.domainSEA .cardHeader { border-left: 3px solid var(--color-domain-sea); }
-.domainEXP .cardHeader { border-left: 3px solid var(--color-domain-exp); }
-.domainSPACE_CYBER .cardHeader { border-left: 3px solid var(--color-domain-space-cyber); }
+/* Domain stripe color overrides — horizontal only (left edge of art column) */
+.cardHorizontal.domainAIR .cardArtSection { border-left: 3px solid var(--color-domain-air); }
+.cardHorizontal.domainSEA .cardArtSection { border-left: 3px solid var(--color-domain-sea); }
+.cardHorizontal.domainEXP .cardArtSection { border-left: 3px solid var(--color-domain-exp); }
+.cardHorizontal.domainSPACE_CYBER .cardArtSection { border-left: 3px solid var(--color-domain-space-cyber); }
 
 /* Requirements list (contracts) */
 .requirementsList {
@@ -206,14 +219,23 @@
 }
 
 /* === Card Art === */
+/* Vertical (default): full width strip on top */
 .cardArtSection {
   width: 100%;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
+  aspect-ratio: 3 / 2;
   flex-shrink: 0;
+  overflow: hidden;
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border-subtle);
   position: relative;
+}
+
+/* Horizontal: fixed-width column on the left */
+.cardHorizontal .cardArtSection {
+  width: var(--card-art-width, 200px);
+  aspect-ratio: unset;
+  border-bottom: none;
+  border-right: 1px solid var(--border-subtle);
 }
 
 .cardArtImage {

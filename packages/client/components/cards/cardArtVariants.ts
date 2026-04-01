@@ -9,7 +9,8 @@ export const CARD_ART_VARIANTS: Record<string, number> = {
   // Programs — add overrides as needed
   // 'prog-f22': 2,
   'prog-b52': 2,
-
+  'prog-kc46': 2,
+  'prog-mq25': 2,
   // Contracts
   // 'con-air-dom': 2,
 
