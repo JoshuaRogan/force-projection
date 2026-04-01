@@ -1,6 +1,9 @@
 import type { CrisisCard } from '../cards.js';
+import prose from './cardProse.json';
 
-export const CRISIS_CARDS: CrisisCard[] = [
+const _prose = prose as Record<string, string>;
+
+const _cards: CrisisCard[] = [
   {
     id: 'crisis-budget-freeze',
     name: 'Budget Freeze',
@@ -407,3 +410,5 @@ export const CRISIS_CARDS: CrisisCard[] = [
     ],
   },
 ];
+
+export const CRISIS_CARDS: CrisisCard[] = _cards.map(c => ({ ...c, prose: _prose[c.id] }));

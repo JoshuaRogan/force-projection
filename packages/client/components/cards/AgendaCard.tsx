@@ -1,4 +1,5 @@
 import type { AgendaCard as AgendaCardType } from '@fp/shared';
+import { CardArt } from './CardArt';
 import styles from './Cards.module.css';
 
 export function AgendaCard({ card }: { card: AgendaCardType }) {
@@ -9,7 +10,11 @@ export function AgendaCard({ card }: { card: AgendaCardType }) {
         <div className={styles.cardSubtitle}>Congressional Agenda</div>
       </div>
 
+      <CardArt id={card.id} type="agendas" name={card.name} />
+
       <div className={styles.cardBody}>
+        {card.prose && <p className={styles.cardProse}>{card.prose}</p>}
+
         <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
           {card.description}
         </p>

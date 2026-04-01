@@ -1,6 +1,9 @@
 import type { AgendaCard } from '../cards.js';
+import prose from './cardProse.json';
 
-export const AGENDA_CARDS: AgendaCard[] = [
+const _prose = prose as Record<string, string>;
+
+const _cards: AgendaCard[] = [
   {
     id: 'agenda-pivot-pacific',
     name: 'Pivot to the Pacific',
@@ -245,3 +248,5 @@ export const AGENDA_CARDS: AgendaCard[] = [
     ],
   },
 ];
+
+export const AGENDA_CARDS: AgendaCard[] = _cards.map(c => ({ ...c, prose: _prose[c.id] }));

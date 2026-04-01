@@ -1,6 +1,7 @@
 import type { ProgramCard as ProgramCardType } from '@fp/shared';
 import { THEATER_NAMES } from '@fp/shared';
 import { CostDisplay } from './CostDisplay';
+import { CardArt } from './CardArt';
 import styles from './Cards.module.css';
 
 const DOMAIN_LABELS: Record<string, string> = {
@@ -17,7 +18,11 @@ export function ProgramCard({ card }: { card: ProgramCardType }) {
         </div>
       </div>
 
+      <CardArt id={card.id} type="programs" name={card.name} />
+
       <div className={styles.cardBody}>
+        {card.prose && <p className={styles.cardProse}>{card.prose}</p>}
+
         {/* Tags */}
         <div className={styles.tagsRow}>
           {card.subtags.map(tag => (

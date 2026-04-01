@@ -1,6 +1,9 @@
 import type { ProgramCard } from '../cards.js';
+import prose from './cardProse.json';
 
-export const PROGRAM_CARDS: ProgramCard[] = [
+const _prose = prose as Record<string, string>;
+
+const _cards: ProgramCard[] = [
 
   // ============================================================
   // AIR DOMAIN (20 cards)
@@ -1521,3 +1524,5 @@ export const PROGRAM_CARDS: ProgramCard[] = [
     ],
   },
 ];
+
+export const PROGRAM_CARDS: ProgramCard[] = _cards.map(c => ({ ...c, prose: _prose[c.id] }));

@@ -3,5 +3,9 @@
   "private": true,
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@google/genai": "^1.47.0",
+    "dotenv": "^17.3.1"
+  }
 }

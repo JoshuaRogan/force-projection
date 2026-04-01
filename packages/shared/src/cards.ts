@@ -62,6 +62,8 @@ export interface ProgramCard {
   stationing?: StationingOption;
   /** SI printed directly on the card (rare) */
   printedSI?: number;
+  /** One-sentence flavour text injected from cardProse.json */
+  prose?: string;
 }
 
 // === Contract Cards ===
@@ -92,6 +94,7 @@ export interface ContractCard {
   rewardEffects?: Effect[]; // bonus effects beyond SI on completion
   failurePenaltySI: number; // negative number
   failureEffects?: Effect[];
+  prose?: string;
 }
 
 // === Agenda Cards ===
@@ -106,6 +109,7 @@ export interface AgendaCard {
   failEffects: Effect[];
   /** Which budget line this agenda "favors" (used by Lobby order) */
   favoredBudgetLine?: import('./resources.js').BudgetLine;
+  prose?: string;
 }
 
 // === Crisis Cards ===
@@ -122,6 +126,7 @@ export interface CrisisCard {
   /** Penalty if crisis is ignored */
   penaltyDescription: string;
   penaltyEffects: Effect[];
+  prose?: string;
 }
 
 // === Union type for any card ===

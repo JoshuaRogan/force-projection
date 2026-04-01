@@ -1,5 +1,6 @@
 import type { ProgramCard } from '@fp/shared';
 import { useCardModal } from '../cards/CardModalContext';
+import { CARD_ART_VARIANTS } from '../cards/cardArtVariants';
 import styles from './Dashboard.module.css';
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -29,6 +30,8 @@ export function HandTray({ hand }: { hand: ProgramCard[] }) {
       <div className={styles.handList}>
         {hand.map(card => {
           const domainColor = DOMAIN_COLORS[card.domain];
+          const variant = CARD_ART_VARIANTS[card.id] ?? 1;
+          const artSrc = `/cards/programs/${card.id}-v${variant}.png`;
           return (
             <div
               key={card.id}
@@ -36,23 +39,26 @@ export function HandTray({ hand }: { hand: ProgramCard[] }) {
               style={{ '--stripe-color': domainColor, cursor: 'pointer' } as React.CSSProperties}
               onClick={() => showCard({ type: 'program', card })}
             >
-              <div className={styles.handCardName}>{card.name}</div>
-              <div className={styles.handCardMeta}>
-                <span className={styles.handCardDomain} style={{ color: domainColor }}>
-                  {DOMAIN_SHORT[card.domain]}
-                </span>
-                <span className={styles.handCardCosts}>
-                  P:{formatCostShort(card.pipelineCost) || '0'}
-                </span>
-                <span className={styles.handCardCosts}>
-                  A:{formatCostShort(card.activeCost) || '0'}
-                </span>
-              </div>
-              {card.activateEffects.length > 0 && (
-                <div className={styles.handCardEffects}>
-                  {card.activateEffects[0].description}
+              <div className={styles.handCardText}>
+                <div className={styles.handCardName}>{card.name}</div>
+                <div className={styles.handCardMeta}>
+                  <span className={styles.handCardDomain} style={{ color: domainColor }}>
+                    {DOMAIN_SHORT[card.domain]}
+                  </span>
+                  <span className={styles.handCardCosts}>
+                    P:{formatCostShort(card.pipelineCost) || '0'}
+                  </span>
+                  <span className={styles.handCardCosts}>
+                    A:{formatCostShort(card.activeCost) || '0'}
+                  </span>
                 </div>
-              )}
+                {card.activateEffects.length > 0 && (
+                  <div className={styles.handCardEffects}>
+                    {card.activateEffects[0].description}
+                  </div>
+                )}
+              </div>
+              <img src={artSrc} aria-hidden className={styles.handCardArt} />
             </div>
           );
         })}

@@ -1,4 +1,5 @@
 import type { ContractCard as ContractCardType } from '@fp/shared';
+import { CardArt } from './CardArt';
 import styles from './Cards.module.css';
 
 export function ContractCard({ card }: { card: ContractCardType }) {
@@ -9,7 +10,11 @@ export function ContractCard({ card }: { card: ContractCardType }) {
         <div className={styles.cardSubtitle}>Contract</div>
       </div>
 
+      <CardArt id={card.id} type="contracts" name={card.name} />
+
       <div className={styles.cardBody}>
+        {card.prose && <p className={styles.cardProse}>{card.prose}</p>}
+
         {/* Immediate award */}
         {card.immediateAward.length > 0 && (
           <div>

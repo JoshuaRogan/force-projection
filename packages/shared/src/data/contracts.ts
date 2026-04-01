@@ -1,6 +1,9 @@
 import type { ContractCard } from '../cards.js';
+import prose from './cardProse.json';
 
-export const CONTRACT_CARDS: ContractCard[] = [
+const _prose = prose as Record<string, string>;
+
+const _cards: ContractCard[] = [
   {
     id: 'con-air-dom',
     name: 'Air Dominance Demonstration',
@@ -479,3 +482,5 @@ export const CONTRACT_CARDS: ContractCard[] = [
     failureEffects: [{ type: 'gainProduction', description: '-1 U production next year', params: { U: -1 } }],
   },
 ];
+
+export const CONTRACT_CARDS: ContractCard[] = _cards.map(c => ({ ...c, prose: _prose[c.id] }));

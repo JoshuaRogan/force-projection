@@ -557,18 +557,15 @@
 
 .handCard {
   flex-shrink: 0;
-  width: 200px;
-  padding: var(--space-sm);
+  width: 240px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: row;
   cursor: default;
   transition: all var(--transition-fast);
   box-shadow: var(--shadow-sm);
-  position: relative;
   overflow: hidden;
 }
 
@@ -586,6 +583,15 @@
   border-color: var(--border-accent);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
+}
+
+.handCardText {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .handCardName {
@@ -626,4 +632,13 @@
   line-height: 1.4;
   max-height: 2.8em;
   overflow: hidden;
+}
+
+.handCardArt {
+  flex-shrink: 0;
+  width: 72px;
+  object-fit: cover;
+  object-position: center;
+  border-left: 1px solid var(--border-subtle);
+  display: block;
 }
