@@ -2,24 +2,27 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-md);
+  padding: var(--space-xs) var(--space-lg);
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   overflow-x: auto;
-  min-height: 48px;
+  min-height: 50px;
 }
 
 .yearBadge {
   flex-shrink: 0;
-  padding: 4px 12px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  color: var(--text-secondary);
+  padding: 3px 10px;
+  background: color-mix(in srgb, var(--color-si) 10%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--color-si) 30%, transparent);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-si);
   white-space: nowrap;
 }
 
@@ -39,7 +42,7 @@
 }
 
 .connector {
-  height: 2px;
+  height: 1px;
   flex: 1;
   min-width: 8px;
   background: var(--border-subtle);
@@ -54,44 +57,50 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   flex-shrink: 0;
   position: relative;
 }
 
+/* Square tactical dot */
 .stepDot {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
   background: var(--bg-elevated);
-  border: 2px solid var(--border-subtle);
+  border: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  color: var(--color-success);
+  font-size: 9px;
+  color: transparent;
   transition: all var(--transition-normal);
 }
 
 .stepActive .stepDot {
-  background: var(--color-info);
+  background: color-mix(in srgb, var(--color-info) 15%, var(--bg-elevated));
   border-color: var(--color-info);
-  box-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
-  color: white;
+  border-width: 2px;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-info) 40%, transparent);
+  color: transparent;
 }
 
 .stepCompleted .stepDot {
-  background: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 15%, var(--bg-elevated));
   border-color: var(--color-success);
-  color: white;
+  color: var(--color-success);
+  font-size: 8px;
 }
 
 .stepLabel {
-  font-size: var(--font-size-2xs);
-  color: var(--text-secondary);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  font-weight: 500;
   text-align: center;
   white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -100,7 +109,7 @@
 
 .stepActive .stepLabel {
   color: var(--color-info);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .stepCompleted .stepLabel {
@@ -108,16 +117,16 @@
 }
 
 .substepLabel {
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 8px;
+  font-weight: 600;
   color: var(--color-info);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .stepMajor .stepDot {
-  width: 24px;
-  height: 24px;
-  font-size: 11px;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
 }

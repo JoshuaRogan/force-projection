@@ -2,7 +2,7 @@
 .dashboard {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -25,17 +25,21 @@
 }
 
 .playerName {
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  line-height: 1.2;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1;
 }
 
 .directorate {
-  font-size: var(--font-size-2xs);
-  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-top: 1px;
+  letter-spacing: 0.1em;
+  margin-top: 3px;
 }
 
 .siBadge {
@@ -59,18 +63,21 @@
 }
 
 .siValue {
-  font-size: var(--font-size-2xl);
-  font-weight: 800;
+  font-family: var(--font-mono);
+  font-size: 1.875rem;
+  font-weight: 700;
   color: var(--color-si);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .siLabel {
-  font-size: var(--font-size-2xs);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
   color: var(--color-si);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  opacity: 0.8;
+  letter-spacing: 0.14em;
+  opacity: 0.75;
   margin-top: 2px;
 }
 
@@ -84,20 +91,22 @@
 }
 
 .sectionTitle {
-  font-size: var(--font-size-2xs);
-  font-weight: 700;
-  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
 }
 
 .sectionTitleBtn {
   all: unset;
-  font-size: var(--font-size-2xs);
-  font-weight: 700;
-  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -376,25 +385,28 @@
 }
 
 .resourceValue {
+  font-family: var(--font-mono);
   font-size: var(--font-size-lg);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .resourceLabel {
-  font-size: var(--font-size-2xs);
-  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   line-height: 1;
 }
 
 .resourceProduction {
-  font-size: var(--font-size-2xs);
-  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--text-muted);
   line-height: 1;
-  opacity: 0.85;
+  opacity: 0.8;
 }
 
 .resourceCellClickable {
@@ -534,17 +546,19 @@
 .handTray {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
+  border-top-color: color-mix(in srgb, var(--color-card-program) 20%, var(--border-subtle));
   padding: var(--space-sm) var(--space-md);
   box-shadow: var(--shadow-md);
 }
 
 .handTrayHeader {
-  font-size: var(--font-size-2xs);
-  font-weight: 700;
-  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   margin-bottom: var(--space-xs);
 }
 

@@ -19,20 +19,36 @@
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  padding: var(--space-xs) var(--space-md);
+  padding: 0 var(--space-lg);
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  min-height: 40px;
+  border-radius: var(--radius-md);
+  border-bottom-color: color-mix(in srgb, var(--color-si) 25%, var(--border-subtle));
+  box-shadow: var(--shadow-md), 0 1px 0 color-mix(in srgb, var(--color-si) 12%, transparent);
+  min-height: 44px;
 }
 
 .title {
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  white-space: nowrap;
-  letter-spacing: -0.01em;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   color: var(--text-primary);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title::before {
+  content: '//';
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-si);
+  letter-spacing: 0;
+  opacity: 0.9;
 }
 
 .topBarRight {
@@ -43,39 +59,46 @@
   overflow-x: auto;
 }
 
+/* Opponent chip */
 .opponentChip {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: var(--bg-card);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-xs);
   white-space: nowrap;
-  box-shadow: var(--shadow-sm);
 }
 
 .opponentDir {
   color: var(--text-muted);
-  font-size: var(--font-size-2xs);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
 }
 
 .opponentSI {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: var(--font-size-xs);
   color: var(--color-si);
-  font-weight: 700;
-  font-size: var(--font-size-sm);
 }
 
+/* New game button */
 .newGameBtn {
-  padding: 4px 12px;
-  background: var(--bg-card);
+  padding: 4px 14px;
+  background: transparent;
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--transition-fast);
@@ -87,24 +110,26 @@
   color: var(--text-primary);
 }
 
+/* Agenda button */
 .agendaBtn {
-  padding: 4px 12px;
-  background: color-mix(in srgb, var(--color-card-agenda) 10%, var(--bg-card));
-  border: 1px solid color-mix(in srgb, var(--color-card-agenda) 35%, transparent);
-  border-radius: var(--radius-md);
+  padding: 5px 14px;
+  background: color-mix(in srgb, var(--color-card-agenda) 8%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--color-card-agenda) 40%, transparent);
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-xs);
   color: var(--text-primary);
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--transition-fast);
-  max-width: 220px;
+  max-width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .agendaBtn:hover {
-  background: color-mix(in srgb, var(--color-card-agenda) 18%, var(--bg-card));
+  background: color-mix(in srgb, var(--color-card-agenda) 15%, var(--bg-elevated));
   border-color: var(--color-card-agenda);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-card-agenda) 20%, transparent);
 }
 
 /* === Timeline row === */
@@ -126,7 +151,7 @@
 
 .phasePanel {
   background: var(--bg-surface);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-md);
 }
@@ -153,7 +178,7 @@
   min-height: 100px;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   overflow: hidden;
 }

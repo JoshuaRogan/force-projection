@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
 /* === Design Tokens === */
 :root {
   /* Background & surface — deeper, richer dark palette */
@@ -69,7 +71,8 @@
 
   /* Typography */
   --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', monospace;
   --font-size-2xs: 0.75rem;
   --font-size-xs: 0.8125rem;
   --font-size-sm: 0.875rem;
