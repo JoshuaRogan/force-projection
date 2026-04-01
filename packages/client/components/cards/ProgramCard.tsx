@@ -1,5 +1,6 @@
 import type { ProgramCard as ProgramCardType } from '@fp/shared';
 import { THEATER_NAMES } from '@fp/shared';
+import { SubtagIcon } from '../icons';
 import { CostDisplay } from './CostDisplay';
 import { CardArt } from './CardArt';
 import styles from './Cards.module.css';
@@ -24,7 +25,10 @@ export function ProgramCard({ card, layout = 'vertical' }: { card: ProgramCardTy
 
           <div className={styles.tagsRow}>
             {card.subtags.map(tag => (
-              <span key={tag} className={styles.tag}>{tag}</span>
+              <span key={tag} className={styles.iconTag}>
+                <SubtagIcon subtag={tag} size={11} colored className={styles.iconTagGlyph} />
+                {tag}
+              </span>
             ))}
           </div>
 

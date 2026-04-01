@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { GameState } from '@fp/shared';
 import { ContractCard } from '../cards';
+import { checkRequirements } from '../../utils/checkRequirements';
 import styles from './GamePanel.module.css';
 
 export function ContractMarketPanel({
@@ -60,7 +61,7 @@ export function ContractMarketPanel({
                 <div className={styles.contractClickHint}>
                   {isSelected ? '✓ Selected — click to remove' : isDisabled ? 'Slots full' : 'Click to select'}
                 </div>
-                <ContractCard card={card} />
+                <ContractCard card={card} fulfillment={checkRequirements(card, player)} />
               </div>
             );
           })}

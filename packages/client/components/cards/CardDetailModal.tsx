@@ -1,8 +1,10 @@
 'use client';
 import { useState } from 'react';
-import type { ProgramCard, ContractCard, AgendaCard, CrisisCard } from '@fp/shared';
+import type { ProgramCard, ContractCard, AgendaCard, CrisisCard, BudgetLine, SecondaryResource } from '@fp/shared';
 import { THEATER_NAMES } from '@fp/shared';
 import type { CardModalData } from './CardModalContext';
+import { SubtagIcon, RequirementIcon } from '../icons';
+import { ResourceToken } from '../ui/ResourceToken';
 import { CARD_ART_VARIANTS } from './cardArtVariants';
 import styles from './CardDetailModal.module.css';
 
@@ -31,11 +33,18 @@ const DOMAIN_ACCENT: Record<string, string> = {
   SPACE_CYBER: 'var(--color-domain-space-cyber)',
 };
 
-function costSummary(cost: { budget: Record<string, number> }): string {
-  return Object.entries(cost.budget)
-    .filter(([, v]) => v > 0)
-    .map(([k, v]) => `${v} ${k}`)
-    .join('  ') || '—';
+function CostChips({ cost }: { cost: { budget: Partial<Record<string, number>>; secondary?: Partial<Record<string, number>> } }) {
+  const budgetEntries = Object.entries(cost.budget).filter(([, v]) => v && v > 0) as [BudgetLine, number][];
+  const secondaryEntries = cost.secondary
+    ? (Object.entries(cost.secondary).filter(([, v]) => v && v > 0) as [SecondaryResource, number][])
+    : [];
+  if (budgetEntries.length === 0 && secondaryEntries.length === 0) return <span className={styles.costEmpty}>—</span>;
+  return (
+    <span className={styles.costChips}>
+      {budgetEntries.map(([k, v]) => <ResourceToken key={k} resource={k} count={v} mode="labeled" />)}
+      {secondaryEntries.map(([k, v]) => <ResourceToken key={k} resource={k} count={v} mode="labeled" />)}
+    </span>
+  );
 }
 
 
@@ -61,17 +70,22 @@ function ProgramBody({ card }: { card: ProgramCard }) {
     <>
       {card.subtags.length > 0 && (
         <div className={styles.tagsRow}>
-          {card.subtags.map(t => <span key={t} className={styles.tag}>{t}</span>)}
+          {card.subtags.map(t => (
+            <span key={t} className={styles.tag} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <SubtagIcon subtag={t} size={12} colored />
+              {t}
+            </span>
+          ))}
         </div>
       )}
       <div className={styles.costGrid}>
         <div className={styles.costCell}>
           <span className={styles.costCellLabel}>Pipeline</span>
-          <span className={styles.costCellValue}>{costSummary(card.pipelineCost)}</span>
+          <CostChips cost={card.pipelineCost} />
         </div>
         <div className={styles.costCell}>
           <span className={styles.costCellLabel}>Activate</span>
-          <span className={styles.costCellValue}>{costSummary(card.activeCost)}</span>
+          <CostChips cost={card.activeCost} />
         </div>
       </div>
       {card.activateEffects.length > 0 && (
@@ -105,7 +119,14 @@ function ContractBody({ card }: { card: ContractCard }) {
       )}
       <Section label="Requirements">
         <ul className={styles.requireList}>
-          {card.requirements.map((r, i) => <li key={i}>{r.description}</li>)}
+          {card.requirements.map((r, i) => (
+            <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, paddingLeft: 0 }}>
+              <span style={{ marginTop: 2, flexShrink: 0, opacity: 0.65 }}>
+                <RequirementIcon req={r} size={14} />
+              </span>
+              <span>{r.description}</span>
+            </li>
+          ))}
         </ul>
       </Section>
       <div className={styles.costGrid}>

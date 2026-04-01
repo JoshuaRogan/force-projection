@@ -193,16 +193,7 @@
 .requireList li {
   font-size: var(--font-size-xs);
   color: var(--text-primary);
-  padding-left: 1.4em;
-  position: relative;
   line-height: 1.5;
-}
-
-.requireList li::before {
-  content: '☐';
-  position: absolute;
-  left: 0;
-  color: var(--text-muted);
 }
 
 /* Cost data grid */
@@ -235,6 +226,19 @@
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-primary);
+}
+
+.costChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.costEmpty {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
 }
 
 /* Tags */

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { PlayerResources, BudgetLine, SecondaryResource } from '@fp/shared';
 import { BUDGET_LINES, SECONDARY_RESOURCES } from '@fp/shared';
+import { ResourceToken } from '../ui/ResourceToken';
 import styles from './Dashboard.module.css';
 
 const BUDGET_CSS: Record<BudgetLine, string> = {
@@ -223,17 +224,21 @@ export function ResourcePanel({ resources }: { resources: PlayerResources }) {
         <button className={styles.sectionTitleBtn} onClick={() => setDetail({ kind: 'section', type: 'budget' })}>
           Budget <span className={styles.infoIcon}>ⓘ</span>
         </button>
-        <div className={styles.resourceGrid}>
+        <div className={styles.resourceList}>
           {BUDGET_LINES.map(line => (
             <div
               key={line}
-              className={`${styles.resourceCell} ${styles.resourceCellClickable}`}
+              className={styles.resourceRow}
               style={{ '--stripe-color': BUDGET_CSS[line] } as React.CSSProperties}
               onClick={() => setDetail({ kind: 'budget-item', key: line })}
             >
-              <span className={styles.resourceValue} style={{ color: BUDGET_CSS[line] }}>{resources.budget[line]}</span>
-              <span className={styles.resourceLabel}>{BUDGET_SHORT[line]}</span>
-              <span className={styles.resourceProduction}>+{resources.production.budget[line]}</span>
+              <ResourceToken resource={line} mode="cell" />
+              <div className={styles.resourceRowRight}>
+                <span className={styles.resourceValue} style={{ color: BUDGET_CSS[line] }}>
+                  {resources.budget[line]}
+                </span>
+                <span className={styles.resourceProduction}>+{resources.production.budget[line]}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -243,17 +248,21 @@ export function ResourcePanel({ resources }: { resources: PlayerResources }) {
         <button className={styles.sectionTitleBtn} onClick={() => setDetail({ kind: 'section', type: 'secondary' })}>
           Secondary <span className={styles.infoIcon}>ⓘ</span>
         </button>
-        <div className={styles.resourceGridSecondary}>
+        <div className={styles.resourceList}>
           {SECONDARY_RESOURCES.map(res => (
             <div
               key={res}
-              className={`${styles.resourceCell} ${styles.resourceCellClickable}`}
+              className={styles.resourceRow}
               style={{ '--stripe-color': SECONDARY_CSS[res] } as React.CSSProperties}
               onClick={() => setDetail({ kind: 'secondary-item', key: res })}
             >
-              <span className={styles.resourceValue} style={{ color: SECONDARY_CSS[res] }}>{resources.secondary[res]}</span>
-              <span className={styles.resourceLabel}>{SECONDARY_SHORT[res]}</span>
-              <span className={styles.resourceProduction}>+{resources.production.secondary[res]}</span>
+              <ResourceToken resource={res} mode="cell" />
+              <div className={styles.resourceRowRight}>
+                <span className={styles.resourceValue} style={{ color: SECONDARY_CSS[res] }}>
+                  {resources.secondary[res]}
+                </span>
+                <span className={styles.resourceProduction}>+{resources.production.secondary[res]}</span>
+              </div>
             </div>
           ))}
         </div>

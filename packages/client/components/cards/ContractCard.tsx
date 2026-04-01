@@ -1,8 +1,17 @@
 import type { ContractCard as ContractCardType } from '@fp/shared';
+import { RequirementIcon } from '../icons';
 import { CardArt } from './CardArt';
 import styles from './Cards.module.css';
 
-export function ContractCard({ card, layout = 'vertical' }: { card: ContractCardType; layout?: 'horizontal' | 'vertical' }) {
+export function ContractCard({
+  card,
+  layout = 'vertical',
+  fulfillment,
+}: {
+  card: ContractCardType;
+  layout?: 'horizontal' | 'vertical';
+  fulfillment?: (boolean | null)[];
+}) {
   return (
     <div className={`${styles.card} ${styles.contractCard} ${layout === 'horizontal' ? styles.cardHorizontal : ''}`}>
       <CardArt id={card.id} type="contracts" name={card.name} />
@@ -30,9 +39,21 @@ export function ContractCard({ card, layout = 'vertical' }: { card: ContractCard
           <div>
             <div className={styles.sectionLabel}>Requirements</div>
             <ul className={styles.requirementsList}>
-              {card.requirements.map((r, i) => (
-                <li key={i}>{r.description}</li>
-              ))}
+              {card.requirements.map((r, i) => {
+                const met = fulfillment?.[i];
+                return (
+                  <li
+                    key={i}
+                    className={`${styles.reqRow} ${met === true ? styles.reqMet : met === false ? styles.reqUnmet : ''}`}
+                  >
+                    <RequirementIcon req={r} size={12} className={styles.reqIcon} />
+                    <span className={styles.reqDesc}>{r.description}</span>
+                    {met !== undefined && met !== null && (
+                      <span className={styles.reqStatus}>{met ? '✓' : '–'}</span>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
 

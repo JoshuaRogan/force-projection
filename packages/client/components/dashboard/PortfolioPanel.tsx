@@ -1,4 +1,5 @@
 import type { Portfolio } from '@fp/shared';
+import { SubtagIcon } from '../icons';
 import { useCardModal } from '../cards/CardModalContext';
 import styles from './Dashboard.module.css';
 
@@ -25,6 +26,13 @@ export function PortfolioPanel({ portfolio }: { portfolio: Portfolio }) {
               <>
                 <span className={styles.slotName}>{slot.card.name}</span>
                 <span className={styles.slotDomain}>{slot.card.domain}</span>
+                {slot.card.subtags.length > 0 && (
+                  <div className={styles.slotSubtags}>
+                    {slot.card.subtags.map(tag => (
+                      <SubtagIcon key={tag} subtag={tag} size={10} className={styles.slotSubtagIcon} />
+                    ))}
+                  </div>
+                )}
               </>
             ) : (
               'Empty'

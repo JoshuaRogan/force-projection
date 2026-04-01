@@ -1,19 +1,12 @@
-import type { Cost } from '@fp/shared';
+import type { Cost, BudgetLine, SecondaryResource } from '@fp/shared';
+import { ResourceToken } from '../ui/ResourceToken';
 import styles from './Cards.module.css';
 
-const BUDGET_LABELS: Record<string, string> = {
-  A: 'Air', S: 'Sea', E: 'Exp', X: 'Spc', U: 'Sus',
-};
-
-const SECONDARY_LABELS: Record<string, string> = {
-  M: 'Man', L: 'Log', I: 'Int', PC: 'PC',
-};
-
 export function CostDisplay({ cost, label }: { cost: Cost; label?: string }) {
-  const budgetEntries = Object.entries(cost.budget).filter(([, v]) => v && v > 0);
-  const secondaryEntries = cost.secondary
+  const budgetEntries = Object.entries(cost.budget).filter(([, v]) => v && v > 0) as [BudgetLine, number][];
+  const secondaryEntries = (cost.secondary
     ? Object.entries(cost.secondary).filter(([, v]) => v && v > 0)
-    : [];
+    : []) as [SecondaryResource, number][];
 
   if (budgetEntries.length === 0 && secondaryEntries.length === 0) {
     return label ? <span className={styles.costLabel}>{label}: Free</span> : null;
@@ -23,14 +16,10 @@ export function CostDisplay({ cost, label }: { cost: Cost; label?: string }) {
     <div className={styles.costRow}>
       {label && <span className={styles.costLabel}>{label}:</span>}
       {budgetEntries.map(([key, val]) => (
-        <span key={key} className={`badge badge-${key}`}>
-          {val}{BUDGET_LABELS[key]}
-        </span>
+        <ResourceToken key={key} resource={key} count={val} mode="chip" />
       ))}
       {secondaryEntries.map(([key, val]) => (
-        <span key={key} className={`badge badge-${key}`}>
-          {val}{SECONDARY_LABELS[key]}
-        </span>
+        <ResourceToken key={key} resource={key} count={val} mode="chip" />
       ))}
     </div>
   );

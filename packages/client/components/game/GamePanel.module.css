@@ -310,6 +310,14 @@
   cursor: default;
 }
 
+.orderBtnUnaffordable {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+  position: relative;
+}
+
+
 /* Order description area — fixed height, no layout shift */
 .orderDescArea {
   min-height: 52px;
@@ -359,6 +367,136 @@
   color: var(--text-secondary);
   margin: 0;
   font-style: italic;
+}
+
+.orderDescUnaffordable {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-danger);
+}
+
+/* ── Order cost row ───────────────────────────────────────────────── */
+
+.orderCostRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 0;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  margin: 4px 0;
+}
+
+.orderCostLabel {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+
+.orderCostChips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.orderCostFree {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-success, #34d399);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.orderCostNote {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.orderCostConditional {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+
+/* ── Per-resource cost chip ───────────────────────────────────────── */
+
+.costChip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 3px 7px 3px 5px;
+  border-radius: 3px;
+  border: 1px solid color-mix(in srgb, var(--chip-color) 40%, transparent);
+  background: color-mix(in srgb, var(--chip-color) 10%, transparent);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.costChipOk {
+  /* Affordability confirmed — full resource color */
+}
+
+.costChipShort {
+  /* Can't afford — danger treatment */
+  animation: chipPulse 2s ease-in-out infinite;
+}
+
+@keyframes chipPulse {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 6px color-mix(in srgb, var(--chip-color) 35%, transparent); }
+}
+
+.costChipIcon {
+  color: var(--chip-color);
+  flex-shrink: 0;
+}
+
+.costChipMain {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--chip-color);
+}
+
+.costChipCount {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--chip-color);
+  line-height: 1;
+}
+
+.costChipLabel {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--chip-color);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.costChipDeficit {
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: var(--chip-color);
+  opacity: 0.75;
+  letter-spacing: 0.04em;
+  line-height: 1;
 }
 
 .orderBtnNeedsConfig {
@@ -816,4 +954,23 @@
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   font-style: italic;
+}
+
+.affordTooltip {
+  position: fixed;
+  transform: translateX(-50%) translateY(-100%);
+  white-space: nowrap;
+  background: #0a0d14;
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  border-radius: 3px;
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.9);
+  z-index: 9999;
 }

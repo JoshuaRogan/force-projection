@@ -1,6 +1,7 @@
-import type { ProgramCard } from '@fp/shared';
+import type { ProgramCard, BudgetLine, SecondaryResource } from '@fp/shared';
 import { useCardModal } from '../cards/CardModalContext';
 import { CARD_ART_VARIANTS } from '../cards/cardArtVariants';
+import { ResourceToken } from '../ui/ResourceToken';
 import styles from './Dashboard.module.css';
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -12,11 +13,17 @@ const DOMAIN_SHORT: Record<string, string> = {
   AIR: 'AIR', SEA: 'SEA', EXP: 'EXP', SPACE_CYBER: 'SPC',
 };
 
-function formatCostShort(cost: { budget: Record<string, number> }): string {
-  return Object.entries(cost.budget)
-    .filter(([, v]) => v > 0)
-    .map(([k, v]) => `${v}${k}`)
-    .join(' ');
+function CostChips({ cost }: { cost: { budget: Record<string, number>; secondary?: Record<string, number> } }) {
+  const budget = Object.entries(cost.budget).filter(([, v]) => v > 0) as [BudgetLine, number][];
+  const secondary = cost.secondary
+    ? (Object.entries(cost.secondary).filter(([, v]) => v > 0) as [SecondaryResource, number][])
+    : [];
+  return (
+    <>
+      {budget.map(([k, v]) => <ResourceToken key={k} resource={k} count={v} mode="chip" />)}
+      {secondary.map(([k, v]) => <ResourceToken key={k} resource={k} count={v} mode="chip" />)}
+    </>
+  );
 }
 
 export function HandTray({ hand }: { hand: ProgramCard[] }) {
@@ -36,21 +43,26 @@ export function HandTray({ hand }: { hand: ProgramCard[] }) {
             <div
               key={card.id}
               className={styles.handCard}
-              style={{ '--stripe-color': domainColor, cursor: 'pointer' } as React.CSSProperties}
+              style={{ '--domain-color': domainColor } as React.CSSProperties}
               onClick={() => showCard({ type: 'program', card })}
             >
-              <div className={styles.handCardText}>
+              <div className={styles.handCardArtWrap}>
+                <img src={artSrc} aria-hidden className={styles.handCardArt} />
+                <span className={styles.handCardDomainBadge} style={{ color: domainColor }}>
+                  {DOMAIN_SHORT[card.domain]}
+                </span>
+              </div>
+              <div className={styles.handCardInfo}>
                 <div className={styles.handCardName}>{card.name}</div>
-                <div className={styles.handCardMeta}>
-                  <span className={styles.handCardDomain} style={{ color: domainColor }}>
-                    {DOMAIN_SHORT[card.domain]}
-                  </span>
-                  <span className={styles.handCardCosts}>
-                    P:{formatCostShort(card.pipelineCost) || '0'}
-                  </span>
-                  <span className={styles.handCardCosts}>
-                    A:{formatCostShort(card.activeCost) || '0'}
-                  </span>
+                <div className={styles.handCardCostRows}>
+                  <div className={styles.handCardCostRow}>
+                    <span className={styles.handCardCostLabel}>P</span>
+                    <CostChips cost={card.pipelineCost} />
+                  </div>
+                  <div className={styles.handCardCostRow}>
+                    <span className={styles.handCardCostLabel}>A</span>
+                    <CostChips cost={card.activeCost} />
+                  </div>
                 </div>
                 {card.activateEffects.length > 0 && (
                   <div className={styles.handCardEffects}>
@@ -58,7 +70,6 @@ export function HandTray({ hand }: { hand: ProgramCard[] }) {
                   </div>
                 )}
               </div>
-              <img src={artSrc} aria-hidden className={styles.handCardArt} />
             </div>
           );
         })}

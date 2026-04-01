@@ -36,8 +36,15 @@ export function resolveAllOrders(state: GameState): void {
     );
 
     for (const { playerId, choice } of sorted) {
+      const logLenBefore = state.log.length;
       resolveOrder(state, playerId, choice);
-      state.log.push({ type: 'orderResolved', playerId, order: choice });
+      // Don't log orderResolved if the resolver already logged orderFailed
+      const lastEntry = state.log[state.log.length - 1];
+      const failed = state.log.length > logLenBefore &&
+        lastEntry.type === 'orderFailed' && lastEntry.playerId === playerId;
+      if (!failed) {
+        state.log.push({ type: 'orderResolved', playerId, order: choice });
+      }
     }
   }
 }
@@ -414,11 +421,24 @@ function resolveMajorExercise(state: GameState, playerId: string): void {
   // Cost: 1M + 1U
   let mCost = 1;
   const cost = { budget: { U: 1 }, secondary: { M: mCost } };
-  if (!canAfford(p.resources, cost)) return;
+  if (!canAfford(p.resources, cost)) {
+    state.log.push({ type: 'orderFailed', playerId, order: 'majorExercise', reason: 'insufficientResources' });
+    return;
+  }
 
   payCost(p.resources, cost);
   p.readiness += 2;
   state.log.push({ type: 'resourceChange', playerId, resource: 'readiness', delta: 2 });
+
+  // Fire sustain effects on active programs that trigger on Major Exercise
+  for (const slot of p.portfolio.active) {
+    if (!slot) continue;
+    for (const effect of slot.card.sustainEffects) {
+      if (effect.params.trigger === 'majorExercise') {
+        resolveEffect(state, playerId, effect);
+      }
+    }
+  }
 
   // Draw 1 card
   if (state.decks.programs.length > 0) {
@@ -520,7 +540,9 @@ export function resolveEffect(state: GameState, playerId: string, effect: Effect
     }
     case 'modifyReadiness': {
       const timing = params.timing as string | undefined;
-      // 'passive' means always-on — apply immediately at activation; skip timing-gated ones
+      const trigger = params.trigger as string | undefined;
+      // 'passive' = always-on at activation; explicit 'trigger' = fired by specific order resolver
+      if (trigger) break;
       if (timing && timing !== 'passive') break;
       const bonus = (params.bonus as number) ?? 0;
       if (bonus !== 0) {

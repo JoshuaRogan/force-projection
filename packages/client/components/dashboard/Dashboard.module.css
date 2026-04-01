@@ -479,74 +479,50 @@
   transition: width var(--transition-normal);
 }
 
-/* === Resource Grid === */
-.resourceGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-}
-
-.resourceGridSecondary {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px;
-}
-
-.resourceCell {
+/* === Resource List === */
+.resourceList {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 6px 2px 4px;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-sm);
   gap: 2px;
-  position: relative;
-  overflow: hidden;
 }
 
-.resourceCell::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--stripe-color, var(--border-subtle));
+.resourceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px 6px 8px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--stripe-color, var(--border-subtle));
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  min-width: 0;
+}
+
+.resourceRow:hover {
+  background: var(--bg-card);
+}
+
+.resourceRowRight {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .resourceValue {
   font-family: var(--font-mono);
-  font-size: var(--font-size-lg);
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
-.resourceLabel {
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  line-height: 1;
-}
-
 .resourceProduction {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.6rem;
   color: var(--text-muted);
   line-height: 1;
-  opacity: 0.8;
-}
-
-.resourceCellClickable {
-  cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast);
-}
-
-.resourceCellClickable:hover {
-  background: var(--bg-card);
-  transform: translateY(-1px);
 }
 
 /* === Portfolio === */
@@ -602,6 +578,19 @@
 
 .slotDomain {
   font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+}
+
+.slotSubtags {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.slotSubtagIcon {
+  opacity: 0.55;
   color: var(--text-secondary);
 }
 
@@ -701,88 +690,108 @@
 
 .handCard {
   flex-shrink: 0;
-  width: 240px;
+  width: 160px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
+  border-top: 2px solid var(--domain-color, var(--border-subtle));
   border-radius: var(--radius-md);
   display: flex;
-  flex-direction: row;
-  cursor: default;
-  transition: all var(--transition-fast);
+  flex-direction: column;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 
-.handCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--stripe-color, var(--border-subtle));
-}
-
 .handCard:hover {
-  border-color: var(--border-accent);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  border-color: var(--domain-color, var(--border-accent));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
 }
 
-.handCardText {
-  flex: 1;
-  min-width: 0;
-  padding: var(--space-sm);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.handCardName {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  line-height: 1.3;
-  white-space: nowrap;
+.handCardArtWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.handCardMeta {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.handCardDomain {
-  font-size: var(--font-size-2xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 1px 4px;
-  border-radius: 3px;
-  background: color-mix(in srgb, currentColor 12%, transparent);
-}
-
-.handCardCosts {
-  font-size: var(--font-size-2xs);
-  color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
-}
-
-.handCardEffects {
-  font-size: var(--font-size-2xs);
-  color: var(--text-secondary);
-  line-height: 1.4;
-  max-height: 2.8em;
-  overflow: hidden;
+  background: var(--bg-surface);
 }
 
 .handCardArt {
-  flex-shrink: 0;
-  width: 72px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  object-position: center;
-  border-left: 1px solid var(--border-subtle);
+  object-position: center top;
   display: block;
+  transition: transform var(--transition-fast);
+}
+
+.handCard:hover .handCardArt {
+  transform: scale(1.04);
+}
+
+.handCardDomainBadge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: rgba(6, 9, 15, 0.82);
+  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+  line-height: 1;
+}
+
+.handCardInfo {
+  padding: 8px 9px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.handCardName {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.handCardCostRows {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.handCardCostRow {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.handCardCostLabel {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  flex-shrink: 0;
+  width: 10px;
+}
+
+.handCardEffects {
+  font-size: 0.62rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

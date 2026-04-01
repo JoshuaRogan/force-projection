@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { GameState, OrderChoice, OrderId, TheaterId, ProgramCard, BudgetLine } from '@fp/shared';
-import { ORDERS, THEATER_NAMES, THEATER_IDS, BUDGET_LINES, BUDGET_LINE_NAMES, canAfford } from '@fp/shared';
+import { createPortal } from 'react-dom';
+import type { GameState, OrderChoice, OrderId, TheaterId, ProgramCard, BudgetLine, SecondaryResource } from '@fp/shared';
+import { ORDERS, THEATER_NAMES, THEATER_IDS, BUDGET_LINES, BUDGET_LINE_NAMES, SECONDARY_RESOURCE_NAMES, canAfford } from '@fp/shared';
+import { ResourceIcon } from '../icons/ResourceIcon';
+import { resourceColor, resourceFullName } from '../ui/ResourceToken';
 import styles from './GamePanel.module.css';
 
 const ORDER_CATEGORIES: Record<string, OrderId[]> = {
@@ -12,11 +15,240 @@ const ORDER_CATEGORIES: Record<string, OrderId[]> = {
   Sustain: ['majorExercise', 'logisticsSurge', 'intelFocus'],
 };
 
+// ── Order cost definitions ────────────────────────────────────────────────────
+// Only orders with fixed known costs. Variable-cost orders (startProgram etc.)
+// show costs inside the param picker, not here.
+
+type OrderCostSpec = {
+  budget?: Partial<Record<BudgetLine, number>>;
+  secondary?: Partial<Record<SecondaryResource, number>>;
+  note?: string;           // extra label for open-ended costs like "+ 1 any line"
+  conditional?: string;    // shown as a qualifier, e.g. "if no base"
+};
+
+function getOrderCost(orderId: OrderId, player: Player): OrderCostSpec | null {
+  switch (orderId) {
+    case 'majorExercise':
+      return { budget: { U: 1 }, secondary: { M: 1 } };
+    case 'buildBase':
+      return { budget: { U: 2 }, note: '+ 1 any line' };
+    case 'forwardOps': {
+      let uCost = 2;
+      let lCost = 1;
+      if (player.directorate === 'MARFOR') uCost = Math.max(0, uCost - 1);
+      if (player.directorate === 'TRANSCOM') lCost = Math.max(0, lCost - 1);
+      const spec: OrderCostSpec = {};
+      if (uCost > 0) spec.budget = { U: uCost };
+      if (lCost > 0) spec.secondary = { L: lCost };
+      return spec;
+    }
+    case 'negotiate':
+      return { secondary: { PC: 1 }, conditional: 'if no base' };
+    // Free orders — show explicit "No cost" indicator
+    case 'lobby':
+    case 'contracting':
+    case 'logisticsSurge':
+    case 'intelFocus':
+    case 'stationPrograms':
+      return {};
+    // Variable — costs shown inside param picker
+    default:
+      return null;
+  }
+}
+
+// ── Affordability-aware cost chip ─────────────────────────────────────────────
+
+function CostChip({
+  resource, required, current,
+}: {
+  resource: BudgetLine | SecondaryResource;
+  required: number;
+  current: number;
+}) {
+  const canPay = current >= required;
+  const color = resourceColor(resource);
+  const name = resourceFullName(resource);
+  const shortage = required - current;
+
+  return (
+    <span
+      className={`${styles.costChip} ${canPay ? styles.costChipOk : styles.costChipShort}`}
+      style={{
+        '--chip-color': canPay ? color : 'var(--color-danger)',
+      } as React.CSSProperties}
+      title={canPay ? name : `${name}: need ${required}, have ${current}`}
+    >
+      <span className={styles.costChipMain}>
+        <ResourceIcon resource={resource} size={10} className={styles.costChipIcon} />
+        <span className={styles.costChipCount}>{required}</span>
+        <span className={styles.costChipLabel}>{name.toUpperCase()}</span>
+      </span>
+      {!canPay && (
+        <span className={styles.costChipDeficit}>have {current}{shortage > 0 ? ` · need ${shortage} more` : ''}</span>
+      )}
+    </span>
+  );
+}
+
+function OrderCostRow({ orderId, player }: { orderId: OrderId; player: Player }) {
+  const spec = getOrderCost(orderId, player);
+  if (spec === null) return null; // variable cost — shown in params
+
+  const budgetEntries = Object.entries(spec.budget ?? {}) as [BudgetLine, number][];
+  const secondaryEntries = Object.entries(spec.secondary ?? {}) as [SecondaryResource, number][];
+  const isEmpty = budgetEntries.length === 0 && secondaryEntries.length === 0;
+
+  return (
+    <div className={styles.orderCostRow}>
+      <span className={styles.orderCostLabel}>COST</span>
+      {isEmpty ? (
+        <span className={styles.orderCostFree}>Free</span>
+      ) : (
+        <div className={styles.orderCostChips}>
+          {budgetEntries.map(([key, val]) => (
+            <CostChip key={key} resource={key} required={val} current={player.resources.budget[key] ?? 0} />
+          ))}
+          {secondaryEntries.map(([key, val]) => (
+            <CostChip key={key} resource={key} required={val} current={player.resources.secondary[key] ?? 0} />
+          ))}
+          {spec.note && <span className={styles.orderCostNote}>{spec.note}</span>}
+          {spec.conditional && <span className={styles.orderCostConditional}>{spec.conditional}</span>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Orders that need additional parameter selection */
 const NEEDS_PARAMS: Set<OrderId> = new Set([
   'negotiate', 'startProgram', 'activateProgram', 'refitMothball',
   'buildBase', 'forwardOps', 'stationPrograms', 'intelFocus',
 ]);
+
+function AffordabilityTooltip({ reason, anchor }: {
+  reason: string;
+  anchor: HTMLButtonElement;
+}) {
+  const rect = anchor.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top - 8;
+
+  return createPortal(
+    <div className={styles.affordTooltip} style={{ left: x, top: y }}>
+      {reason}
+    </div>,
+    document.body,
+  );
+}
+
+type Player = GameState['players'][string];
+
+function canAffordOrder(orderId: OrderId, player: Player): boolean {
+  const res = player.resources;
+  switch (orderId) {
+    case 'lobby':
+    case 'contracting':
+    case 'logisticsSurge':
+    case 'intelFocus':
+      return true;
+
+    case 'negotiate':
+      // Need a base in any theater OR at least 1 PC
+      return Object.values(player.theaterPresence).some(p => p.bases > 0)
+        || res.secondary.PC >= 1;
+
+    case 'startProgram':
+      return player.hand.length > 0
+        && player.portfolio.pipeline.some(s => s === null)
+        && player.hand.some(c => canAfford(res, c.pipelineCost));
+
+    case 'activateProgram':
+      return player.portfolio.pipeline.some(s => s !== null)
+        && player.portfolio.active.some(s => s === null)
+        && player.portfolio.pipeline.some(s => s && canAfford(res, s.card.activeCost));
+
+    case 'refitMothball':
+      // Can mothball any active program (free) OR reactivate a mothballed one (U:1 + primary line:1)
+      return player.portfolio.active.some(s => s !== null)
+        || (player.portfolio.mothballed.length > 0
+            && (res.budget.U >= 3
+                || (res.budget.U >= 1 && BUDGET_LINES.some(l => l !== 'U' && (res.budget[l] ?? 0) >= 1))));
+
+    case 'buildBase':
+      // Cost: U:2 + 1 of any budget line (including U, making it U:3 if chosen)
+      return res.budget.U >= 2
+        && (res.budget.U >= 3 || BUDGET_LINES.some(l => l !== 'U' && (res.budget[l] ?? 0) >= 1));
+
+    case 'forwardOps': {
+      const hasBase = Object.values(player.theaterPresence).some(p => p.bases > 0);
+      if (!hasBase) return false;
+      let lCost = 1;
+      let uCost = 2;
+      if (player.directorate === 'MARFOR') uCost = Math.max(0, uCost - 1);
+      if (player.directorate === 'TRANSCOM') lCost = Math.max(0, lCost - 1);
+      return canAfford(res, { budget: { U: uCost }, secondary: { L: lCost } });
+    }
+
+    case 'stationPrograms':
+      return player.portfolio.active.some(s => s?.card.stationing != null);
+
+    case 'majorExercise':
+      return canAfford(res, { budget: { U: 1 }, secondary: { M: 1 } });
+
+    default:
+      return true;
+  }
+}
+
+function affordabilityReason(orderId: OrderId, player: Player): string {
+  const res = player.resources;
+  switch (orderId) {
+    case 'majorExercise': {
+      const missing: string[] = [];
+      if ((res.budget.U ?? 0) < 1) missing.push(`1 ${BUDGET_LINE_NAMES.U}`);
+      if ((res.secondary.M ?? 0) < 1) missing.push(`1 ${SECONDARY_RESOURCE_NAMES.M}`);
+      return `Need ${missing.join(' + ')}`;
+    }
+    case 'buildBase': {
+      if ((res.budget.U ?? 0) < 2) return `Need 2 ${BUDGET_LINE_NAMES.U} (have ${res.budget.U ?? 0})`;
+      return 'Need 1 of any budget line';
+    }
+    case 'forwardOps': {
+      const hasBase = Object.values(player.theaterPresence).some(p => p.bases > 0);
+      if (!hasBase) return 'No base in any theater';
+      let lCost = 1;
+      let uCost = 2;
+      if (player.directorate === 'MARFOR') uCost = Math.max(0, uCost - 1);
+      if (player.directorate === 'TRANSCOM') lCost = Math.max(0, lCost - 1);
+      const missing: string[] = [];
+      if ((res.budget.U ?? 0) < uCost) missing.push(`${uCost} ${BUDGET_LINE_NAMES.U}`);
+      if (lCost > 0 && (res.secondary.L ?? 0) < lCost) missing.push(`${lCost} ${SECONDARY_RESOURCE_NAMES.L}`);
+      return `Need ${missing.join(' + ')}`;
+    }
+    case 'startProgram': {
+      if (player.hand.length === 0) return 'No cards in hand';
+      if (!player.portfolio.pipeline.some(s => s === null)) return 'Pipeline full';
+      return "Can't afford any card in hand";
+    }
+    case 'activateProgram': {
+      if (!player.portfolio.pipeline.some(s => s !== null)) return 'No programs in pipeline';
+      if (!player.portfolio.active.some(s => s === null)) return 'Active slots full';
+      return "Can't afford activation cost";
+    }
+    case 'negotiate':
+      return `Need a base in a theater or 1 ${SECONDARY_RESOURCE_NAMES.PC}`;
+    case 'stationPrograms':
+      return 'No active programs with stationing capability';
+    case 'refitMothball': {
+      if (!player.portfolio.active.some(s => s !== null) && player.portfolio.mothballed.length === 0)
+        return 'No programs to refit';
+      return "Can't afford reactivation cost";
+    }
+    default:
+      return 'Cannot afford';
+  }
+}
 
 export function OrdersPanel({
   gameState,
@@ -31,6 +263,7 @@ export function OrdersPanel({
   const [orderParams, setOrderParams] = useState<Record<number, OrderChoice>>({});
   const [configuringIdx, setConfiguringIdx] = useState<number | null>(null);
   const [hoveredOrder, setHoveredOrder] = useState<OrderId | null>(null);
+  const [unaffordableAnchor, setUnaffordableAnchor] = useState<{ el: HTMLButtonElement; reason: string } | null>(null);
   const clearHover = useCallback(() => setHoveredOrder(prev => prev === null ? prev : null), []);
   const player = gameState.players[humanPlayerId];
   const alreadySubmitted = player.selectedOrders !== null;
@@ -100,17 +333,26 @@ export function OrdersPanel({
               const isDimmed = selectedOrders.length >= 2 && !isSelected;
               const selectedIdx = selectedOrders.indexOf(oid);
               const needsConfig = isSelected && NEEDS_PARAMS.has(oid) && orderParams[selectedIdx] === undefined;
+              const affordable = isSelected || canAffordOrder(oid, player);
+              const reason = !affordable ? affordabilityReason(oid, player) : undefined;
               return (
                 <button
                   key={oid}
-                  onClick={() => toggleOrder(oid)}
-                  onMouseEnter={() => setHoveredOrder(oid)}
-                  onMouseLeave={clearHover}
+                  onClick={() => affordable && toggleOrder(oid)}
+                  onMouseEnter={(e) => {
+                    setHoveredOrder(oid);
+                    if (reason) setUnaffordableAnchor({ el: e.currentTarget, reason });
+                  }}
+                  onMouseLeave={() => {
+                    clearHover();
+                    setUnaffordableAnchor(null);
+                  }}
                   className={[
                     styles.orderBtn,
                     isSelected ? styles.orderBtnSelected : '',
                     isDimmed ? styles.orderBtnDimmed : '',
                     needsConfig ? styles.orderBtnNeedsConfig : '',
+                    !affordable ? styles.orderBtnUnaffordable : '',
                   ].filter(Boolean).join(' ')}
                 >
                   {def.name}
@@ -129,7 +371,11 @@ export function OrdersPanel({
             <div className={styles.orderDescHeader}>
               <span className={styles.orderDescName}>{ORDERS[hoveredOrder].name}</span>
               <span className={styles.orderDescCategory}>{ORDERS[hoveredOrder].category}</span>
+              {!canAffordOrder(hoveredOrder, player) && (
+                <span className={styles.orderDescUnaffordable}>{affordabilityReason(hoveredOrder, player)}</span>
+              )}
             </div>
+            <OrderCostRow orderId={hoveredOrder} player={player} />
             <p className={styles.orderDescText}>{ORDERS[hoveredOrder].description}</p>
           </>
         ) : (
@@ -185,6 +431,10 @@ export function OrdersPanel({
       >
         Submit Orders {selectedOrders.length > 0 && `(${selectedOrders.length}/2)`}
       </button>
+
+      {unaffordableAnchor && (
+        <AffordabilityTooltip anchor={unaffordableAnchor.el} reason={unaffordableAnchor.reason} />
+      )}
     </div>
   );
 }
