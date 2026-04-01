@@ -8,6 +8,8 @@ import { PhasePanel } from '@/components/game/PhasePanel';
 import { PhaseTimeline } from '@/components/game/PhaseTimeline';
 import { EventFeed } from '@/components/game/EventFeed';
 import { CardModalProvider, useCardModal } from '@/components/cards';
+import { ViewSwitcher, PersonalView, MapView } from '@/components/views';
+import type { ViewMode } from '@/components/views';
 import gameStyles from './game.module.css';
 
 export default function GamePage() {
@@ -21,7 +23,7 @@ export default function GamePage() {
 
   if (!mounted) {
     return (
-      <div className={gameStyles.layout}>
+      <div className={gameStyles.shell}>
         <header className={gameStyles.topBar}>
           <span className={gameStyles.title}>Force Projection: Joint Command</span>
         </header>
@@ -39,16 +41,20 @@ export default function GamePage() {
 function GameBoard({ seed }: { seed: number }) {
   const game = useGameController(seed);
   const { showCard } = useCardModal();
+  const [viewMode, setViewMode] = useState<ViewMode>('command');
 
   const { gameState, humanPlayerId } = game;
   const humanPlayer = gameState.players[humanPlayerId];
   const agenda = gameState.currentAgenda?.agenda;
 
   return (
-    <div className={gameStyles.layout}>
-      {/* Top bar: title + agenda + opponents + new game */}
+    <div className={gameStyles.shell}>
+      {/* Top bar: always present across all views */}
       <header className={gameStyles.topBar}>
         <span className={gameStyles.title}>Force Projection</span>
+
+        <ViewSwitcher current={viewMode} onChange={setViewMode} />
+
         {agenda && (
           <button
             onClick={() => showCard({ type: 'agenda', card: agenda })}
@@ -75,46 +81,74 @@ function GameBoard({ seed }: { seed: number }) {
         </div>
       </header>
 
-      {/* Phase timeline */}
-      <div className={gameStyles.timelineRow}>
-        <PhaseTimeline gameState={gameState} />
-      </div>
+      {/* COMMAND view: existing unified layout */}
+      {viewMode === 'command' && (
+        <div className={gameStyles.commandGrid}>
+          <div className={gameStyles.timelineRow}>
+            <PhaseTimeline gameState={gameState} />
+          </div>
 
-      {/* Center: phase panel + crisis + theaters */}
-      <main className={gameStyles.center}>
-        <div className={gameStyles.phasePanel}>
-          <PhasePanel
-            gameState={gameState}
-            humanPlayerId={humanPlayerId}
-            onVote={game.submitVote}
-            onEndContractMarket={game.endContractMarket}
-            onSubmitOrders={game.submitOrders}
-            finalScores={game.getFinalScores()}
-            onNewGame={game.newGame}
-            showingResolution={game.showingResolution}
-            recentEvents={game.recentEvents}
-            onSkipResolution={game.skipResolution}
-            onAcknowledgeCrisis={game.acknowledgeCrisis}
-          />
+          <main className={gameStyles.center}>
+            <div className={gameStyles.phasePanel}>
+              <PhasePanel
+                gameState={gameState}
+                humanPlayerId={humanPlayerId}
+                onVote={game.submitVote}
+                onEndContractMarket={game.endContractMarket}
+                onSubmitOrders={game.submitOrders}
+                finalScores={game.getFinalScores()}
+                onNewGame={game.newGame}
+                showingResolution={game.showingResolution}
+                recentEvents={game.recentEvents}
+                onSkipResolution={game.skipResolution}
+                onAcknowledgeCrisis={game.acknowledgeCrisis}
+              />
+            </div>
+            <TheaterBoard gameState={gameState} humanPlayerId={humanPlayerId} />
+          </main>
+
+          <aside className={gameStyles.sidebar}>
+            <div className={gameStyles.playerDashboardArea}>
+              <PlayerDashboard player={humanPlayer} />
+            </div>
+            <div className={gameStyles.eventFeedWrapper}>
+              <EventFeed events={game.events} gameState={gameState} />
+            </div>
+          </aside>
+
+          <footer className={gameStyles.handArea}>
+            <HandTray hand={humanPlayer.hand} />
+          </footer>
         </div>
+      )}
 
-        <TheaterBoard gameState={gameState} humanPlayerId={humanPlayerId} />
-      </main>
+      {/* PERSONAL view: player stats + phase panel + hand, no theater */}
+      {viewMode === 'personal' && (
+        <PersonalView
+          gameState={gameState}
+          humanPlayerId={humanPlayerId}
+          humanPlayer={humanPlayer}
+          events={game.events}
+          recentEvents={game.recentEvents}
+          showingResolution={game.showingResolution}
+          onVote={game.submitVote}
+          onEndContractMarket={game.endContractMarket}
+          onSubmitOrders={game.submitOrders}
+          getFinalScores={game.getFinalScores}
+          onNewGame={game.newGame}
+          onSkipResolution={game.skipResolution}
+          onAcknowledgeCrisis={game.acknowledgeCrisis}
+        />
+      )}
 
-      {/* Right sidebar: player dashboard + event feed */}
-      <aside className={gameStyles.sidebar}>
-        <div className={gameStyles.playerDashboardArea}>
-          <PlayerDashboard player={humanPlayer} />
-        </div>
-        <div className={gameStyles.eventFeedWrapper}>
-          <EventFeed events={game.events} gameState={gameState} />
-        </div>
-      </aside>
-
-      {/* Bottom tray: hand cards */}
-      <footer className={gameStyles.handArea}>
-        <HandTray hand={humanPlayer.hand} />
-      </footer>
+      {/* STRATEGIC view: world map + public info */}
+      {viewMode === 'strategic' && (
+        <MapView
+          gameState={gameState}
+          humanPlayerId={humanPlayerId}
+          events={game.events}
+        />
+      )}
     </div>
   );
 }

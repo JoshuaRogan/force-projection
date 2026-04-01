@@ -1,0 +1,49 @@
+.switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+
+.modeBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.modeBtn:hover:not(.active) {
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+}
+
+.modeBtn.active {
+  color: var(--color-si);
+  background: color-mix(in srgb, var(--color-si) 8%, var(--bg-elevated));
+  border-color: color-mix(in srgb, var(--color-si) 35%, transparent);
+}
+
+.index {
+  font-size: 0.5rem;
+  opacity: 0.5;
+  font-weight: 400;
+}
+
+.modeBtn.active .index {
+  opacity: 0.7;
+}

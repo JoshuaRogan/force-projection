@@ -1,0 +1,210 @@
+.layout {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  overflow: hidden;
+}
+
+.timelineRow {
+  flex-shrink: 0;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: var(--space-xs);
+}
+
+/* ── Info panel ───────────────────────────────────────────────────────────── */
+
+.infoPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  padding-right: 2px;
+}
+
+.sectionLabel {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+/* Phase status */
+.phaseStatus {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  border-left: 2px solid var(--color-si);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phaseLabel {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-si);
+  opacity: 0.7;
+}
+
+.phaseName {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.phaseSub {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+
+/* Agenda */
+.agendaBlock {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+}
+
+.agendaBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: color-mix(in srgb, var(--color-card-agenda) 8%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--color-card-agenda) 30%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.agendaBtn:hover {
+  background: color-mix(in srgb, var(--color-card-agenda) 15%, var(--bg-elevated));
+  border-color: var(--color-card-agenda);
+}
+
+.agendaBtnName {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-primary);
+  text-align: left;
+  line-height: 1.3;
+}
+
+.agendaBtnHint {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  color: var(--color-card-agenda);
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+/* Score board */
+.scoreBoard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scoreRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px;
+  border-radius: 2px;
+  transition: background var(--transition-fast);
+}
+
+.scoreRow:hover {
+  background: var(--bg-elevated);
+}
+
+.humanRow {
+  background: color-mix(in srgb, var(--dir-color) 6%, transparent);
+}
+
+.scoreRank {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  color: var(--text-muted);
+  min-width: 12px;
+}
+
+.scoreInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.scoreName {
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scoreDir {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: var(--dir-color, var(--text-muted));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scoreValue {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-si);
+  min-width: 24px;
+  text-align: right;
+}
+
+/* Event feed */
+.feedBlock {
+  flex: 1;
+  min-height: 80px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+/* ── Map canvas ───────────────────────────────────────────────────────────── */
+
+.mapCanvas {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}

@@ -1,0 +1,56 @@
+.layout {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  overflow: hidden;
+}
+
+.timelineRow {
+  flex-shrink: 0;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--space-xs);
+}
+
+.statsCol {
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.mainCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.phasePanel {
+  flex-shrink: 0;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
+}
+
+.feedWrapper {
+  flex: 1;
+  min-height: 80px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.handArea {
+  flex-shrink: 0;
+}

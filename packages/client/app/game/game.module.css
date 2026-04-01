@@ -1,3 +1,28 @@
+/* Shell: flex column wrapping top bar + view content */
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  padding: var(--space-xs) var(--space-sm);
+  gap: var(--space-xs);
+}
+
+/* COMMAND view inner grid (replaces the old .layout grid for the content below the topbar) */
+.commandGrid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "timeline timeline"
+    "center   sidebar"
+    "hand     hand";
+  gap: var(--space-xs);
+}
+
+/* Keep .layout as an alias for old references, unused after refactor */
 .layout {
   display: grid;
   grid-template-columns: 1fr 300px;
@@ -15,7 +40,7 @@
 
 /* === Top bar === */
 .topBar {
-  grid-area: topbar;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: var(--space-md);
