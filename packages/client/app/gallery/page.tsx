@@ -1,47 +1,123 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { PROGRAM_CARDS, CONTRACT_CARDS, AGENDA_CARDS, CRISIS_CARDS } from '@fp/shared';
+import type { ProgramDomain } from '@fp/shared';
 import { ProgramCard, ContractCard, AgendaCard, CrisisCard } from '@/components/cards';
+import styles from './gallery.module.css';
+
+type Tab = 'programs' | 'contracts' | 'agendas' | 'crises';
+
+const DOMAIN_OPTIONS: { value: ProgramDomain | 'ALL'; label: string }[] = [
+  { value: 'ALL', label: 'All Domains' },
+  { value: 'AIR', label: 'Air' },
+  { value: 'SEA', label: 'Sea' },
+  { value: 'EXP', label: 'Expeditionary' },
+  { value: 'SPACE_CYBER', label: 'Space/Cyber' },
+];
 
 export default function GalleryPage() {
-  return (
-    <main style={{ padding: '2rem', maxWidth: 1400, margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '1.5rem' }}>Card Gallery</h1>
+  const [tab, setTab] = useState<Tab>('programs');
+  const [search, setSearch] = useState('');
+  const [domain, setDomain] = useState<ProgramDomain | 'ALL'>('ALL');
 
-      <Section title="Program Cards">
-        {PROGRAM_CARDS.slice(0, 8).map(card => (
+  const filteredPrograms = useMemo(() => {
+    let cards = PROGRAM_CARDS;
+    if (domain !== 'ALL') cards = cards.filter(c => c.domain === domain);
+    if (search) {
+      const q = search.toLowerCase();
+      cards = cards.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.subtags.some(t => t.toLowerCase().includes(q)) ||
+        c.domain.toLowerCase().includes(q)
+      );
+    }
+    return cards;
+  }, [search, domain]);
+
+  const filteredContracts = useMemo(() => {
+    if (!search) return CONTRACT_CARDS;
+    const q = search.toLowerCase();
+    return CONTRACT_CARDS.filter(c => c.name.toLowerCase().includes(q));
+  }, [search]);
+
+  const filteredAgendas = useMemo(() => {
+    if (!search) return AGENDA_CARDS;
+    const q = search.toLowerCase();
+    return AGENDA_CARDS.filter(c =>
+      c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)
+    );
+  }, [search]);
+
+  const filteredCrises = useMemo(() => {
+    if (!search) return CRISIS_CARDS;
+    const q = search.toLowerCase();
+    return CRISIS_CARDS.filter(c =>
+      c.name.toLowerCase().includes(q) || c.immediateRule.toLowerCase().includes(q)
+    );
+  }, [search]);
+
+  const counts: Record<Tab, number> = {
+    programs: filteredPrograms.length,
+    contracts: filteredContracts.length,
+    agendas: filteredAgendas.length,
+    crises: filteredCrises.length,
+  };
+
+  return (
+    <main className={styles.page}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Card Gallery</h1>
+        <input
+          className={styles.search}
+          type="search"
+          placeholder="Search cards…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
+
+      <div className={styles.tabs}>
+        {(['programs', 'contracts', 'agendas', 'crises'] as Tab[]).map(t => (
+          <button
+            key={t}
+            className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`}
+            onClick={() => setTab(t)}
+          >
+            {t.charAt(0).toUpperCase() + t.slice(1)}
+            <span className={styles.tabCount}>{counts[t]}</span>
+          </button>
+        ))}
+        {tab === 'programs' && (
+          <select
+            className={styles.domainFilter}
+            value={domain}
+            onChange={e => setDomain(e.target.value as ProgramDomain | 'ALL')}
+          >
+            {DOMAIN_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      <div className={styles.grid}>
+        {tab === 'programs' && filteredPrograms.map(card => (
           <ProgramCard key={card.id} card={card} />
         ))}
-      </Section>
-
-      <Section title="Contract Cards">
-        {CONTRACT_CARDS.slice(0, 4).map(card => (
+        {tab === 'contracts' && filteredContracts.map(card => (
           <ContractCard key={card.id} card={card} />
         ))}
-      </Section>
-
-      <Section title="Agenda Cards">
-        {AGENDA_CARDS.slice(0, 4).map(card => (
+        {tab === 'agendas' && filteredAgendas.map(card => (
           <AgendaCard key={card.id} card={card} />
         ))}
-      </Section>
-
-      <Section title="Crisis Cards">
-        {CRISIS_CARDS.slice(0, 4).map(card => (
+        {tab === 'crises' && filteredCrises.map(card => (
           <CrisisCard key={card.id} card={card} />
         ))}
-      </Section>
-    </main>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section style={{ marginBottom: '2rem' }}>
-      <h2 style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>{title}</h2>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-        {children}
+        {counts[tab] === 0 && (
+          <p className={styles.empty}>No cards match your search.</p>
+        )}
       </div>
-    </section>
+    </main>
   );
 }
