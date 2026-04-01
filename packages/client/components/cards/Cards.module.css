@@ -227,7 +227,7 @@
 /* Vertical (default): full width strip on top */
 .cardArtSection {
   width: 100%;
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 1 / 1;
   flex-shrink: 0;
   overflow: hidden;
   background: var(--bg-elevated);

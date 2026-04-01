@@ -21,6 +21,19 @@ const SECONDARY_SHORT: Record<SecondaryResource, string> = {
   M: 'Manpower', L: 'Logistics', I: 'Intel', PC: 'Pol. Capital',
 };
 
+// Maps each resource key to its image filename stem in /resources/
+const RESOURCE_IMAGE: Record<BudgetLine | SecondaryResource, string> = {
+  A: 'air',
+  S: 'sea',
+  E: 'expeditionary',
+  X: 'space-cyber',
+  U: 'sustain',
+  M: 'manpower',
+  L: 'logistics',
+  I: 'intel',
+  PC: 'political-capital',
+};
+
 const BUDGET_INFO: Record<BudgetLine, { name: string; description: string; usedFor: string }> = {
   A: { name: 'Air', description: 'Funds Air Force and aviation programs.', usedFor: 'Procuring air platforms, activating AIR domain programs, sustaining air capabilities in theater.' },
   S: { name: 'Sea', description: 'Funds naval programs and maritime operations.', usedFor: 'Procuring naval vessels, activating SEA domain programs, maintaining maritime presence.' },
@@ -41,6 +54,84 @@ type DetailView =
   | { kind: 'budget-item'; key: BudgetLine }
   | { kind: 'secondary-item'; key: SecondaryResource };
 
+function ResourceArtHero({ resourceKey, color, name }: { resourceKey: BudgetLine | SecondaryResource; color: string; name: string }) {
+  const [failed, setFailed] = useState(false);
+  const slug = RESOURCE_IMAGE[resourceKey];
+  return (
+    <div className={styles.resourceArtHero} style={{ '--resource-color': color } as React.CSSProperties}>
+      {!failed && (
+        <img
+          src={`/resources/${slug}.png`}
+          alt={slug}
+          className={styles.resourceArtImage}
+          onError={() => setFailed(true)}
+        />
+      )}
+      {failed && <div className={styles.resourceArtFallback} />}
+      <div className={styles.resourceArtGradient} />
+      <div className={styles.resourceArtNameOverlay}>
+        <div className={styles.resourceArtKeyPill}>{resourceKey}</div>
+        <div className={styles.resourceArtTitle}>{name}</div>
+      </div>
+    </div>
+  );
+}
+
+function ResourceItemModal({
+  resourceKey,
+  info,
+  color,
+  current,
+  prod,
+  onClose,
+}: {
+  resourceKey: BudgetLine | SecondaryResource;
+  info: { name: string; description: string; usedFor: string };
+  color: string;
+  current: number;
+  prod: number;
+  onClose: () => void;
+}) {
+  return (
+    <div className={styles.resourceInfoOverlay} onClick={onClose}>
+      <div className={styles.resourceInfoPanel} onClick={e => e.stopPropagation()}>
+        <button className={styles.resourceInfoClose} onClick={onClose}>✕</button>
+
+        {/* Art hero with name overlay inside */}
+        <ResourceArtHero resourceKey={resourceKey} color={color} name={info.name} />
+
+        {/* Body */}
+        <div className={styles.resourceInfoBody}>
+          {/* Stats row */}
+          <div className={styles.resourceStatusRow}>
+            <div className={styles.resourceStatusBlock}>
+              <span className={styles.resourceStatusValue} style={{ color }}>{current}</span>
+              <span className={styles.resourceStatusLabel}>Current</span>
+            </div>
+            <div className={styles.resourceStatusDivider} />
+            <div className={styles.resourceStatusBlock}>
+              <span className={styles.resourceStatusValue} style={{ color }}>+{prod}</span>
+              <span className={styles.resourceStatusLabel}>Per Year</span>
+            </div>
+          </div>
+
+          {/* Description callout */}
+          <div className={styles.resourceDescCallout} style={{ '--resource-color': color } as React.CSSProperties}>
+            <span className={styles.resourceDescLabel}>Overview</span>
+            <p className={styles.resourceDescText}>{info.description}</p>
+          </div>
+
+          {/* Used for */}
+          <div className={styles.resourceInfoUsedBlock}>
+            <span className={styles.resourceInfoUsedLabel}>Used for</span>
+            <p className={styles.resourceInfoUsed}>{info.usedFor}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ResourceInfoModal({
   view,
   resources,
@@ -52,83 +143,33 @@ function ResourceInfoModal({
 }) {
   if (view.kind === 'budget-item') {
     const { key } = view;
-    const info = BUDGET_INFO[key];
-    const color = BUDGET_CSS[key];
-    const current = resources.budget[key];
-    const prod = resources.production.budget[key];
     return (
-      <div className={styles.resourceInfoOverlay} onClick={onClose}>
-        <div className={styles.resourceInfoPanel} onClick={e => e.stopPropagation()}>
-          <div className={styles.resourceInfoHeader} style={{ borderBottom: `2px solid ${color}` }}>
-            <div className={styles.resourceInfoItemHeader} style={{ color }}>
-              <span className={styles.resourceInfoKey}>{key}</span>
-              <span className={styles.resourceInfoTitle}>{info.name}</span>
-            </div>
-            <button className={styles.resourceInfoClose} onClick={onClose}>✕</button>
-          </div>
-          <div className={styles.resourceInfoBody}>
-            <div className={styles.resourceStatusRow}>
-              <div className={styles.resourceStatusBlock}>
-                <span className={styles.resourceStatusValue} style={{ color }}>{current}</span>
-                <span className={styles.resourceStatusLabel}>Current</span>
-              </div>
-              <div className={styles.resourceStatusDivider} />
-              <div className={styles.resourceStatusBlock}>
-                <span className={styles.resourceStatusValue} style={{ color }}>+{prod}</span>
-                <span className={styles.resourceStatusLabel}>Per Year</span>
-              </div>
-            </div>
-            <p className={styles.resourceInfoDesc}>{info.description}</p>
-            <div className={styles.resourceInfoUsedBlock}>
-              <span className={styles.resourceInfoUsedLabel}>Used for</span>
-              <p className={styles.resourceInfoUsed}>{info.usedFor}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ResourceItemModal
+        resourceKey={key}
+        info={BUDGET_INFO[key]}
+        color={BUDGET_CSS[key]}
+        current={resources.budget[key]}
+        prod={resources.production.budget[key]}
+        onClose={onClose}
+      />
     );
   }
 
   if (view.kind === 'secondary-item') {
     const { key } = view;
-    const info = SECONDARY_INFO[key];
-    const color = SECONDARY_CSS[key];
-    const current = resources.secondary[key];
-    const prod = resources.production.secondary[key];
     return (
-      <div className={styles.resourceInfoOverlay} onClick={onClose}>
-        <div className={styles.resourceInfoPanel} onClick={e => e.stopPropagation()}>
-          <div className={styles.resourceInfoHeader} style={{ borderBottom: `2px solid ${color}` }}>
-            <div className={styles.resourceInfoItemHeader} style={{ color }}>
-              <span className={styles.resourceInfoKey}>{key}</span>
-              <span className={styles.resourceInfoTitle}>{info.name}</span>
-            </div>
-            <button className={styles.resourceInfoClose} onClick={onClose}>✕</button>
-          </div>
-          <div className={styles.resourceInfoBody}>
-            <div className={styles.resourceStatusRow}>
-              <div className={styles.resourceStatusBlock}>
-                <span className={styles.resourceStatusValue} style={{ color }}>{current}</span>
-                <span className={styles.resourceStatusLabel}>Current</span>
-              </div>
-              <div className={styles.resourceStatusDivider} />
-              <div className={styles.resourceStatusBlock}>
-                <span className={styles.resourceStatusValue} style={{ color }}>+{prod}</span>
-                <span className={styles.resourceStatusLabel}>Per Year</span>
-              </div>
-            </div>
-            <p className={styles.resourceInfoDesc}>{info.description}</p>
-            <div className={styles.resourceInfoUsedBlock}>
-              <span className={styles.resourceInfoUsedLabel}>Used for</span>
-              <p className={styles.resourceInfoUsed}>{info.usedFor}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ResourceItemModal
+        resourceKey={key}
+        info={SECONDARY_INFO[key]}
+        color={SECONDARY_CSS[key]}
+        current={resources.secondary[key]}
+        prod={resources.production.secondary[key]}
+        onClose={onClose}
+      />
     );
   }
 
-  // Section view
+  // Section overview (unchanged)
   const isBudget = view.type === 'budget';
   return (
     <div className={styles.resourceInfoOverlay} onClick={onClose}>

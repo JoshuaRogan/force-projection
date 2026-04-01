@@ -132,24 +132,68 @@
 .resourceInfoOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 200;
+  animation: fadeIn 120ms ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .resourceInfoPanel {
-  background: var(--bg-surface);
+  position: relative;
+  background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  width: min(480px, calc(100vw - 2rem));
-  max-height: 80vh;
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 0 40px color-mix(in srgb, var(--resource-color, #3b82f6) 10%, transparent);
+  width: min(360px, calc(100vw - 2rem));
+  max-height: 88vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  animation: scaleIn 140ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Close button — floating over art */
+.resourceInfoClose {
+  all: unset;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(4px);
+}
+
+.resourceInfoClose:hover {
+  background: rgba(0, 0, 0, 0.75);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
 }
 
 .resourceInfoHeader {
@@ -158,28 +202,112 @@
   justify-content: space-between;
   padding: var(--space-md) var(--space-lg);
   border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-card);
+  background: var(--bg-elevated);
 }
 
 .resourceInfoTitle {
-  font-size: var(--font-size-md);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.resourceInfoClose {
-  all: unset;
-  cursor: pointer;
-  font-size: var(--font-size-md);
+/* === Resource Art Hero === */
+.resourceArtHero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--resource-color, #3b82f6) 8%, var(--bg-elevated));
+  flex-shrink: 0;
+}
+
+.resourceArtImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.resourceArtFallback {
+  width: 100%;
+  height: 100%;
+}
+
+.resourceArtGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 20%,
+    color-mix(in srgb, #0a0d12 35%, transparent) 55%,
+    rgba(10, 13, 18, 0.97) 100%
+  );
+  pointer-events: none;
+}
+
+/* Name overlay — sits at bottom of art hero (child of .resourceArtHero) */
+.resourceArtNameOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0 var(--space-xl) var(--space-lg);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.resourceArtKeyPill {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--resource-color, #3b82f6);
+}
+
+.resourceArtTitle {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 2.125rem;
+  line-height: 0.95;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.9);
+}
+
+/* === Resource detail body === */
+.resourceDescCallout {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-sm) var(--space-md);
+  border-left: 2px solid var(--resource-color, #3b82f6);
+  background: color-mix(in srgb, var(--resource-color, #3b82f6) 6%, transparent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.resourceDescLabel {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--resource-color, #3b82f6);
+}
+
+.resourceDescText {
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
-  line-height: 1;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  transition: color var(--transition-fast), background var(--transition-fast);
-}
-
-.resourceInfoClose:hover {
-  color: var(--text-primary);
-  background: var(--bg-elevated);
+  line-height: 1.6;
+  font-style: italic;
+  margin: 0;
 }
 
 .resourceInfoIntro {
@@ -240,10 +368,11 @@
 }
 
 .resourceInfoBody {
-  padding: var(--space-md) var(--space-lg);
+  padding: var(--space-md) var(--space-lg) var(--space-xl);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  overflow-y: auto;
 }
 
 .resourceStatusRow {
@@ -264,8 +393,9 @@
 }
 
 .resourceStatusValue {
+  font-family: var(--font-mono);
   font-size: var(--font-size-2xl);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
