@@ -1,6 +1,6 @@
 'use client';
 
-import type { GameState, GameEvent, OrderChoice } from '@fp/shared';
+import type { GameState, GameEvent, OrderChoice, BudgetLine } from '@fp/shared';
 import { ORDERS, THEATER_NAMES } from '@fp/shared';
 import { CongressPanel } from './CongressPanel';
 import { ContractMarketPanel } from './ContractMarketPanel';
@@ -15,6 +15,7 @@ interface PhasePanelProps {
   onVote: (amount: number, support: boolean) => void;
   onEndContractMarket: (chosenIds: string[]) => void;
   onSubmitOrders: (orders: [OrderChoice, OrderChoice]) => void;
+  onUseNavseaAbility: (from: BudgetLine, to: BudgetLine) => void;
   finalScores: { winnerId: string; scores: Record<string, number> } | null;
   onNewGame: () => void;
   showingResolution: boolean;
@@ -160,6 +161,7 @@ export function PhasePanel(props: PhasePanelProps) {
               gameState={gameState}
               humanPlayerId={humanPlayerId}
               onSubmit={props.onSubmitOrders}
+              onUseNavseaAbility={props.onUseNavseaAbility}
             />
           </>
         );

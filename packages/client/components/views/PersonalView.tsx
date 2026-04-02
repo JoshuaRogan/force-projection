@@ -1,6 +1,6 @@
 'use client';
 
-import type { GameState, PlayerState, GameEvent, OrderChoice } from '@fp/shared';
+import type { GameState, PlayerState, GameEvent, OrderChoice, BudgetLine } from '@fp/shared';
 import { PlayerDashboard, HandTray } from '@/components/dashboard';
 import { PhasePanel } from '@/components/game/PhasePanel';
 import { PhaseTimeline } from '@/components/game/PhaseTimeline';
@@ -17,6 +17,7 @@ interface PersonalViewProps {
   onVote: (amount: number, support: boolean) => void;
   onEndContractMarket: (ids: string[]) => void;
   onSubmitOrders: (orders: [OrderChoice, OrderChoice]) => void;
+  onUseNavseaAbility: (from: BudgetLine, to: BudgetLine) => void;
   getFinalScores: () => { winnerId: string; scores: Record<string, number> } | null;
   onNewGame: () => void;
   onSkipResolution: () => void;
@@ -33,6 +34,7 @@ export function PersonalView({
   onVote,
   onEndContractMarket,
   onSubmitOrders,
+  onUseNavseaAbility,
   getFinalScores,
   onNewGame,
   onSkipResolution,
@@ -61,6 +63,7 @@ export function PersonalView({
               onVote={onVote}
               onEndContractMarket={onEndContractMarket}
               onSubmitOrders={onSubmitOrders}
+              onUseNavseaAbility={onUseNavseaAbility}
               finalScores={getFinalScores()}
               onNewGame={onNewGame}
               showingResolution={showingResolution}

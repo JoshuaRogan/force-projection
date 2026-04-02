@@ -156,19 +156,29 @@ export function OrdersPanel({
   gameState,
   humanPlayerId,
   onSubmit,
+  onUseNavseaAbility,
 }: {
   gameState: GameState;
   humanPlayerId: string;
   onSubmit: (orders: [OrderChoice, OrderChoice]) => void;
+  onUseNavseaAbility: (from: BudgetLine, to: BudgetLine) => void;
 }) {
   const [selectedOrders, setSelectedOrders] = useState<OrderId[]>([]);
   const [orderParams, setOrderParams] = useState<Record<number, OrderChoice>>({});
   const [configuringIdx, setConfiguringIdx] = useState<number | null>(null);
   const [hoveredOrder, setHoveredOrder] = useState<OrderId | null>(null);
   const [unaffordableAnchor, setUnaffordableAnchor] = useState<{ el: HTMLButtonElement; reason: string } | null>(null);
+  const [navseaFrom, setNavseaFrom] = useState<BudgetLine>('U');
+  const [navseaTo, setNavseaTo] = useState<BudgetLine>('S');
+  const [navseaError, setNavseaError] = useState<string | null>(null);
   const clearHover = useCallback(() => setHoveredOrder(prev => prev === null ? prev : null), []);
   const player = gameState.players[humanPlayerId];
   const alreadySubmitted = player.selectedOrders !== null;
+  const canUseNavseaAbility = player.directorate === 'NAVSEA' && !player.usedOncePerYear;
+  const availableFromLines = BUDGET_LINES.filter(line => player.resources.budget[line] > 0);
+  const effectiveFrom = availableFromLines.includes(navseaFrom) ? navseaFrom : (availableFromLines[0] ?? 'U');
+  const toOptions = BUDGET_LINES.filter(line => line !== effectiveFrom);
+  const effectiveTo = toOptions.includes(navseaTo) ? navseaTo : (toOptions[0] ?? 'S');
 
   // Compute validation for all orders (accounts for cost reductions)
   const orderValidations = useMemo(() => {
@@ -239,6 +249,65 @@ export function OrdersPanel({
   return (
     <div className={styles.panelCompact}>
       <div className={styles.panelTitle} style={{ fontSize: '1rem' }}>Select 2 Orders — Q{quarter}</div>
+
+      {player.directorate === 'NAVSEA' && (
+        <div className={styles.orderSummary} style={{ marginBottom: 8 }}>
+          <div className={styles.orderSummaryItem} style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span className={styles.orderSummaryNum}>★</span>
+            <span className={styles.orderSummaryName}>NAVSEA once/year</span>
+            <span className={styles.orderSummaryDetail}>Reprogram 1 budget between lines</span>
+            {canUseNavseaAbility ? (
+              <>
+                <select
+                  className={styles.orderConfigBtn}
+                  value={effectiveFrom}
+                  onChange={e => setNavseaFrom(e.target.value as BudgetLine)}
+                >
+                  {availableFromLines.map(line => (
+                    <option key={line} value={line}>
+                      {line} ({BUDGET_LINE_NAMES[line]}: {player.resources.budget[line]})
+                    </option>
+                  ))}
+                </select>
+                <span className={styles.mutedText}>→</span>
+                <select
+                  className={styles.orderConfigBtn}
+                  value={effectiveTo}
+                  onChange={e => setNavseaTo(e.target.value as BudgetLine)}
+                >
+                  {toOptions.map(line => (
+                    <option key={line} value={line}>
+                      {line} ({BUDGET_LINE_NAMES[line]})
+                    </option>
+                  ))}
+                </select>
+                <button
+                  className={styles.orderConfigBtn}
+                  disabled={availableFromLines.length === 0}
+                  onClick={() => {
+                    setNavseaError(null);
+                    try {
+                      onUseNavseaAbility(effectiveFrom, effectiveTo);
+                    } catch {
+                      setNavseaError('Could not reprogram right now.');
+                    }
+                  }}
+                >
+                  Use Ability
+                </button>
+              </>
+            ) : (
+              <span className={styles.orderCostFree}>Used this fiscal year</span>
+            )}
+          </div>
+          {canUseNavseaAbility && availableFromLines.length === 0 && (
+            <div className={styles.paramWarning}>No budget available to move.</div>
+          )}
+          {navseaError && (
+            <div className={styles.paramWarning}>{navseaError}</div>
+          )}
+        </div>
+      )}
 
       <div className={styles.orderCategoriesGrid}>
         {Object.entries(ORDER_CATEGORIES).map(([category, orderIds]) => (

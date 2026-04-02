@@ -2,15 +2,29 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ORDERS, DIRECTORATES, THEATER_NAMES, THEATER_IDS, STRENGTH_VALUES, THEATER_CONTROL_SCORING } from '@fp/shared';
+import {
+  ORDERS,
+  DIRECTORATES,
+  THEATER_NAMES,
+  THEATER_IDS,
+  STRENGTH_VALUES,
+  THEATER_CONTROL_SCORING,
+  DEFAULT_CONFIG,
+} from '@fp/shared';
 import type { OrderCategory } from '@fp/shared';
+import { colorizeDesc } from '@/utils/colorizeDesc';
 import styles from './Tutorial.module.css';
 
+/** Inline text with the same resource / SI highlighting as cards and the orders panel. */
+function C({ children, className }: { children: string; className?: string }) {
+  return <span className={className ?? styles.tokenText}>{colorizeDesc(children)}</span>;
+}
+
 const CATEGORY_INFO: Record<OrderCategory, { color: string; desc: string }> = {
-  Influence: { color: 'var(--color-polcap)', desc: 'Gain resources, pick up contracts, and build alliances. Resolves first.' },
-  Procure: { color: 'var(--color-air)', desc: 'Build out your program portfolio — pipeline, activate, or refit. Resolves second.' },
-  Deploy: { color: 'var(--color-exp)', desc: 'Establish presence in theaters through bases, forward ops, and stationing. Resolves third.' },
-  Sustain: { color: 'var(--color-sustain)', desc: 'Refill resources, shore up logistics, and gather intel. Resolves last.' },
+  Influence: { color: 'var(--color-polcap)', desc: 'Gain PC, contracts, and alliances. Resolves first.' },
+  Procure: { color: 'var(--color-air)', desc: 'Pipeline, activate, or refit programs. Resolves second.' },
+  Deploy: { color: 'var(--color-exp)', desc: 'Bases, Forward Ops, and stationed programs. Resolves third.' },
+  Sustain: { color: 'var(--color-sustain)', desc: 'Readiness, logistics, intel, crisis mitigation. Resolves last.' },
 };
 
 const BUDGET_LINES = [
@@ -42,28 +56,28 @@ const CARD_TYPES = [
     color: 'var(--color-card-program)',
     icon: '⬡',
     desc: 'Military platforms you build into your portfolio. Each has Pipeline and Activate costs, domain tags, effects on activate, and ongoing Sustain effects while active.',
-    tips: ['Start programs cheaply via Pipeline, then pay full cost to Activate', 'Stationed programs add strength to theaters', 'Mothball unused programs for +1 U — reactivate later'],
+    tips: ['Start programs cheaply via Pipeline, then pay full cost to Activate', 'Stationed programs add strength to theaters', 'Mothball unused programs for +1U — reactivate later with 1U + 1 domain line (e.g. 1A)'],
   },
   {
     name: 'Contract',
     color: 'var(--color-card-contract)',
     icon: '◈',
     desc: 'Public objectives that award SI when completed. Completing them requires meeting specific theater presence, readiness, or resource conditions.',
-    tips: ['You can hold max 2 active contracts at once', 'Use Contracting order to draw and keep new contracts', 'Some contracts score multiple SI — prioritize them early'],
+    tips: ['You can hold max 2 active contracts at once', 'Use Contracting order to draw and keep new contracts', 'Some contracts award big SI payouts — prioritize them early'],
   },
   {
     name: 'Agenda',
     color: 'var(--color-card-agenda)',
     icon: '▣',
-    desc: 'Congressional budget priorities voted on each year. Spend Political Capital to influence the vote. Passing or defeating the Agenda triggers different effects for all players.',
-    tips: ['Even small PC investments can swing the vote', 'Check if the Agenda favors your directorate before spending', 'SPACECY can peek at the next crisis to plan around it'],
+    desc: 'Congressional budget priorities voted on each year. Spend PC to influence the vote. Passing or defeating the Agenda triggers different effects for all players.',
+    tips: ['Even 1 PC can swing a close vote', 'Check if the Agenda favors your directorate before spending', 'SPACECY can peek at the next crisis to plan around it'],
   },
   {
     name: 'Crisis',
     color: 'var(--color-card-crisis)',
     icon: '◬',
     desc: 'Quarterly shocks that penalize players without adequate readiness or theater presence. Each crisis targets specific theaters and resource thresholds.',
-    tips: ['Readiness above threshold reduces crisis penalties', 'Logistics Surge cuts your crisis penalty by 1', 'SPACECY can bury an incoming crisis for 1 PC'],
+    tips: ['Readiness above threshold reduces crisis penalties', 'Logistics Surge grants +2L and cuts your crisis penalty by 1', 'SPACECY can bury an incoming crisis for 1 PC'],
   },
 ];
 
@@ -132,16 +146,18 @@ export default function TutorialPage() {
 
         {/* Sticky nav */}
         <nav className={styles.nav}>
-          {SECTIONS.map(s => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              className={`${styles.navLink} ${activeSection === s.id ? styles.navLinkActive : ''}`}
-              onClick={() => setActiveSection(s.id)}
-            >
-              {s.label}
-            </a>
-          ))}
+          <div className={styles.navInner}>
+            {SECTIONS.map(s => (
+              <a
+                key={s.id}
+                href={`#${s.id}`}
+                className={`${styles.navLink} ${activeSection === s.id ? styles.navLinkActive : ''}`}
+                onClick={() => setActiveSection(s.id)}
+              >
+                {s.label}
+              </a>
+            ))}
+          </div>
         </nav>
 
         <main className={styles.main}>
@@ -149,30 +165,58 @@ export default function TutorialPage() {
           <section id="objective" className={styles.section}>
             <h2 className={styles.sectionTitle}>Objective</h2>
             <p className={styles.lead}>
-              Accumulate the most <strong className={styles.highlight}>Strategic Influence (SI)</strong> across
-              a standard <strong>4 fiscal years</strong> (with 3- and 5-year variants supported by config).
-              SI represents your directorate&apos;s ability to shape policy and theater posture.
+              <C>
+                Accumulate the most SI across a standard 4 fiscal years (3-year and 5-year games are also supported).
+                SI is your directorate score — earn it through programs, theater control, contracts, and year-end effects.
+              </C>
             </p>
             <p className={styles.sectionDesc}>
-              You earn SI by activating programs, controlling theaters, completing contracts, and resolving
-              year-end scoring effects.
+              <C>
+                Track SI on your dashboard. Each quarter: Crisis, hidden orders, resolution, cleanup, and card draw.
+              </C>
             </p>
             <div className={styles.calloutGrid}>
-              <div className={styles.callout}>
-                <div className={styles.calloutValue} style={{ color: 'var(--color-si)' }}>SI</div>
-                <div className={styles.calloutLabel}>Strategic Influence — the win condition tracked on your dashboard.</div>
+              <div className={styles.callout} style={{ borderTopColor: 'var(--color-si)' } as React.CSSProperties}>
+                <div className={styles.calloutTop}>
+                  <span className={styles.calloutName} style={{ color: 'var(--color-si)' }}>Strategic Influence</span>
+                  <span className={styles.calloutBadge} style={{ color: 'var(--color-si)', borderColor: 'color-mix(in srgb, var(--color-si) 45%, var(--border-subtle))' } as React.CSSProperties}>SI</span>
+                </div>
+                <p className={styles.calloutLabel}><C>Highest SI wins. Earn it from programs, theaters, contracts, and year-end scoring.</C></p>
               </div>
-              <div className={styles.callout}>
-                <div className={styles.calloutValue}>6</div>
-                <div className={styles.calloutLabel}>Theaters to contest through bases, alliances, forward ops, and stationed programs.</div>
+              <div className={styles.callout} style={{ borderTopColor: 'var(--color-info)' } as React.CSSProperties}>
+                <div className={styles.calloutTop}>
+                  <span className={styles.calloutName} style={{ color: 'var(--color-info)' }}>Theaters</span>
+                  <span className={styles.calloutMetrics}>
+                    <span className={styles.calloutMetric}>6 regions</span>
+                  </span>
+                </div>
+                <p className={styles.calloutLabel}>
+                  The global map you fight over — presence from bases, alliances, forward ops, and stationed programs drives control and SI.
+                </p>
               </div>
-              <div className={styles.callout}>
-                <div className={styles.calloutValue}>12</div>
-                <div className={styles.calloutLabel}>Orders available each quarter. Pick 2, then resolve by category sequence.</div>
+              <div className={styles.callout} style={{ borderTopColor: 'var(--color-air)' } as React.CSSProperties}>
+                <div className={styles.calloutTop}>
+                  <span className={styles.calloutName} style={{ color: 'var(--color-air)' }}>Orders</span>
+                  <span className={styles.calloutMetrics}>
+                    <span className={styles.calloutMetric}>12 total</span>
+                    <span className={styles.calloutMetric}>pick 2 / quarter</span>
+                  </span>
+                </div>
+                <p className={styles.calloutLabel}>
+                  Your quarterly actions — chosen hidden, then resolved in sequence: Influence, Procure, Deploy, Sustain.
+                </p>
               </div>
-              <div className={styles.callout}>
-                <div className={styles.calloutValue}>16</div>
-                <div className={styles.calloutLabel}>Quarters in the standard game (4 years × 4 quarters).</div>
+              <div className={styles.callout} style={{ borderTopColor: 'var(--color-exp)' } as React.CSSProperties}>
+                <div className={styles.calloutTop}>
+                  <span className={styles.calloutName} style={{ color: 'var(--color-exp)' }}>Quarters</span>
+                  <span className={styles.calloutMetrics}>
+                    <span className={styles.calloutMetric}>4 / year</span>
+                    <span className={styles.calloutMetric}>16 in standard</span>
+                  </span>
+                </div>
+                <p className={styles.calloutLabel}>
+                  Each fiscal year is four quarters of Crisis, orders, resolution, cleanup, and draws — standard campaign is 4 years.
+                </p>
               </div>
             </div>
           </section>
@@ -180,56 +224,85 @@ export default function TutorialPage() {
           {/* === GAME FLOW === */}
           <section id="flow" className={styles.section}>
             <h2 className={styles.sectionTitle}>Game Flow</h2>
-            <p className={styles.sectionDesc}>Each fiscal year follows this sequence. Standard game length is 4 years.</p>
+            <p className={styles.sectionDesc}>
+              <C>Each fiscal year follows this sequence. Standard length is 4 years (16 quarters).</C>
+            </p>
+            <p className={styles.flowIntro}>
+              The four beats below run in reading order — that is the order of play at the table each year.
+            </p>
 
-            <div className={styles.flowYear}>
-              <div className={styles.flowPhase} style={{ '--phase-color': 'var(--color-card-agenda)' } as React.CSSProperties}>
-                <div className={styles.flowPhaseLetter}>A</div>
-                <div className={styles.flowPhaseContent}>
-                  <div className={styles.flowPhaseName}>Congress</div>
-                  <div className={styles.flowPhaseDesc}>Vote on the Congressional Agenda using Political Capital. The outcome applies pass/fail effects to every player.</div>
+            <div className={styles.calloutGrid}>
+              <div className={styles.callout} style={{ borderTopColor: 'var(--color-card-agenda)' } as React.CSSProperties}>
+                <div className={styles.calloutTop}>
+                  <span className={styles.calloutName} style={{ color: 'var(--color-card-agenda)' }}>Agenda vote</span>
+                  <span className={styles.calloutMetrics}>
+                    <span className={styles.calloutMetric}>opens the year</span>
+                    <span className={styles.calloutMetric}>1 agenda</span>
+                  </span>
                 </div>
+                <p className={styles.calloutLabel}>
+                  <C>Commit PC to support or oppose the Congressional Agenda. Pass or fail applies that card&apos;s effects to every player for the whole year.</C>
+                </p>
               </div>
-              <div className={styles.flowArrow}>→</div>
-              <div className={styles.flowPhase} style={{ '--phase-color': 'var(--color-card-contract)' } as React.CSSProperties}>
-                <div className={styles.flowPhaseLetter}>B</div>
-                <div className={styles.flowPhaseContent}>
-                  <div className={styles.flowPhaseName}>Contract Market</div>
-                  <div className={styles.flowPhaseDesc}>The market refills to 3 visible contracts. Players can take contracts up to the 2-active-contract cap.</div>
+              <div className={styles.callout} style={{ borderTopColor: 'var(--color-card-contract)' } as React.CSSProperties}>
+                <div className={styles.calloutTop}>
+                  <span className={styles.calloutName} style={{ color: 'var(--color-card-contract)' }}>Contract market</span>
+                  <span className={styles.calloutMetrics}>
+                    <span className={styles.calloutMetric}>up to 3 shown</span>
+                    <span className={styles.calloutMetric}>2 active max</span>
+                  </span>
                 </div>
+                <p className={styles.calloutLabel}>
+                  <C>Pick public objectives with immediate perks and year-end requirements. Taking a contract applies its on-take effects.</C>
+                </p>
               </div>
-              <div className={styles.flowArrow}>→</div>
-              <div className={styles.flowPhase} style={{ '--phase-color': 'var(--color-info)' } as React.CSSProperties}>
-                <div className={styles.flowPhaseLetter}>C</div>
-                <div className={styles.flowPhaseContent}>
-                  <div className={styles.flowPhaseName}>4 Quarters</div>
-                  <div className={styles.flowPhaseDesc}>Each quarter: reveal Crisis, plan 2 Orders simultaneously, resolve by category, then cleanup and draw for next quarter.</div>
+              <div className={styles.callout} style={{ borderTopColor: 'var(--color-info)' } as React.CSSProperties}>
+                <div className={styles.calloutTop}>
+                  <span className={styles.calloutName} style={{ color: 'var(--color-info)' }}>Quarterly operations</span>
+                  <span className={styles.calloutMetrics}>
+                    <span className={styles.calloutMetric}>4 per year</span>
+                    <span className={styles.calloutMetric}>2 orders each</span>
+                    <span className={styles.calloutMetric}>{`${DEFAULT_CONFIG.drawPerQuarter} programs / qtr`}</span>
+                  </span>
                 </div>
+                <p className={styles.calloutLabel}>
+                  <C>
+                    {`Where most turns happen: Crisis, hidden orders, category resolution, cleanup — then each player draws ${DEFAULT_CONFIG.drawPerQuarter} programs before the next quarter (after Q1–Q3 only).`}
+                  </C>
+                </p>
               </div>
-              <div className={styles.flowArrow}>→</div>
-              <div className={styles.flowPhase} style={{ '--phase-color': 'var(--color-si)' } as React.CSSProperties}>
-                <div className={styles.flowPhaseLetter}>D</div>
-                <div className={styles.flowPhaseContent}>
-                  <div className={styles.flowPhaseName}>Year End</div>
-                  <div className={styles.flowPhaseDesc}>Process year-end sustain effects, score contracts, and score theater control ({THEATER_CONTROL_SCORING.first}/{THEATER_CONTROL_SCORING.second}/{THEATER_CONTROL_SCORING.third} SI).</div>
+              <div className={styles.callout} style={{ borderTopColor: 'var(--color-si)' } as React.CSSProperties}>
+                <div className={styles.calloutTop}>
+                  <span className={styles.calloutName} style={{ color: 'var(--color-si)' }}>Year-end scoring</span>
+                  <span className={styles.calloutMetrics}>
+                    <span className={styles.calloutMetric}>contracts</span>
+                    <span className={styles.calloutMetric}>theaters</span>
+                    <span className={styles.calloutMetric}>{`${THEATER_CONTROL_SCORING.first}/${THEATER_CONTROL_SCORING.second}/${THEATER_CONTROL_SCORING.third} SI`}</span>
+                  </span>
                 </div>
+                <p className={styles.calloutLabel}>
+                  <C>
+                    {`Resolve year-end sustain text, finish or fail contracts for SI, then score theater control (${THEATER_CONTROL_SCORING.first}/${THEATER_CONTROL_SCORING.second}/${THEATER_CONTROL_SCORING.third} SI per theater).`}
+                  </C>
+                </p>
               </div>
             </div>
 
             <div className={styles.quarterBreakdown}>
-              <div className={styles.quarterTitle}>Inside a Quarter</div>
+              <div className={styles.quarterTitle}>Inside each quarter</div>
+              <p className={styles.quarterIntro}>Same rhythm every quarter — these four moments always happen in this order.</p>
               <div className={styles.quarterSteps}>
                 {[
-                  { label: 'Crisis Pulse', desc: 'A Crisis card is revealed. Immediate crisis effects resolve, then quarter-start sustain effects trigger.' },
-                  { label: 'Plan Orders', desc: 'All players choose 2 orders simultaneously. Choices remain hidden until reveal.' },
-                  { label: 'Resolve Orders', desc: 'Orders execute in category sequence: Influence → Procure → Deploy → Sustain.' },
-                  { label: 'Cleanup', desc: 'Discard down to hand limit, clear selected orders, then draw for the next quarter (Q1-Q3).' },
-                ].map((step, i) => (
-                  <div key={i} className={styles.quarterStep}>
-                    <div className={styles.quarterStepNum}>{i + 1}</div>
+                  { tag: 'Crisis', label: 'Crisis pulse', desc: 'Reveal the quarter Crisis. Immediate effects apply; quarter-start sustain effects may fire.' },
+                  { tag: 'Commit', label: 'Plan orders', desc: 'Every player selects 2 orders face-down, then reveals together.' },
+                  { tag: 'Resolve', label: 'Resolve orders', desc: 'Resolve in order: Influence → Procure → Deploy → Sustain (Intel Focus can spend 1I to shift timing).' },
+                  { tag: 'Cleanup', label: 'Cleanup & draw', desc: `Discard to hand limit (${DEFAULT_CONFIG.handLimit}), clear orders, then draw ${DEFAULT_CONFIG.drawPerQuarter} programs each before the next quarter (not after Q4).` },
+                ].map(step => (
+                  <div key={step.tag} className={styles.quarterStep}>
+                    <div className={styles.quarterStepTag}>{step.tag}</div>
                     <div>
                       <div className={styles.quarterStepLabel}>{step.label}</div>
-                      <div className={styles.quarterStepDesc}>{step.desc}</div>
+                      <div className={styles.quarterStepDesc}><C>{step.desc}</C></div>
                     </div>
                   </div>
                 ))}
@@ -241,12 +314,15 @@ export default function TutorialPage() {
           <section id="resources" className={styles.section}>
             <h2 className={styles.sectionTitle}>Resources</h2>
             <p className={styles.sectionDesc}>
-              You manage two pools of resources. Budget lines fund specific program domains; secondary resources
-              support orders, activations, and political tempo. Each has current amount plus production rates.
+              <C>
+                Budget lines (A S E X U) fund domains; secondary resources (M L I PC) pay for orders and tempo.
+                Each track has current stock and production rates.
+              </C>
             </p>
             <p className={styles.sectionDesc}>
-              Core production is applied at the start of each fiscal year, with additional gains coming from orders,
-              contracts, agendas, and sustain effects throughout the year.
+              <C>
+                Year-start production refills everyone; orders, contracts, agendas, and sustain effects add more during the year.
+              </C>
             </p>
 
             <h3 className={styles.subTitle}>Budget Lines</h3>
@@ -255,7 +331,7 @@ export default function TutorialPage() {
                 <div key={r.key} className={styles.resourceCard} style={{ '--res-color': r.color } as React.CSSProperties}>
                   <div className={styles.resourceKey}>{r.key}</div>
                   <div className={styles.resourceName}>{r.name}</div>
-                  <div className={styles.resourceDesc}>{r.desc}</div>
+                  <div className={styles.resourceDesc}><C>{r.desc}</C></div>
                 </div>
               ))}
             </div>
@@ -266,14 +342,15 @@ export default function TutorialPage() {
                 <div key={r.key} className={styles.resourceCard} style={{ '--res-color': r.color } as React.CSSProperties}>
                   <div className={styles.resourceKey}>{r.key}</div>
                   <div className={styles.resourceName}>{r.name}</div>
-                  <div className={styles.resourceDesc}>{r.desc}</div>
+                  <div className={styles.resourceDesc}><C>{r.desc}</C></div>
                 </div>
               ))}
             </div>
 
             <div className={styles.tip}>
-              <strong>Reprogramming:</strong> Budget conversion is effect-driven (for example by directorate powers
-              or agenda/card effects), with Political Capital still serving as the key influence resource.
+              <C>
+                Reprogramming: moving budget between lines is effect-driven (directorates, agendas, cards). PC remains the main currency for politics and votes.
+              </C>
             </div>
           </section>
 
@@ -281,22 +358,22 @@ export default function TutorialPage() {
         <section id="orders" className={styles.section}>
           <h2 className={styles.sectionTitle}>The 12 Orders</h2>
           <p className={styles.sectionDesc}>
-            Each quarter you pick exactly <strong>2 orders</strong>. Orders resolve in category sequence —
-            Influence first, then Procure, Deploy, and finally Sustain. Everyone's orders resolve simultaneously
-            within each category, with Intel spend used to shift your position.
+            <C>
+              Each quarter pick exactly 2 orders. Resolve Influence → Procure → Deploy → Sustain. Intel Focus can spend 1I to shift your slot in that order.
+            </C>
           </p>
 
           {(['Influence', 'Procure', 'Deploy', 'Sustain'] as OrderCategory[]).map(cat => (
             <div key={cat} className={styles.categoryBlock}>
               <div className={styles.categoryHeader} style={{ '--cat-color': CATEGORY_INFO[cat].color } as React.CSSProperties}>
                 <span className={styles.categoryName}>{cat}</span>
-                <span className={styles.categoryDesc}>{CATEGORY_INFO[cat].desc}</span>
+                <span className={styles.categoryDesc}><C>{CATEGORY_INFO[cat].desc}</C></span>
               </div>
               <div className={styles.orderGrid}>
                 {(ordersByCategory[cat] ?? []).map(order => (
                   <div key={order.id} className={styles.orderCard} style={{ '--cat-color': CATEGORY_INFO[cat].color } as React.CSSProperties}>
                     <div className={styles.orderName}>{order.name}</div>
-                    <div className={styles.orderDesc}>{order.description}</div>
+                    <div className={styles.orderDesc}><C>{order.description}</C></div>
                   </div>
                 ))}
               </div>
@@ -308,8 +385,7 @@ export default function TutorialPage() {
         <section id="portfolio" className={styles.section}>
           <h2 className={styles.sectionTitle}>Program Portfolio</h2>
           <p className={styles.sectionDesc}>
-            Your programs are your primary source of sustained SI, theater strength, and resource production.
-            Managing your portfolio efficiently is the central strategic challenge.
+            <C>Programs drive SI, theater strength, and production. Pipeline → Active → Mothball timing is the core puzzle.</C>
           </p>
 
           <div className={styles.portfolioSlots}>
@@ -317,8 +393,9 @@ export default function TutorialPage() {
               <div className={styles.portfolioSlotHeader} style={{ color: 'var(--color-info)' }}>Pipeline</div>
               <div className={styles.portfolioSlotCount}>3 slots</div>
               <div className={styles.portfolioSlotDesc}>
-                Programs in development. Pay the reduced Pipeline cost to place a card here.
-                Use <strong>Start Program</strong> order. Programs here generate no effects — they're just queued.
+                <C>
+                  In development. Pay pipeline cost and use Start Program. No effects until activated.
+                </C>
               </div>
               <div className={styles.portfolioSlotTip}>Tip: Fill your pipeline early to prep activations for later quarters.</div>
             </div>
@@ -327,8 +404,9 @@ export default function TutorialPage() {
               <div className={styles.portfolioSlotHeader} style={{ color: 'var(--color-success)' }}>Active</div>
               <div className={styles.portfolioSlotCount}>6 slots</div>
               <div className={styles.portfolioSlotDesc}>
-                Fully commissioned programs. Pay the full Activate cost via <strong>Activate Program</strong> order.
-                Active programs grant immediate effects, ongoing Sustain effects, and can be stationed in theaters.
+                <C>
+                  Pay activate cost with Activate Program. Immediate effects, sustain text, and stationing all apply from here.
+                </C>
               </div>
               <div className={styles.portfolioSlotTip}>Tip: Active slots are scarce — prioritize programs with strong Sustain effects or high station strength.</div>
             </div>
@@ -337,10 +415,11 @@ export default function TutorialPage() {
               <div className={styles.portfolioSlotHeader} style={{ color: 'var(--color-sustain)' }}>Mothball</div>
               <div className={styles.portfolioSlotCount}>Unlimited</div>
               <div className={styles.portfolioSlotDesc}>
-                Decommissioned programs stored in reserve. Use <strong>Refit / Mothball</strong> to move an Active
-                program here and gain +1 U. Reactivate later by paying 1U + 1 of its budget line.
+                <C>
+                  Refit / Mothball from Active: gain +1U. Reactivate for 1U + 1 domain line (e.g. 1A for an AIR program).
+                </C>
               </div>
-              <div className={styles.portfolioSlotTip}>Tip: Mothball programs that aren't contributing to free up Active slots and recover Sustain.</div>
+              <div className={styles.portfolioSlotTip}>Tip: Mothball programs that aren&apos;t contributing to free up Active slots and recover U.</div>
             </div>
           </div>
         </section>
@@ -349,9 +428,9 @@ export default function TutorialPage() {
         <section id="theaters" className={styles.section}>
           <h2 className={styles.sectionTitle}>Theaters</h2>
           <p className={styles.sectionDesc}>
-            Theater control is scored at Year End. The player with the highest strength in each theater
-            scores {THEATER_CONTROL_SCORING.first} SI, second scores {THEATER_CONTROL_SCORING.second} SI,
-            and third scores {THEATER_CONTROL_SCORING.third} SI (4–5 player games only).
+            <C>
+              {`Theater control scores at year end: 1st gains ${THEATER_CONTROL_SCORING.first} SI, 2nd ${THEATER_CONTROL_SCORING.second} SI, 3rd ${THEATER_CONTROL_SCORING.third} SI (3rd place only with 4+ players).`}
+            </C>
           </p>
 
           <div className={styles.strengthTable}>
@@ -360,22 +439,22 @@ export default function TutorialPage() {
               <div className={styles.strengthRow}>
                 <span className={styles.strengthLabel}>Base</span>
                 <span className={styles.strengthValue}>+{STRENGTH_VALUES.base} strength</span>
-                <span className={styles.strengthDesc}>Build with Build Base order (2U + 1 any line). Each theater has 2 Base slots.</span>
+                <span className={styles.strengthDesc}><C>Build Base: 2U + 1A (or any budget line). 2 Base slots per theater.</C></span>
               </div>
               <div className={styles.strengthRow}>
                 <span className={styles.strengthLabel}>Alliance</span>
                 <span className={styles.strengthValue}>+{STRENGTH_VALUES.alliance} strength</span>
-                <span className={styles.strengthDesc}>Place with Negotiate order — requires a Base, or spend 1 PC to place anywhere. 2 Alliance slots per theater.</span>
+                <span className={styles.strengthDesc}><C>Negotiate: needs a Base in theater, or 1 PC to place anywhere. 2 Alliance slots per theater.</C></span>
               </div>
               <div className={styles.strengthRow}>
                 <span className={styles.strengthLabel}>Forward Ops</span>
                 <span className={styles.strengthValue}>+{STRENGTH_VALUES.forwardOps} strength</span>
-                <span className={styles.strengthDesc}>High value but expensive (1L + 2U). Requires a Base in that theater. 1 Forward Ops slot per theater.</span>
+                <span className={styles.strengthDesc}><C>Forward Ops: 1L + 2U, requires Base in that theater. 1 slot per theater.</C></span>
               </div>
               <div className={styles.strengthRow}>
                 <span className={styles.strengthLabel}>Stationed</span>
                 <span className={styles.strengthValue}>+ card value</span>
-                <span className={styles.strengthDesc}>Station Active Programs using the Station Programs order. Strength equals the program's stationing value.</span>
+                <span className={styles.strengthDesc}><C>Station Programs order: strength equals each program&apos;s station value.</C></span>
               </div>
             </div>
           </div>
@@ -392,7 +471,7 @@ export default function TutorialPage() {
         {/* === CARDS === */}
         <section id="cards" className={styles.section}>
           <h2 className={styles.sectionTitle}>Card Types</h2>
-          <p className={styles.sectionDesc}>There are four card types, each playing a distinct role in the game.</p>
+          <p className={styles.sectionDesc}><C>Four card types — same coloring as in-game card text for costs and SI.</C></p>
 
           <div className={styles.cardTypeGrid}>
             {CARD_TYPES.map(ct => (
@@ -401,9 +480,11 @@ export default function TutorialPage() {
                   <span className={styles.cardTypeIcon}>{ct.icon}</span>
                   <span className={styles.cardTypeName}>{ct.name}</span>
                 </div>
-                <p className={styles.cardTypeDesc}>{ct.desc}</p>
+                <p className={styles.cardTypeDesc}><C>{ct.desc}</C></p>
                 <ul className={styles.cardTypeTips}>
-                  {ct.tips.map((tip, i) => <li key={i}>{tip}</li>)}
+                  {ct.tips.map((tip, i) => (
+                    <li key={i}><C>{tip}</C></li>
+                  ))}
                 </ul>
               </div>
             ))}
@@ -428,21 +509,22 @@ export default function TutorialPage() {
                 <div className={styles.directorateAbilities}>
                   <div className={styles.ability}>
                     <div className={styles.abilityLabel}>Passive</div>
-                    <div className={styles.abilityDesc}>{d.passiveDescription}</div>
+                    <div className={styles.abilityDesc}><C>{d.passiveDescription}</C></div>
                   </div>
                   <div className={styles.ability}>
                     <div className={styles.abilityLabel}>Once / Year</div>
-                    <div className={styles.abilityDesc}>{d.oncePerYearDescription}</div>
+                    <div className={styles.abilityDesc}><C>{d.oncePerYearDescription}</C></div>
                   </div>
                 </div>
                 {(Object.keys(d.startBonusBudgetProduction).length > 0 || Object.keys(d.startBonusSecondaryProduction).length > 0 || Object.keys(d.startBonusTokens).length > 0) && (
                   <div className={styles.directorateBonus}>
-                    Starting bonus:{' '}
-                    {[
-                      ...Object.entries(d.startBonusBudgetProduction).map(([k, v]) => `+${v} ${k} production`),
-                      ...Object.entries(d.startBonusSecondaryProduction).map(([k, v]) => `+${v} ${k} production`),
-                      ...Object.entries(d.startBonusTokens).map(([k, v]) => `+${v} ${k}`),
-                    ].join(', ')}
+                    <C>
+                      {`Starting bonus: ${[
+                        ...Object.entries(d.startBonusBudgetProduction).map(([k, v]) => `+${v} ${k} production`),
+                        ...Object.entries(d.startBonusSecondaryProduction).map(([k, v]) => `+${v} ${k} production`),
+                        ...Object.entries(d.startBonusTokens).map(([k, v]) => `+${v} ${k}`),
+                      ].join(', ')}`}
+                    </C>
                   </div>
                 )}
               </div>

@@ -142,6 +142,29 @@ describe('GameEngine', () => {
     assert.throws(() => engine.endCrisisPulse(), /Expected quarter phase/);
   });
 
+  it('should allow NAVSEA once-per-year reprogram during planOrders', () => {
+    const engine = createTestGame();
+    engine.start();
+    engine.submitVote('p1', 0, true);
+    engine.submitVote('p2', 0, true);
+    engine.resolveVotes();
+    engine.endContractMarket();
+    engine.endCrisisPulse();
+
+    const p1 = engine.getPlayer('p1');
+    const fromBefore = p1.resources.budget.A;
+    const toBefore = p1.resources.budget.S;
+
+    engine.useNavseaAbility('p1', 'A', 'S');
+
+    assert.equal(p1.resources.budget.A, fromBefore - 1);
+    assert.equal(p1.resources.budget.S, toBefore + 1);
+    assert.equal(p1.usedOncePerYear, true);
+
+    assert.throws(() => engine.useNavseaAbility('p1', 'S', 'U'), /not available/i);
+    assert.throws(() => engine.useNavseaAbility('p2', 'A', 'S'), /not available/i);
+  });
+
   it('should handle build base order', () => {
     const engine = createTestGame();
     engine.start();

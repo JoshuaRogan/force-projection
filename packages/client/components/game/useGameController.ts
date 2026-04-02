@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import type { GameState, GameEvent, OrderChoice, DirectorateId } from '@fp/shared';
+import type { GameState, GameEvent, OrderChoice, DirectorateId, BudgetLine } from '@fp/shared';
 import { DIRECTORATE_IDS, PROGRAM_CARDS, CONTRACT_CARDS, AGENDA_CARDS, CRISIS_CARDS } from '@fp/shared';
 import { GameEngine, SeededRNG } from '@fp/engine';
 import { Bot, PERSONALITIES } from '@fp/simulation';
@@ -37,6 +37,7 @@ interface GameController {
   humanPlayerId: string;
   submitVote: (amount: number, support: boolean) => void;
   submitOrders: (orders: [OrderChoice, OrderChoice]) => void;
+  useNavseaAbility: (from: BudgetLine, to: BudgetLine) => void;
   endContractMarket: (chosenIds: string[]) => void;
   getFinalScores: () => { winnerId: string; scores: Record<string, number> } | null;
   newGame: () => void;
@@ -320,6 +321,12 @@ export function useGameController(seed: number = 42): GameController {
     rerenderAndAdvance();
   }, [engine, rerenderAndAdvance]);
 
+  const doUseNavseaAbility = useCallback((from: BudgetLine, to: BudgetLine) => {
+    engine.useNavseaAbility(humanId, from, to);
+    saveState(engine.state);
+    rerender();
+  }, [engine, rerender]);
+
   const getFinalScores = useCallback(() => {
     if (!engine.isGameOver) return null;
     return engine.getFinalScores();
@@ -337,6 +344,7 @@ export function useGameController(seed: number = 42): GameController {
     submitVote,
     endContractMarket: doEndContractMarket,
     submitOrders: doSubmitOrders,
+    useNavseaAbility: doUseNavseaAbility,
     getFinalScores,
     newGame,
     phaseLabel: getPhaseLabel(engine.state),

@@ -1,10 +1,10 @@
-import type { GameState, OrderChoice } from '@fp/shared';
+import type { GameState, OrderChoice, BudgetLine } from '@fp/shared';
 import { createGame, type CreateGameOptions } from './createGame.js';
 import {
   startFiscalYear, setupCongress, submitAgendaVote, resolveAgenda,
   setupContractMarket, takeContract, endContractMarket,
   setupCrisisPulse, endCrisisPulse, submitOrders, allOrdersSubmitted,
-  revealOrders, endResolveOrders, quarterCleanup, processYearEnd,
+  revealOrders, endResolveOrders, quarterCleanup, processYearEnd, useNavseaReprogram,
 } from './phases.js';
 import { resolveAllOrders } from './orders.js';
 import { computeEndgameScoring, determineWinner } from './scoring.js';
@@ -71,6 +71,15 @@ export class GameEngine {
   submitOrders(playerId: string, orders: [OrderChoice, OrderChoice]): void {
     this.assertQuarterStep('planOrders');
     submitOrders(this.state, playerId, orders);
+  }
+
+  /** NAVSEA once/year: move 1 budget token between lines. */
+  useNavseaAbility(playerId: string, from: BudgetLine, to: BudgetLine): void {
+    this.assertQuarterStep('planOrders');
+    const ok = useNavseaReprogram(this.state, playerId, from, to);
+    if (!ok) {
+      throw new Error('NAVSEA reprogram action is not available');
+    }
   }
 
   /** Check if all players have submitted orders */

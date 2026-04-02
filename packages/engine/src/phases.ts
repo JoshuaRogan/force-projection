@@ -1,5 +1,5 @@
 import type {
-  GameState, GamePhase, QuarterStep,
+  GameState, GamePhase, QuarterStep, BudgetLine,
 } from '@fp/shared';
 import {
   BUDGET_LINES, SECONDARY_RESOURCES, THEATER_IDS,
@@ -199,6 +199,30 @@ export function takeContract(state: GameState, playerId: string, contractId: str
 export function endContractMarket(state: GameState): void {
   state.phase = { type: 'quarter', quarter: 1, step: 'crisisPulse' };
   log(state, state.phase);
+}
+
+/** NAVSEA once-per-year action: move 1 budget from one line to another. */
+export function useNavseaReprogram(
+  state: GameState,
+  playerId: string,
+  from: BudgetLine,
+  to: BudgetLine,
+): boolean {
+  const player = state.players[playerId];
+  if (!player) return false;
+  if (player.directorate !== 'NAVSEA') return false;
+  if (player.usedOncePerYear) return false;
+  if (from === to) return false;
+  if (player.resources.budget[from] < 1) return false;
+
+  player.resources.budget[from] -= 1;
+  player.resources.budget[to] += 1;
+  player.usedOncePerYear = true;
+
+  state.log.push({ type: 'resourceChange', playerId, resource: from, delta: -1 });
+  state.log.push({ type: 'resourceChange', playerId, resource: to, delta: 1 });
+
+  return true;
 }
 
 // === Quarter Phases (Phase C) ===
