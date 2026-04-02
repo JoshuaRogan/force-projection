@@ -1,5 +1,6 @@
 import type { ProgramCard as ProgramCardType } from '@fp/shared';
 import { THEATER_NAMES } from '@fp/shared';
+import { colorizeDesc } from '../../utils/colorizeDesc';
 import { SubtagIcon } from '../icons';
 import { CostDisplay } from './CostDisplay';
 import { CardArt } from './CardArt';
@@ -40,7 +41,7 @@ export function ProgramCard({ card, layout = 'vertical' }: { card: ProgramCardTy
               <div className={styles.sectionLabel}>On Activate</div>
               <ul className={styles.effectsList}>
                 {card.activateEffects.map((e, i) => (
-                  <li key={i}>{e.description}</li>
+                  <li key={i}>{colorizeDesc(e.description)}</li>
                 ))}
               </ul>
             </div>
@@ -51,7 +52,7 @@ export function ProgramCard({ card, layout = 'vertical' }: { card: ProgramCardTy
               <div className={styles.sectionLabel}>Sustain</div>
               <ul className={styles.effectsList}>
                 {card.sustainEffects.map((e, i) => (
-                  <li key={i}>{e.description}</li>
+                  <li key={i}>{colorizeDesc(e.description)}</li>
                 ))}
               </ul>
             </div>

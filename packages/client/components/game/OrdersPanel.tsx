@@ -6,6 +6,7 @@ import type { GameState, OrderChoice, OrderId, TheaterId, ProgramCard, BudgetLin
 import { ORDERS, THEATER_NAMES, THEATER_IDS, BUDGET_LINES, BUDGET_LINE_NAMES, SECONDARY_RESOURCE_NAMES, canAfford } from '@fp/shared';
 import { ResourceIcon } from '../icons/ResourceIcon';
 import { resourceColor, resourceFullName } from '../ui/ResourceToken';
+import { colorizeDesc } from '../../utils/colorizeDesc';
 import styles from './GamePanel.module.css';
 
 const ORDER_CATEGORIES: Record<string, OrderId[]> = {
@@ -378,7 +379,7 @@ export function OrdersPanel({
               )}
             </div>
             <OrderCostRow orderId={hoveredOrder} player={player} />
-            <p className={styles.orderDescText}>{ORDERS[hoveredOrder].description}</p>
+            <p className={styles.orderDescText}>{colorizeDesc(ORDERS[hoveredOrder].description)}</p>
           </>
         ) : (
           <p className={styles.orderDescHint}>Hover an order to see what it does</p>
@@ -470,7 +471,7 @@ function OrderParamPicker({
       return (
         <div className={styles.paramPicker}>
           <div className={styles.paramTitle}>{orderDef.name}: Pick Theater</div>
-          <div className={styles.paramDesc}>{orderDef.description}</div>
+          <div className={styles.paramDesc}>{colorizeDesc(orderDef.description)}</div>
           <div className={styles.paramOptions}>
             {THEATER_IDS.map(tid => (
               <button
@@ -502,7 +503,7 @@ function OrderParamPicker({
       return (
         <div className={styles.paramPicker}>
           <div className={styles.paramTitle}>{orderDef.name}: Pick Card & Slot</div>
-          <div className={styles.paramDesc}>{orderDef.description}</div>
+          <div className={styles.paramDesc}>{colorizeDesc(orderDef.description)}</div>
           {hand.length === 0 ? (
             <div className={styles.paramWarning}>No cards in hand</div>
           ) : (
@@ -577,7 +578,7 @@ function OrderParamPicker({
       return (
         <div className={styles.paramPicker}>
           <div className={styles.paramTitle}>{orderDef.name}: Pick Program</div>
-          <div className={styles.paramDesc}>{orderDef.description}</div>
+          <div className={styles.paramDesc}>{colorizeDesc(orderDef.description)}</div>
           {pipeCards.length === 0 ? (
             <div className={styles.paramWarning}>No programs in pipeline to activate</div>
           ) : (
@@ -645,7 +646,7 @@ function OrderParamPicker({
       return (
         <div className={styles.paramPicker}>
           <div className={styles.paramTitle}>{orderDef.name}</div>
-          <div className={styles.paramDesc}>{orderDef.description}</div>
+          <div className={styles.paramDesc}>{colorizeDesc(orderDef.description)}</div>
           <div className={styles.paramOptions}>
             <button
               className={`${styles.paramOption} ${refitAction === 'mothball' ? styles.paramOptionSelected : ''}`}
@@ -709,7 +710,7 @@ function OrderParamPicker({
       return (
         <div className={styles.paramPicker}>
           <div className={styles.paramTitle}>{orderDef.name}: Pick Theater & Budget</div>
-          <div className={styles.paramDesc}>{orderDef.description}</div>
+          <div className={styles.paramDesc}>{colorizeDesc(orderDef.description)}</div>
           <div className={styles.paramLabel}>Theater:</div>
           <div className={styles.paramOptions}>
             {THEATER_IDS.map(tid => (
@@ -749,7 +750,7 @@ function OrderParamPicker({
       return (
         <div className={styles.paramPicker}>
           <div className={styles.paramTitle}>{orderDef.name}: Pick Theater</div>
-          <div className={styles.paramDesc}>{orderDef.description}</div>
+          <div className={styles.paramDesc}>{colorizeDesc(orderDef.description)}</div>
           {validForwardOpsTheaters.length === 0 ? (
             <div className={styles.paramWarning}>You need a Base in a theater before deploying Forward Ops there.</div>
           ) : (
@@ -807,7 +808,7 @@ function OrderParamPicker({
       return (
         <div className={styles.paramPicker}>
           <div className={styles.paramTitle}>{orderDef.name}</div>
-          <div className={styles.paramDesc}>{orderDef.description}</div>
+          <div className={styles.paramDesc}>{colorizeDesc(orderDef.description)}</div>
           {stationable.length === 0 ? (
             <div className={styles.paramWarning}>No active programs with stationing capability</div>
           ) : (
@@ -868,7 +869,7 @@ function OrderParamPicker({
       return (
         <div className={styles.paramPicker}>
           <div className={styles.paramTitle}>{orderDef.name}</div>
-          <div className={styles.paramDesc}>{orderDef.description}</div>
+          <div className={styles.paramDesc}>{colorizeDesc(orderDef.description)}</div>
           <div className={styles.paramOptions}>
             <button
               className={`${styles.paramOption} ${!spendI ? styles.paramOptionSelected : ''}`}

@@ -4,6 +4,7 @@ import type { GameState, GameEvent, DirectorateId, AgendaCard, CrisisCard, Agend
 import { PhaseTimeline } from '@/components/game/PhaseTimeline';
 import { EventFeed } from '@/components/game/EventFeed';
 import { useCardModal } from '@/components/cards';
+import { colorizeDesc } from '@/utils/colorizeDesc';
 import { WorldMap } from './WorldMap';
 import styles from './MapView.module.css';
 
@@ -82,7 +83,7 @@ function AgendaPanel({ agendaState, onView }: {
         <button className={styles.agendaViewBtn} onClick={onView}>full card →</button>
       </div>
       <div className={styles.agendaName}>{agenda.name}</div>
-      <p className={styles.agendaDesc}>{agenda.description}</p>
+      <p className={styles.agendaDesc}>{colorizeDesc(agenda.description)}</p>
       {totalVotes > 0 && (
         <div className={styles.voteBlock}>
           <div className={styles.voteBar}>

@@ -48,15 +48,15 @@
 
 /* === Buttons === */
 .btnPrimary {
-  padding: 7px 20px;
+  padding: 8px 22px;
   background: color-mix(in srgb, var(--color-info) 12%, var(--bg-elevated));
   color: var(--color-info);
   border: 1px solid color-mix(in srgb, var(--color-info) 50%, transparent);
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-family: var(--font-mono);
-  font-weight: 600;
-  font-size: 0.7rem;
+  font-weight: 700;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   transition: all var(--transition-fast);
@@ -304,13 +304,13 @@
 
 .orderCategoryLabel {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--color-si);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   border-bottom: 1px solid color-mix(in srgb, var(--color-si) 20%, transparent);
-  padding-bottom: 3px;
+  padding-bottom: 4px;
 }
 
 .orderGrid {
@@ -320,13 +320,13 @@
 }
 
 .orderBtn {
-  padding: 5px 11px;
+  padding: 6px 13px;
   background: var(--bg-elevated);
   color: var(--text-secondary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -390,18 +390,20 @@
 
 .orderDescCategory {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: var(--text-muted);
 }
 
 .orderDescText {
-  font-size: var(--font-size-xs);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.55;
   margin: 0;
+  letter-spacing: 0.01em;
 }
 
 .orderDescHint {
@@ -413,10 +415,10 @@
 
 .orderDescUnaffordable {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--color-danger);
 }
 
@@ -434,9 +436,9 @@
 
 .orderCostLabel {
   font-family: var(--font-mono);
-  font-size: 0.55rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: var(--text-muted);
   text-transform: uppercase;
   padding-top: 2px;
@@ -452,7 +454,7 @@
 
 .orderCostFree {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--color-success, #34d399);
   text-transform: uppercase;
@@ -461,7 +463,7 @@
 
 .orderCostNote {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -469,7 +471,7 @@
 
 .orderCostConditional {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
   font-style: italic;
   letter-spacing: 0.02em;
@@ -525,10 +527,10 @@
 }
 
 .costChipLabel {
-  font-size: 0.6rem;
-  font-weight: 600;
+  font-size: 0.65rem;
+  font-weight: 700;
   color: var(--chip-color);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   line-height: 1;
 }
 
@@ -625,9 +627,11 @@
 }
 
 .paramDesc {
-  font-size: var(--font-size-xs);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
 }
 
 .paramLabel {
@@ -827,11 +831,11 @@
 
 .eventFeedTitle {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
-  font-weight: 600;
+  font-size: 0.65rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
   padding: var(--space-xs) var(--space-sm);
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
@@ -883,13 +887,13 @@
   text-align: center;
   font-family: var(--font-mono);
   color: var(--text-muted);
-  font-size: 0.6rem;
+  font-size: 0.68rem;
   margin-top: 2px;
 }
 
 .eventText {
-  line-height: 1.45;
-  font-size: 0.75rem;
+  line-height: 1.5;
+  font-size: 0.8rem;
 }
 
 .eventEmpty {
@@ -897,7 +901,7 @@
   text-align: center;
   color: var(--text-muted);
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }

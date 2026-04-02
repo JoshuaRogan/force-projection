@@ -45,15 +45,15 @@
 .theaterName {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   color: var(--text-primary);
 }
 
 .theaterEmpty {
   font-family: var(--font-mono);
-  font-size: 0.52rem;
+  font-size: 0.6rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -72,8 +72,8 @@
   grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 6px;
-  font-size: 0.68rem;
-  padding: 2px 4px;
+  font-size: 0.72rem;
+  padding: 3px 4px;
   border-radius: 2px;
   background: transparent;
   transition: background var(--transition-fast);
@@ -94,7 +94,7 @@
 .presenceDetails {
   font-family: var(--font-mono);
   color: var(--text-muted);
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   letter-spacing: 0.04em;
   white-space: nowrap;
 }

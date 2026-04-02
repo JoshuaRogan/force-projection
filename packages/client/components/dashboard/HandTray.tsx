@@ -2,6 +2,7 @@ import type { ProgramCard, BudgetLine, SecondaryResource } from '@fp/shared';
 import { useCardModal } from '../cards/CardModalContext';
 import { CARD_ART_VARIANTS } from '../cards/cardArtVariants';
 import { ResourceToken } from '../ui/ResourceToken';
+import { colorizeDesc } from '../../utils/colorizeDesc';
 import styles from './Dashboard.module.css';
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -66,7 +67,7 @@ export function HandTray({ hand }: { hand: ProgramCard[] }) {
                 </div>
                 {card.activateEffects.length > 0 && (
                   <div className={styles.handCardEffects}>
-                    {card.activateEffects[0].description}
+                    {colorizeDesc(card.activateEffects[0].description)}
                   </div>
                 )}
               </div>

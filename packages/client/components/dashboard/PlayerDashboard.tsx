@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { PlayerState } from '@fp/shared';
 import { DIRECTORATES } from '@fp/shared';
 import { useCardModal } from '../cards/CardModalContext';
+import { colorizeDesc } from '../../utils/colorizeDesc';
 import { ResourcePanel } from './ResourcePanel';
 import { PortfolioPanel } from './PortfolioPanel';
 import styles from './Dashboard.module.css';
@@ -116,7 +117,7 @@ export function PlayerDashboard({ player }: { player: PlayerState }) {
               </div>
               <div className={styles.contractReqs}>
                 {ac.card.requirements.map((req, i) => (
-                  <div key={i} className={styles.contractReq}>&#x2022; {req.description}</div>
+                  <div key={i} className={styles.contractReq}>&#x2022; {colorizeDesc(req.description)}</div>
                 ))}
               </div>
             </div>

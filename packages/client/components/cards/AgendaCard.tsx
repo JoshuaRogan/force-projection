@@ -1,4 +1,5 @@
 import type { AgendaCard as AgendaCardType } from '@fp/shared';
+import { colorizeDesc } from '../../utils/colorizeDesc';
 import { CardArt } from './CardArt';
 import styles from './Cards.module.css';
 
@@ -17,7 +18,7 @@ export function AgendaCard({ card, layout = 'vertical' }: { card: AgendaCardType
           {card.prose && <p className={styles.cardProse}>{card.prose}</p>}
 
           <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-            {card.description}
+            {colorizeDesc(card.description)}
           </p>
 
           {card.passEffects.length > 0 && (
@@ -25,7 +26,7 @@ export function AgendaCard({ card, layout = 'vertical' }: { card: AgendaCardType
               <div className={styles.sectionLabel} style={{ color: 'var(--color-success)' }}>If Passes</div>
               <ul className={styles.effectsList}>
                 {card.passEffects.map((e, i) => (
-                  <li key={i}>{e.description}</li>
+                  <li key={i}>{colorizeDesc(e.description)}</li>
                 ))}
               </ul>
             </div>
@@ -36,7 +37,7 @@ export function AgendaCard({ card, layout = 'vertical' }: { card: AgendaCardType
               <div className={styles.sectionLabel} style={{ color: 'var(--color-danger)' }}>If Fails</div>
               <ul className={styles.effectsList}>
                 {card.failEffects.map((e, i) => (
-                  <li key={i}>{e.description}</li>
+                  <li key={i}>{colorizeDesc(e.description)}</li>
                 ))}
               </ul>
             </div>

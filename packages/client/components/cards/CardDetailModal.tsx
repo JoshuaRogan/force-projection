@@ -5,6 +5,7 @@ import { THEATER_NAMES } from '@fp/shared';
 import type { CardModalData } from './CardModalContext';
 import { SubtagIcon, RequirementIcon } from '../icons';
 import { ResourceToken } from '../ui/ResourceToken';
+import { colorizeDesc } from '../../utils/colorizeDesc';
 import { CARD_ART_VARIANTS } from './cardArtVariants';
 import styles from './CardDetailModal.module.css';
 
@@ -60,7 +61,7 @@ function Section({ label, color, children }: { label: string; color?: string; ch
 function EffectList({ items }: { items: Array<{ description: string }> }) {
   return (
     <ul className={styles.effectList}>
-      {items.map((e, i) => <li key={i}>{e.description}</li>)}
+      {items.map((e, i) => <li key={i}>{colorizeDesc(e.description)}</li>)}
     </ul>
   );
 }
@@ -124,7 +125,7 @@ function ContractBody({ card }: { card: ContractCard }) {
               <span style={{ marginTop: 2, flexShrink: 0, opacity: 0.65 }}>
                 <RequirementIcon req={r} size={14} />
               </span>
-              <span>{r.description}</span>
+              <span>{colorizeDesc(r.description)}</span>
             </li>
           ))}
         </ul>
@@ -146,7 +147,7 @@ function ContractBody({ card }: { card: ContractCard }) {
 function AgendaBody({ card }: { card: AgendaCard }) {
   return (
     <>
-      <p className={styles.descriptionText}>{card.description}</p>
+      <p className={styles.descriptionText}>{colorizeDesc(card.description)}</p>
       {card.passEffects.length > 0 && (
         <Section label="If Passes" color="var(--color-success)">
           <EffectList items={card.passEffects} />
@@ -169,12 +170,12 @@ function AgendaBody({ card }: { card: AgendaCard }) {
 function CrisisBody({ card }: { card: CrisisCard }) {
   return (
     <>
-      <div className={styles.crisisRule}>{card.immediateRule}</div>
+      <div className={styles.crisisRule}>{colorizeDesc(card.immediateRule)}</div>
       <Section label="Response" color="var(--color-success)">
-        <p className={styles.crisisNote} style={{ color: 'var(--color-success)' }}>{card.responseDescription}</p>
+        <p className={styles.crisisNote} style={{ color: 'var(--color-success)' }}>{colorizeDesc(card.responseDescription)}</p>
       </Section>
       <Section label="Penalty" color="var(--color-danger)">
-        <p className={styles.crisisNote} style={{ color: 'var(--color-danger)' }}>{card.penaltyDescription}</p>
+        <p className={styles.crisisNote} style={{ color: 'var(--color-danger)' }}>{colorizeDesc(card.penaltyDescription)}</p>
       </Section>
     </>
   );

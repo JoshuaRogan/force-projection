@@ -1,35 +1,63 @@
+/* ─── Timeline shell ────────────────────────────────────────────────────────── */
+
 .timeline {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-lg);
+  gap: 0;
+  padding: 0 var(--space-lg);
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
+  border-bottom-color: color-mix(in srgb, var(--color-si) 18%, var(--border-subtle));
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.03);
   overflow-x: auto;
-  min-height: 50px;
+  min-height: 56px;
+  position: relative;
 }
+
+/* ─── Year badge ────────────────────────────────────────────────────────────── */
 
 .yearBadge {
   flex-shrink: 0;
-  padding: 3px 10px;
-  background: color-mix(in srgb, var(--color-si) 10%, var(--bg-elevated));
-  border: 1px solid color-mix(in srgb, var(--color-si) 30%, transparent);
-  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-md) 0 0;
+  margin-right: var(--space-md);
+  border-right: 1px solid var(--border-subtle);
+  gap: 1px;
+}
+
+.yearLabel {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.52rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--color-si);
-  white-space: nowrap;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
 }
+
+.yearValue {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: var(--color-si);
+  line-height: 1;
+}
+
+.yearMax {
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--color-si) 55%, var(--text-muted));
+}
+
+/* ─── Steps row ─────────────────────────────────────────────────────────────── */
 
 .steps {
   display: flex;
   align-items: center;
-  gap: 0;
   flex: 1;
   min-width: 0;
 }
@@ -41,92 +69,151 @@
   min-width: 0;
 }
 
+/* ─── Connector track ───────────────────────────────────────────────────────── */
+
 .connector {
-  height: 1px;
   flex: 1;
-  min-width: 8px;
+  min-width: 12px;
+  height: 2px;
   background: var(--border-subtle);
-  transition: background var(--transition-normal);
+  position: relative;
+  transition: background 400ms ease;
 }
 
 .connectorActive {
   background: var(--color-success);
 }
 
+/* Subtle arrow notches on the track */
+.connector::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-left: 4px solid var(--border-subtle);
+  opacity: 0.4;
+}
+
+.connectorActive::after {
+  border-left-color: var(--color-success);
+  opacity: 0.7;
+}
+
+/* ─── Individual step ───────────────────────────────────────────────────────── */
+
 .step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 5px;
+  flex-shrink: 0;
+  position: relative;
+  padding: 10px 4px;
+}
+
+/* ─── Diamond node ──────────────────────────────────────────────────────────── */
+
+.stepDot {
+  width: 14px;
+  height: 14px;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  background: var(--bg-elevated);
+  outline: 2px solid var(--border-subtle);
+  outline-offset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  color: transparent;
+  transition: all 300ms ease;
   flex-shrink: 0;
   position: relative;
 }
 
-/* Square tactical dot */
-.stepDot {
-  width: 18px;
-  height: 18px;
-  border-radius: 3px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  color: transparent;
-  transition: all var(--transition-normal);
+.stepMajor .stepDot {
+  width: 16px;
+  height: 16px;
 }
 
-.stepActive .stepDot {
-  background: color-mix(in srgb, var(--color-info) 15%, var(--bg-elevated));
-  border-color: var(--color-info);
-  border-width: 2px;
-  box-shadow: 0 0 10px color-mix(in srgb, var(--color-info) 40%, transparent);
-  color: transparent;
-}
-
+/* Completed: filled green diamond */
 .stepCompleted .stepDot {
-  background: color-mix(in srgb, var(--color-success) 15%, var(--bg-elevated));
-  border-color: var(--color-success);
-  color: var(--color-success);
+  background: var(--color-success);
+  outline-color: var(--color-success);
+  color: rgba(0,0,0,0.7);
   font-size: 8px;
+  font-weight: 900;
 }
+
+/* Active: amber diamond with glow pulse */
+.stepActive .stepDot {
+  width: 20px;
+  height: 20px;
+  background: color-mix(in srgb, var(--color-si) 20%, var(--bg-elevated));
+  outline: 2px solid var(--color-si);
+  animation: activePulse 2s ease-in-out infinite;
+}
+
+/* Inner dot for active state */
+.stepActive .stepDot::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  background: var(--color-si);
+}
+
+@keyframes activePulse {
+  0%, 100% { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-si) 60%, transparent)); }
+  50%       { filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-si) 90%, transparent)); }
+}
+
+/* ─── Labels ────────────────────────────────────────────────────────────────── */
 
 .stepLabel {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.6rem;
   color: var(--text-muted);
   font-weight: 500;
   text-align: center;
   white-space: nowrap;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
-}
-
-.stepActive .stepLabel {
-  color: var(--color-info);
-  font-weight: 600;
+  gap: 2px;
+  line-height: 1.1;
 }
 
 .stepCompleted .stepLabel {
   color: var(--color-success);
-}
-
-.substepLabel {
-  font-size: 8px;
   font-weight: 600;
-  color: var(--color-info);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  opacity: 0.85;
 }
 
-.stepMajor .stepDot {
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
+.stepActive .stepLabel {
+  color: var(--color-si);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+}
+
+/* Substep pill under the active phase label */
+.substepLabel {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--color-si) 75%, var(--text-primary));
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 1px 5px;
+  background: color-mix(in srgb, var(--color-si) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-si) 35%, transparent);
+  border-radius: 2px;
+  margin-top: 1px;
+  white-space: nowrap;
 }

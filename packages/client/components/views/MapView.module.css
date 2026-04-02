@@ -33,11 +33,11 @@
 
 .sectionLabel {
   font-family: var(--font-mono);
-  font-size: 0.52rem;
-  font-weight: 600;
+  font-size: 0.62rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
 }
 
 /* ── Phase status ─────────────────────────────────────────────────────────── */
@@ -62,15 +62,15 @@
 
 .phaseLabel {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
-  font-weight: 600;
+  font-size: 0.65rem;
+  font-weight: 700;
   color: var(--color-si);
   letter-spacing: 0.1em;
 }
 
 .phaseName {
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -80,7 +80,7 @@
 
 .phaseSub {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
 }
 
@@ -114,10 +114,10 @@
 
 .postureKey {
   font-family: var(--font-mono);
-  font-size: 0.48rem;
+  font-size: 0.6rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: var(--text-muted);
 }
 
@@ -191,7 +191,7 @@
   background: transparent;
   border: none;
   font-family: var(--font-mono);
-  font-size: 0.55rem;
+  font-size: 0.62rem;
   color: var(--color-card-agenda);
   cursor: pointer;
   padding: 0;
@@ -363,7 +363,7 @@
   display: flex;
   justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 0.55rem;
+  font-size: 0.62rem;
 }
 
 .voteSupport { color: var(--color-success); }
@@ -422,9 +422,9 @@
 
 .scoreRank {
   font-family: var(--font-mono);
-  font-size: 0.52rem;
+  font-size: 0.62rem;
   color: var(--text-muted);
-  min-width: 12px;
+  min-width: 14px;
 }
 
 .scoreInfo {

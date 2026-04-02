@@ -1,4 +1,5 @@
 import type { ContractCard as ContractCardType } from '@fp/shared';
+import { colorizeDesc } from '../../utils/colorizeDesc';
 import { RequirementIcon } from '../icons';
 import { CardArt } from './CardArt';
 import styles from './Cards.module.css';
@@ -30,7 +31,7 @@ export function ContractCard({
               <div className={styles.sectionLabel}>Immediate</div>
               <ul className={styles.effectsList}>
                 {card.immediateAward.map((e, i) => (
-                  <li key={i}>{e.description}</li>
+                  <li key={i}>{colorizeDesc(e.description)}</li>
                 ))}
               </ul>
             </div>
@@ -47,7 +48,7 @@ export function ContractCard({
                     className={`${styles.reqRow} ${met === true ? styles.reqMet : met === false ? styles.reqUnmet : ''}`}
                   >
                     <RequirementIcon req={r} size={12} className={styles.reqIcon} />
-                    <span className={styles.reqDesc}>{r.description}</span>
+                    <span className={styles.reqDesc}>{colorizeDesc(r.description)}</span>
                     {met !== undefined && met !== null && (
                       <span className={styles.reqStatus}>{met ? '✓' : '–'}</span>
                     )}
