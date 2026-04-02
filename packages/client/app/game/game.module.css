@@ -8,37 +8,7 @@
   gap: var(--space-xs);
 }
 
-/* COMMAND view inner grid (replaces the old .layout grid for the content below the topbar) */
-.commandGrid {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  grid-template-rows: auto 1fr auto;
-  grid-template-areas:
-    "timeline timeline"
-    "center   sidebar"
-    "hand     hand";
-  gap: var(--space-xs);
-}
-
-/* Keep .layout as an alias for old references, unused after refactor */
-.layout {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  grid-template-rows: auto auto 1fr auto;
-  grid-template-areas:
-    "topbar   topbar"
-    "timeline timeline"
-    "center   sidebar"
-    "hand     hand";
-  gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-sm);
-  height: 100vh;
-  overflow: hidden;
-}
-
-/* === Top bar === */
+/* ── Top bar ─────────────────────────────────────────────────────────── */
 .topBar {
   flex-shrink: 0;
   display: flex;
@@ -82,6 +52,66 @@
   gap: var(--space-xs);
   margin-left: auto;
   overflow-x: auto;
+}
+
+/* ── Panel toggle buttons (STATS / HAND) in top bar ────────────────── */
+.panelToggles {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.panelToggleBtn {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.panelToggleBtn:hover {
+  border-color: var(--border-accent);
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+}
+
+/* Active state: panel is currently open */
+.panelToggleBtnActive {
+  background: color-mix(in srgb, var(--color-si) 10%, var(--bg-elevated));
+  border-color: color-mix(in srgb, var(--color-si) 45%, transparent);
+  color: var(--color-si);
+}
+
+.panelToggleBtnActive:hover {
+  background: color-mix(in srgb, var(--color-si) 16%, var(--bg-elevated));
+  border-color: var(--color-si);
+}
+
+/* Status dot inside the button */
+.panelToggleDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--border-subtle);
+  flex-shrink: 0;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.panelToggleBtnActive .panelToggleDot {
+  background: var(--color-si);
+  box-shadow: 0 0 5px color-mix(in srgb, var(--color-si) 60%, transparent);
 }
 
 /* Opponent chip */
@@ -157,45 +187,185 @@
   box-shadow: 0 0 12px color-mix(in srgb, var(--color-card-agenda) 20%, transparent);
 }
 
-/* === Timeline row === */
-.timelineRow {
-  grid-area: timeline;
-}
+/* ── COMMAND view ──────────────────────────────────────────────────────── */
 
-/* === Center content === */
-.center {
-  grid-area: center;
+/* Outer body: timeline + main row + hand toggle + hand area */
+.commandBody {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  overflow-y: auto;
-  overflow-x: hidden;
-  min-height: 0;
-  padding-right: var(--space-xs);
+  gap: var(--space-xs);
 }
 
+/* Timeline row */
+.timelineRow {
+  flex-shrink: 0;
+}
+
+/* Active card indicator buttons in top bar */
+.activeCardBtn {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: color-mix(in srgb, var(--color-card-agenda) 8%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--color-card-agenda) 40%, transparent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  max-width: 220px;
+  flex-shrink: 0;
+}
+
+.activeCardBtn:hover {
+  background: color-mix(in srgb, var(--color-card-agenda) 15%, var(--bg-elevated));
+  border-color: var(--color-card-agenda);
+}
+
+.activeCardBtnCrisis {
+  background: color-mix(in srgb, var(--color-card-crisis) 8%, var(--bg-elevated));
+  border-color: color-mix(in srgb, var(--color-card-crisis) 40%, transparent);
+}
+
+.activeCardBtnCrisis:hover {
+  background: color-mix(in srgb, var(--color-card-crisis) 15%, var(--bg-elevated));
+  border-color: var(--color-card-crisis);
+}
+
+.activeCardType {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-card-agenda);
+  flex-shrink: 0;
+}
+
+.activeCardBtnCrisis .activeCardType {
+  color: var(--color-card-crisis);
+}
+
+.activeCardName {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Main row: center content + collapsible sidebar */
+.commandMain {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-xs);
+  position: relative;
+}
+
+/* Center column: phase panel (primary) + theater strip (secondary) */
+.commandCenter {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* Phase panel wraps the actual PhasePanel component — fills available height */
 .phasePanel {
+  flex: 1;
+  min-height: 0;
   background: var(--bg-surface);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-md);
+  overflow-y: auto;
 }
 
-/* === Right sidebar === */
+/* Theater strip: compact, fixed height, secondary reference */
+.theaterStrip {
+  flex-shrink: 0;
+}
+
+/* ── Collapsible sidebar ──────────────────────────────────────────────── */
+.sidebarWrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Sidebar edge tab — visible, labeled, clearly interactive */
+.sidebarToggle {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  flex-shrink: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-right: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+  align-self: stretch;
+}
+
+.sidebarToggle:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-accent);
+  color: var(--text-primary);
+}
+
+.sidebarToggleIcon {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  opacity: 1;
+}
+
 .sidebar {
-  grid-area: sidebar;
+  width: 320px;
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
-  overflow-x: hidden;
-  overflow-y: hidden;
+  overflow: hidden;
+  transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 180ms ease;
+  opacity: 1;
   min-height: 0;
+}
+
+.sidebarClosed {
+  width: 0;
+  opacity: 0;
 }
 
 .playerDashboardArea {
   overflow-y: auto;
   flex-shrink: 1;
   min-height: 0;
+}
+
+.sidebarAgendaCard {
+  flex-shrink: 0;
+  height: 140px;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  --card-art-width: 85px;
+  --card-width: 100%;
 }
 
 .eventFeedWrapper {
@@ -208,8 +378,119 @@
   overflow: hidden;
 }
 
-/* === Bottom hand tray === */
+/* ── Hand toggle bar + collapsible hand tray ────────────────────────── */
+
+/* Always-visible hand tray handle — styled as a clear drawer pull */
+.handToggleBar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 var(--space-md);
+  height: 28px;
+  background: var(--bg-surface);
+  border: 1px solid color-mix(in srgb, var(--color-si) 20%, var(--border-subtle));
+  border-top: 2px solid color-mix(in srgb, var(--color-si) 35%, transparent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  user-select: none;
+  position: relative;
+}
+
+.handToggleBar:hover {
+  background: var(--bg-elevated);
+  border-top-color: var(--color-si);
+}
+
+/* Drag-handle dots in the center */
+.handToggleBar::before {
+  content: '· · · · ·';
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 4px;
+  color: color-mix(in srgb, var(--color-si) 40%, transparent);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.handToggleLabel {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--color-si) 80%, var(--text-secondary));
+}
+
+.handToggleChevron {
+  font-size: 0.55rem;
+  color: color-mix(in srgb, var(--color-si) 60%, transparent);
+  transition: transform 220ms ease;
+  font-family: var(--font-mono);
+}
+
+.handToggleChevronOpen {
+  transform: rotate(180deg);
+}
+
+/* Hand area: slides down when open */
 .handArea {
-  grid-area: hand;
+  flex-shrink: 0;
+  overflow: hidden;
+  max-height: 300px;
+  transition: max-height 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.handAreaClosed {
+  max-height: 0;
+}
+
+/* ── Legacy aliases used by other views ─────────────────────────────── */
+
+/* Keep .layout for old references, replaced after refactor */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  grid-template-rows: auto auto 1fr auto;
+  grid-template-areas:
+    "topbar   topbar"
+    "timeline timeline"
+    "center   sidebar"
+    "hand     hand";
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* commandGrid kept for TS references until full removal */
+.commandGrid {
+  flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.center {
+  grid-area: center;
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-sm);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.theaterArea {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }

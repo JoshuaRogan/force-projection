@@ -6,6 +6,13 @@
   gap: var(--space-md);
 }
 
+.panelCompact {
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
 .panelTitle {
   font-family: var(--font-display);
   font-size: 1.375rem;
@@ -20,6 +27,18 @@
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   line-height: 1.5;
+}
+
+/* Wide card display — horizontal layout, fills panel width, square art */
+.wideCard {
+  --card-width: 100%;
+  --card-art-width: 220px;
+  height: 220px;
+  overflow: hidden;
+}
+
+.wideCard > * {
+  height: 100%;
 }
 
 .mutedText {
@@ -271,42 +290,53 @@
 }
 
 /* === Orders Panel === */
+.orderCategoriesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
 .orderCategory {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 5px;
 }
 
 .orderCategoryLabel {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--color-si);
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-si) 20%, transparent);
+  padding-bottom: 3px;
 }
 
 .orderGrid {
   display: flex;
-  gap: var(--space-xs);
+  gap: 4px;
   flex-wrap: wrap;
 }
 
 .orderBtn {
-  padding: 5px 12px;
+  padding: 5px 11px;
   background: var(--bg-elevated);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: var(--font-size-sm);
+  font-size: 0.8rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.04em;
   transition: all var(--transition-fast);
-  font-weight: 500;
 }
 
 .orderBtn:hover:not(:disabled) {
   background: var(--bg-hover);
   border-color: var(--border-accent);
+  color: var(--text-primary);
 }
 
 .orderBtnSelected {
@@ -332,8 +362,8 @@
 
 /* Order description area — fixed height, no layout shift */
 .orderDescArea {
-  min-height: 52px;
-  padding: var(--space-sm) var(--space-md);
+  min-height: 40px;
+  padding: 6px var(--space-sm);
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
   border-left: 2px solid var(--border-accent);

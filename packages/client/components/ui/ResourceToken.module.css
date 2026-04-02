@@ -47,10 +47,10 @@
 .cellMode {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   color: var(--token-color);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
   white-space: nowrap;
   min-width: 0;

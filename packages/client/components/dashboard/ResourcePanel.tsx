@@ -224,7 +224,7 @@ export function ResourcePanel({ resources }: { resources: PlayerResources }) {
         <button className={styles.sectionTitleBtn} onClick={() => setDetail({ kind: 'section', type: 'budget' })}>
           Budget <span className={styles.infoIcon}>ⓘ</span>
         </button>
-        <div className={styles.resourceList}>
+        <div className={styles.resourceGrid}>
           {BUDGET_LINES.map(line => (
             <div
               key={line}
@@ -248,7 +248,7 @@ export function ResourcePanel({ resources }: { resources: PlayerResources }) {
         <button className={styles.sectionTitleBtn} onClick={() => setDetail({ kind: 'section', type: 'secondary' })}>
           Secondary <span className={styles.infoIcon}>ⓘ</span>
         </button>
-        <div className={styles.resourceList}>
+        <div className={styles.resourceGrid}>
           {SECONDARY_RESOURCES.map(res => (
             <div
               key={res}

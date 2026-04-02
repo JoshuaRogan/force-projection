@@ -59,7 +59,6 @@ function AgendaPanel({ agendaState, onView }: {
 }) {
   const { agenda, commitments, resolved, passed } = agendaState;
 
-  // Tally votes
   let totalSupport = 0;
   let totalOppose = 0;
   for (const c of Object.values(commitments)) {
@@ -82,35 +81,8 @@ function AgendaPanel({ agendaState, onView }: {
         </div>
         <button className={styles.agendaViewBtn} onClick={onView}>full card →</button>
       </div>
-
       <div className={styles.agendaName}>{agenda.name}</div>
       <p className={styles.agendaDesc}>{agenda.description}</p>
-
-      {/* Pass effects */}
-      {agenda.passEffects.length > 0 && (
-        <div className={styles.effectBlock}>
-          <span className={styles.effectBlockLabel}>IF PASSED</span>
-          <ul className={styles.effectList}>
-            {agenda.passEffects.map((e, i) => (
-              <li key={i} className={styles.effectItem}>{e.description}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Fail effects */}
-      {agenda.failEffects.length > 0 && (
-        <div className={`${styles.effectBlock} ${styles.effectBlockFail}`}>
-          <span className={styles.effectBlockLabel}>IF FAILED</span>
-          <ul className={styles.effectList}>
-            {agenda.failEffects.map((e, i) => (
-              <li key={i} className={styles.effectItemFail}>{e.description}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Vote bar (only when voting is live or just resolved) */}
       {totalVotes > 0 && (
         <div className={styles.voteBlock}>
           <div className={styles.voteBar}>

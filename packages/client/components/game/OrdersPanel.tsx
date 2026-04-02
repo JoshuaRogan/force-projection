@@ -320,49 +320,51 @@ export function OrdersPanel({
   const quarter = gameState.phase.type === 'quarter' ? gameState.phase.quarter : '?';
 
   return (
-    <div className={styles.panel}>
-      <div className={styles.panelTitle}>Select 2 Orders (Q{quarter})</div>
+    <div className={styles.panelCompact}>
+      <div className={styles.panelTitle} style={{ fontSize: '1rem' }}>Select 2 Orders — Q{quarter}</div>
 
-      {Object.entries(ORDER_CATEGORIES).map(([category, orderIds]) => (
-        <div key={category} className={styles.orderCategory}>
-          <div className={styles.orderCategoryLabel}>{category}</div>
-          <div className={styles.orderGrid}>
-            {orderIds.map(oid => {
-              const def = ORDERS[oid];
-              const isSelected = selectedOrders.includes(oid);
-              const isDimmed = selectedOrders.length >= 2 && !isSelected;
-              const selectedIdx = selectedOrders.indexOf(oid);
-              const needsConfig = isSelected && NEEDS_PARAMS.has(oid) && orderParams[selectedIdx] === undefined;
-              const affordable = isSelected || canAffordOrder(oid, player);
-              const reason = !affordable ? affordabilityReason(oid, player) : undefined;
-              return (
-                <button
-                  key={oid}
-                  onClick={() => affordable && toggleOrder(oid)}
-                  onMouseEnter={(e) => {
-                    setHoveredOrder(oid);
-                    if (reason) setUnaffordableAnchor({ el: e.currentTarget, reason });
-                  }}
-                  onMouseLeave={() => {
-                    clearHover();
-                    setUnaffordableAnchor(null);
-                  }}
-                  className={[
-                    styles.orderBtn,
-                    isSelected ? styles.orderBtnSelected : '',
-                    isDimmed ? styles.orderBtnDimmed : '',
-                    needsConfig ? styles.orderBtnNeedsConfig : '',
-                    !affordable ? styles.orderBtnUnaffordable : '',
-                  ].filter(Boolean).join(' ')}
-                >
-                  {def.name}
-                  {needsConfig && ' ...'}
-                </button>
-              );
-            })}
+      <div className={styles.orderCategoriesGrid}>
+        {Object.entries(ORDER_CATEGORIES).map(([category, orderIds]) => (
+          <div key={category} className={styles.orderCategory}>
+            <div className={styles.orderCategoryLabel}>{category}</div>
+            <div className={styles.orderGrid}>
+              {orderIds.map(oid => {
+                const def = ORDERS[oid];
+                const isSelected = selectedOrders.includes(oid);
+                const isDimmed = selectedOrders.length >= 2 && !isSelected;
+                const selectedIdx = selectedOrders.indexOf(oid);
+                const needsConfig = isSelected && NEEDS_PARAMS.has(oid) && orderParams[selectedIdx] === undefined;
+                const affordable = isSelected || canAffordOrder(oid, player);
+                const reason = !affordable ? affordabilityReason(oid, player) : undefined;
+                return (
+                  <button
+                    key={oid}
+                    onClick={() => affordable && toggleOrder(oid)}
+                    onMouseEnter={(e) => {
+                      setHoveredOrder(oid);
+                      if (reason) setUnaffordableAnchor({ el: e.currentTarget, reason });
+                    }}
+                    onMouseLeave={() => {
+                      clearHover();
+                      setUnaffordableAnchor(null);
+                    }}
+                    className={[
+                      styles.orderBtn,
+                      isSelected ? styles.orderBtnSelected : '',
+                      isDimmed ? styles.orderBtnDimmed : '',
+                      needsConfig ? styles.orderBtnNeedsConfig : '',
+                      !affordable ? styles.orderBtnUnaffordable : '',
+                    ].filter(Boolean).join(' ')}
+                  >
+                    {def.name}
+                    {needsConfig && ' ...'}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
       {/* Order description — fixed area, no layout shift */}
       <div className={styles.orderDescArea}>

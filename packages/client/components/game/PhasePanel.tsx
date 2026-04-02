@@ -143,7 +143,9 @@ export function PhasePanel(props: PhasePanelProps) {
             <p className={styles.panelSubtext}>
               A crisis has emerged. Review the situation and prepare your response.
             </p>
-            <CrisisCard card={gameState.currentCrisis} />
+            <div className={styles.wideCard}>
+              <CrisisCard card={gameState.currentCrisis} layout="horizontal" />
+            </div>
             <button onClick={props.onAcknowledgeCrisis} className={styles.btnPrimary}>
               Acknowledge &amp; Plan Orders
             </button>

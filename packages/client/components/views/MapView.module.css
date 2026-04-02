@@ -204,21 +204,67 @@
   opacity: 1;
 }
 
+/* Agenda name + description */
 .agendaName {
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   color: var(--text-primary);
-  line-height: 1.15;
+  line-height: 1.2;
 }
 
 .agendaDesc {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
-  line-height: 1.45;
+  line-height: 1.4;
   margin: 0;
+}
+
+/* Crisis severity */
+.crisisName {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-danger);
+  line-height: 1.15;
+}
+
+.crisisRule {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.4;
+  margin: 0;
+  padding: 4px 6px;
+  background: color-mix(in srgb, var(--color-danger) 6%, var(--bg-elevated));
+  border-radius: var(--radius-sm);
+  border-left: 2px solid color-mix(in srgb, var(--color-danger) 50%, transparent);
+}
+
+.crisisResponse {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.crisisResponse p {
+  margin: 2px 0 0;
+  color: var(--color-success);
+  font-size: var(--font-size-xs);
+}
+
+.crisisResponseLabel {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  display: block;
 }
 
 /* Effect blocks */
@@ -343,49 +389,6 @@
   justify-content: space-between;
 }
 
-.crisisName {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-danger);
-  line-height: 1.15;
-}
-
-.crisisRule {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  font-style: italic;
-  line-height: 1.4;
-  margin: 0;
-  padding: 4px 6px;
-  background: color-mix(in srgb, var(--color-danger) 6%, var(--bg-elevated));
-  border-radius: var(--radius-sm);
-  border-left: 2px solid color-mix(in srgb, var(--color-danger) 50%, transparent);
-}
-
-.crisisResponse {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.crisisResponse p {
-  margin: 2px 0 0;
-  color: var(--color-success);
-  font-size: var(--font-size-xs);
-}
-
-.crisisResponseLabel {
-  font-family: var(--font-mono);
-  font-size: 0.5rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-  display: block;
-}
 
 /* ── Score board ──────────────────────────────────────────────────────────── */
 

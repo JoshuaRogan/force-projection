@@ -33,16 +33,18 @@ interface ResourceTokenProps {
   count?: number;
   /** chip: compact pill for inline costs | labeled: pill with full name | cell: flat row for panel headers */
   mode?: 'chip' | 'labeled' | 'cell';
+  /** compact: in cell mode, hide the full name — shows [icon] KEY only */
+  compact?: boolean;
   className?: string;
 }
 
-export function ResourceToken({ resource, count, mode = 'chip', className }: ResourceTokenProps) {
+export function ResourceToken({ resource, count, mode = 'chip', compact, className }: ResourceTokenProps) {
   const color = RESOURCE_COLOR[resource];
   const fullName = resourceFullName(resource);
   const iconSize = mode === 'chip' ? 10 : mode === 'labeled' ? 12 : 11;
 
   if (mode === 'cell') {
-    // Flat inline row: [icon] U · Sustain
+    // Flat inline row: [icon] U · Sustain (or [icon] U when compact)
     return (
       <span
         className={`${styles.cellMode} ${className ?? ''}`}
@@ -51,8 +53,8 @@ export function ResourceToken({ resource, count, mode = 'chip', className }: Res
       >
         <ResourceIcon resource={resource} size={iconSize} className={styles.cellIcon} />
         <span className={styles.cellKey}>{resource}</span>
-        <span className={styles.cellSep}>·</span>
-        <span className={styles.cellName}>{fullName}</span>
+        {!compact && <span className={styles.cellSep}>·</span>}
+        {!compact && <span className={styles.cellName}>{fullName}</span>}
       </span>
     );
   }
