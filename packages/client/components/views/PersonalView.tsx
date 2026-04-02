@@ -18,6 +18,8 @@ interface PersonalViewProps {
   onEndContractMarket: (ids: string[]) => void;
   onSubmitOrders: (orders: [OrderChoice, OrderChoice]) => void;
   onUseNavseaAbility: (from: BudgetLine, to: BudgetLine) => void;
+  onUseTranscomAbility: (to: BudgetLine) => void;
+  onUseSpacecyAbility: (bury: boolean) => void;
   getFinalScores: () => { winnerId: string; scores: Record<string, number> } | null;
   onNewGame: () => void;
   onSkipResolution: () => void;
@@ -35,6 +37,8 @@ export function PersonalView({
   onEndContractMarket,
   onSubmitOrders,
   onUseNavseaAbility,
+  onUseTranscomAbility,
+  onUseSpacecyAbility,
   getFinalScores,
   onNewGame,
   onSkipResolution,
@@ -64,6 +68,8 @@ export function PersonalView({
               onEndContractMarket={onEndContractMarket}
               onSubmitOrders={onSubmitOrders}
               onUseNavseaAbility={onUseNavseaAbility}
+              onUseTranscomAbility={onUseTranscomAbility}
+              onUseSpacecyAbility={onUseSpacecyAbility}
               finalScores={getFinalScores()}
               onNewGame={onNewGame}
               showingResolution={showingResolution}

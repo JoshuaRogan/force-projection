@@ -165,6 +165,146 @@ describe('GameEngine', () => {
     assert.throws(() => engine.useNavseaAbility('p2', 'A', 'S'), /not available/i);
   });
 
+  it('should allow TRANSCOM once-per-year conversion during planOrders', () => {
+    const engine = new GameEngine({
+      players: [
+        { id: 'p1', name: 'P1', directorate: 'TRANSCOM' },
+        { id: 'p2', name: 'P2', directorate: 'NAVSEA' },
+      ],
+      seed: 42,
+      config: { fiscalYears: 1 },
+    });
+    engine.start();
+    engine.submitVote('p1', 0, true);
+    engine.submitVote('p2', 0, true);
+    engine.resolveVotes();
+    engine.endContractMarket();
+    engine.endCrisisPulse();
+
+    const p1 = engine.getPlayer('p1');
+    p1.resources.budget.U = 3;
+    const aBefore = p1.resources.budget.A;
+
+    engine.useTranscomAbility('p1', 'A');
+
+    assert.equal(p1.resources.budget.U, 1);
+    assert.equal(p1.resources.budget.A, aBefore + 1);
+    assert.equal(p1.usedOncePerYear, true);
+    assert.throws(() => engine.useTranscomAbility('p1', 'S'), /not available/i);
+  });
+
+  it('should allow SPACECY peek and bury during crisisPulse', () => {
+    const engine = new GameEngine({
+      players: [
+        { id: 'p1', name: 'P1', directorate: 'SPACECY' },
+        { id: 'p2', name: 'P2', directorate: 'NAVSEA' },
+      ],
+      seed: 42,
+      config: { fiscalYears: 1 },
+    });
+    engine.start();
+    engine.submitVote('p1', 0, true);
+    engine.submitVote('p2', 0, true);
+    engine.resolveVotes();
+    engine.endContractMarket();
+
+    assert.deepEqual(engine.state.phase, { type: 'quarter', quarter: 1, step: 'crisisPulse' });
+    const p1 = engine.getPlayer('p1');
+    p1.resources.secondary.PC = 2;
+    const first = engine.state.decks.crises[0]?.id;
+    const second = engine.state.decks.crises[1]?.id;
+
+    engine.useSpacecyAbility('p1', true);
+
+    assert.equal(p1.resources.secondary.PC, 1);
+    assert.equal(p1.usedOncePerYear, true);
+    assert.equal(engine.state.decks.crises[0]?.id, second);
+    assert.throws(() => engine.useSpacecyAbility('p1', false), /not available/i);
+    assert.ok(first, 'expected at least one crisis card');
+  });
+
+  it('should award MARFOR once-per-year +1 PC on first contract completion', () => {
+    const engine = new GameEngine({
+      players: [
+        { id: 'p1', name: 'P1', directorate: 'MARFOR' },
+        { id: 'p2', name: 'P2', directorate: 'NAVSEA' },
+      ],
+      seed: 42,
+      config: { fiscalYears: 1 },
+    });
+    engine.start();
+    engine.submitVote('p1', 0, true);
+    engine.submitVote('p2', 0, true);
+    engine.resolveVotes();
+    engine.endContractMarket();
+
+    const p1 = engine.getPlayer('p1');
+    p1.contracts.push({
+      card: {
+        id: 'test-marfor-contract',
+        type: 'contract',
+        name: 'Test Contract',
+        tags: [],
+        contractType: 'Service',
+        objectiveText: '',
+        requirements: [],
+        rewardSI: 1,
+        failurePenaltySI: -1,
+        immediateAward: [],
+      } as any,
+      progress: {},
+    });
+    const pcBefore = p1.resources.secondary.PC;
+
+    for (let q = 1; q <= 4; q++) {
+      engine.endCrisisPulse();
+      engine.submitOrders('p1', [{ order: 'logisticsSurge' }, { order: 'stationPrograms', assignments: [] }]);
+      engine.submitOrders('p2', [{ order: 'logisticsSurge' }, { order: 'stationPrograms', assignments: [] }]);
+      engine.revealAndResolve();
+      engine.endQuarter();
+    }
+
+    assert.ok(p1.resources.secondary.PC >= pcBefore + 1);
+    assert.equal(p1.usedOncePerYear, true);
+  });
+
+  it('should apply AIRCOM theater tie-break once per year at year end', () => {
+    const engine = new GameEngine({
+      players: [
+        { id: 'p1', name: 'P1', directorate: 'NAVSEA' },
+        { id: 'p2', name: 'P2', directorate: 'AIRCOM' },
+      ],
+      seed: 42,
+      config: { fiscalYears: 1 },
+    });
+    engine.start();
+    engine.submitVote('p1', 0, true);
+    engine.submitVote('p2', 0, true);
+    engine.resolveVotes();
+    engine.endContractMarket();
+
+    for (let q = 1; q <= 4; q++) {
+      engine.endCrisisPulse();
+      engine.submitOrders('p1', [{ order: 'lobby' }, { order: 'logisticsSurge' }]);
+      engine.submitOrders('p2', [{ order: 'lobby' }, { order: 'logisticsSurge' }]);
+      engine.revealAndResolve();
+      if (q === 4) {
+        const p1 = engine.getPlayer('p1');
+        const p2 = engine.getPlayer('p2');
+        p1.theaterPresence.northAtlantic.bases = 1;
+        p2.theaterPresence.northAtlantic.bases = 1;
+        engine.state.board.theaters.northAtlantic.presence.p1.bases = 1;
+        engine.state.board.theaters.northAtlantic.presence.p2.bases = 1;
+      }
+      engine.endQuarter();
+    }
+
+    const p1 = engine.getPlayer('p1');
+    const p2 = engine.getPlayer('p2');
+    assert.ok(p2.si > p1.si, 'AIRCOM should win tie-break for first place');
+    assert.equal(p2.usedOncePerYear, true);
+  });
+
   it('should handle build base order', () => {
     const engine = createTestGame();
     engine.start();

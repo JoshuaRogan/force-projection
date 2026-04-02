@@ -128,6 +128,8 @@ function GameBoard({ seed }: { seed: number }) {
                   onEndContractMarket={game.endContractMarket}
                   onSubmitOrders={game.submitOrders}
                   onUseNavseaAbility={game.useNavseaAbility}
+                  onUseTranscomAbility={game.useTranscomAbility}
+                  onUseSpacecyAbility={game.useSpacecyAbility}
                   finalScores={game.getFinalScores()}
                   onNewGame={game.newGame}
                   showingResolution={game.showingResolution}
@@ -196,6 +198,8 @@ function GameBoard({ seed }: { seed: number }) {
           onEndContractMarket={game.endContractMarket}
           onSubmitOrders={game.submitOrders}
           onUseNavseaAbility={game.useNavseaAbility}
+          onUseTranscomAbility={game.useTranscomAbility}
+          onUseSpacecyAbility={game.useSpacecyAbility}
           getFinalScores={game.getFinalScores}
           onNewGame={game.newGame}
           onSkipResolution={game.skipResolution}

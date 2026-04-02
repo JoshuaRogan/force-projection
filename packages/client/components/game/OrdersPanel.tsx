@@ -157,11 +157,13 @@ export function OrdersPanel({
   humanPlayerId,
   onSubmit,
   onUseNavseaAbility,
+  onUseTranscomAbility,
 }: {
   gameState: GameState;
   humanPlayerId: string;
   onSubmit: (orders: [OrderChoice, OrderChoice]) => void;
   onUseNavseaAbility: (from: BudgetLine, to: BudgetLine) => void;
+  onUseTranscomAbility: (to: BudgetLine) => void;
 }) {
   const [selectedOrders, setSelectedOrders] = useState<OrderId[]>([]);
   const [orderParams, setOrderParams] = useState<Record<number, OrderChoice>>({});
@@ -170,7 +172,8 @@ export function OrdersPanel({
   const [unaffordableAnchor, setUnaffordableAnchor] = useState<{ el: HTMLButtonElement; reason: string } | null>(null);
   const [navseaFrom, setNavseaFrom] = useState<BudgetLine>('U');
   const [navseaTo, setNavseaTo] = useState<BudgetLine>('S');
-  const [navseaError, setNavseaError] = useState<string | null>(null);
+  const [abilityError, setAbilityError] = useState<string | null>(null);
+  const [transcomTo, setTranscomTo] = useState<BudgetLine>('A');
   const clearHover = useCallback(() => setHoveredOrder(prev => prev === null ? prev : null), []);
   const player = gameState.players[humanPlayerId];
   const alreadySubmitted = player.selectedOrders !== null;
@@ -285,11 +288,11 @@ export function OrdersPanel({
                   className={styles.orderConfigBtn}
                   disabled={availableFromLines.length === 0}
                   onClick={() => {
-                    setNavseaError(null);
+                    setAbilityError(null);
                     try {
                       onUseNavseaAbility(effectiveFrom, effectiveTo);
                     } catch {
-                      setNavseaError('Could not reprogram right now.');
+                      setAbilityError('Could not reprogram right now.');
                     }
                   }}
                 >
@@ -303,9 +306,90 @@ export function OrdersPanel({
           {canUseNavseaAbility && availableFromLines.length === 0 && (
             <div className={styles.paramWarning}>No budget available to move.</div>
           )}
-          {navseaError && (
-            <div className={styles.paramWarning}>{navseaError}</div>
+          {abilityError && (
+            <div className={styles.paramWarning}>{abilityError}</div>
           )}
+        </div>
+      )}
+
+      {player.directorate === 'TRANSCOM' && (
+        <div className={styles.orderSummary} style={{ marginBottom: 8 }}>
+          <div className={styles.orderSummaryItem} style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span className={styles.orderSummaryNum}>★</span>
+            <span className={styles.orderSummaryName}>TRANSCOM once/year</span>
+            <span className={styles.orderSummaryDetail}>Convert 2 U → 1 of any line</span>
+            {!player.usedOncePerYear ? (
+              <>
+                <select
+                  className={styles.orderConfigBtn}
+                  value={transcomTo}
+                  onChange={e => setTranscomTo(e.target.value as BudgetLine)}
+                >
+                  {BUDGET_LINES.map(line => (
+                    <option key={line} value={line}>{line} ({BUDGET_LINE_NAMES[line]})</option>
+                  ))}
+                </select>
+                <button
+                  className={styles.orderConfigBtn}
+                  disabled={player.resources.budget.U < 2}
+                  onClick={() => {
+                    setAbilityError(null);
+                    try {
+                      onUseTranscomAbility(transcomTo);
+                    } catch {
+                      setAbilityError('Could not convert budget right now.');
+                    }
+                  }}
+                >
+                  Use Ability
+                </button>
+              </>
+            ) : (
+              <span className={styles.orderCostFree}>Used this fiscal year</span>
+            )}
+          </div>
+          {!player.usedOncePerYear && player.resources.budget.U < 2 && (
+            <div className={styles.paramWarning}>Need at least 2 U to convert.</div>
+          )}
+          {abilityError && (
+            <div className={styles.paramWarning}>{abilityError}</div>
+          )}
+        </div>
+      )}
+
+      {player.directorate === 'AIRCOM' && (
+        <div className={styles.orderSummary} style={{ marginBottom: 8 }}>
+          <div className={styles.orderSummaryItem}>
+            <span className={styles.orderSummaryNum}>★</span>
+            <span className={styles.orderSummaryName}>AIRCOM once/year</span>
+            <span className={styles.orderSummaryDetail}>
+              Theater Control tie-break is automatic in engine ({player.usedOncePerYear ? 'used' : 'ready'}).
+            </span>
+          </div>
+        </div>
+      )}
+
+      {player.directorate === 'MARFOR' && (
+        <div className={styles.orderSummary} style={{ marginBottom: 8 }}>
+          <div className={styles.orderSummaryItem}>
+            <span className={styles.orderSummaryNum}>★</span>
+            <span className={styles.orderSummaryName}>MARFOR once/year</span>
+            <span className={styles.orderSummaryDetail}>
+              First completed contract each year grants +1 PC automatically ({player.usedOncePerYear ? 'used' : 'ready'}).
+            </span>
+          </div>
+        </div>
+      )}
+
+      {player.directorate === 'SPACECY' && (
+        <div className={styles.orderSummary} style={{ marginBottom: 8 }}>
+          <div className={styles.orderSummaryItem}>
+            <span className={styles.orderSummaryNum}>★</span>
+            <span className={styles.orderSummaryName}>SPACECY once/year</span>
+            <span className={styles.orderSummaryDetail}>
+              Use in Crisis Pulse to peek/bury next crisis ({player.usedOncePerYear ? 'used' : 'ready'}).
+            </span>
+          </div>
         </div>
       )}
 

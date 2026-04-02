@@ -16,6 +16,8 @@ interface PhasePanelProps {
   onEndContractMarket: (chosenIds: string[]) => void;
   onSubmitOrders: (orders: [OrderChoice, OrderChoice]) => void;
   onUseNavseaAbility: (from: BudgetLine, to: BudgetLine) => void;
+  onUseTranscomAbility: (to: BudgetLine) => void;
+  onUseSpacecyAbility: (bury: boolean) => void;
   finalScores: { winnerId: string; scores: Record<string, number> } | null;
   onNewGame: () => void;
   showingResolution: boolean;
@@ -138,6 +140,12 @@ export function PhasePanel(props: PhasePanelProps) {
 
     case 'quarter':
       if (phase.step === 'crisisPulse' && gameState.currentCrisis) {
+        const human = gameState.players[humanPlayerId];
+        const canUseSpacecy = human.directorate === 'SPACECY' && !human.usedOncePerYear;
+        const canBury = human.resources.secondary.PC >= 1;
+        const peekResult = human.directorate === 'SPACECY' && human.usedOncePerYear
+          ? gameState.decks.crises[0]
+          : null;
         return (
           <div className={styles.panel}>
             <div className={styles.panelTitle}>Crisis This Quarter</div>
@@ -147,6 +155,39 @@ export function PhasePanel(props: PhasePanelProps) {
             <div className={styles.wideCard}>
               <CrisisCard card={gameState.currentCrisis} layout="horizontal" />
             </div>
+            {human.directorate === 'SPACECY' && (
+              <div className={styles.orderSummary} style={{ marginBottom: 12 }}>
+                <div className={styles.orderSummaryItem}>
+                  <span className={styles.orderSummaryNum}>★</span>
+                  <span className={styles.orderSummaryName}>SPACECY once/year</span>
+                  <span className={styles.orderSummaryDetail}>Peek next crisis and optionally bury for 1 PC</span>
+                </div>
+                {canUseSpacecy ? (
+                  <div className={styles.paramActions} style={{ marginTop: 8 }}>
+                    <button
+                      onClick={() => props.onUseSpacecyAbility(false)}
+                      className={styles.orderConfigBtn}
+                    >
+                      Peek Next Crisis
+                    </button>
+                    <button
+                      onClick={() => props.onUseSpacecyAbility(true)}
+                      className={styles.orderConfigBtn}
+                      disabled={!canBury}
+                    >
+                      Peek + Bury (1 PC)
+                    </button>
+                  </div>
+                ) : (
+                  <p className={styles.mutedText}>SPACECY once/year ability used for this fiscal year.</p>
+                )}
+                {peekResult && (
+                  <div className={styles.wideCard} style={{ marginTop: 8 }}>
+                    <CrisisCard card={peekResult} layout="horizontal" />
+                  </div>
+                )}
+              </div>
+            )}
             <button onClick={props.onAcknowledgeCrisis} className={styles.btnPrimary}>
               Acknowledge &amp; Plan Orders
             </button>
@@ -162,6 +203,7 @@ export function PhasePanel(props: PhasePanelProps) {
               humanPlayerId={humanPlayerId}
               onSubmit={props.onSubmitOrders}
               onUseNavseaAbility={props.onUseNavseaAbility}
+              onUseTranscomAbility={props.onUseTranscomAbility}
             />
           </>
         );

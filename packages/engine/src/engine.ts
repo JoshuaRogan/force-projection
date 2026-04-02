@@ -4,7 +4,8 @@ import {
   startFiscalYear, setupCongress, submitAgendaVote, resolveAgenda,
   setupContractMarket, takeContract, endContractMarket,
   setupCrisisPulse, endCrisisPulse, submitOrders, allOrdersSubmitted,
-  revealOrders, endResolveOrders, quarterCleanup, processYearEnd, useNavseaReprogram,
+  revealOrders, endResolveOrders, quarterCleanup, processYearEnd,
+  useNavseaReprogram, useTranscomConversion, useSpacecyCrisisPeek,
 } from './phases.js';
 import { resolveAllOrders } from './orders.js';
 import { computeEndgameScoring, determineWinner } from './scoring.js';
@@ -79,6 +80,24 @@ export class GameEngine {
     const ok = useNavseaReprogram(this.state, playerId, from, to);
     if (!ok) {
       throw new Error('NAVSEA reprogram action is not available');
+    }
+  }
+
+  /** TRANSCOM once/year: convert 2 U to 1 budget line. */
+  useTranscomAbility(playerId: string, to: BudgetLine): void {
+    this.assertQuarterStep('planOrders');
+    const ok = useTranscomConversion(this.state, playerId, to);
+    if (!ok) {
+      throw new Error('TRANSCOM conversion is not available');
+    }
+  }
+
+  /** SPACECY once/year: peek next crisis and optionally bury it. */
+  useSpacecyAbility(playerId: string, bury: boolean): void {
+    this.assertQuarterStep('crisisPulse');
+    const ok = useSpacecyCrisisPeek(this.state, playerId, bury);
+    if (!ok) {
+      throw new Error('SPACECY crisis peek is not available');
     }
   }
 

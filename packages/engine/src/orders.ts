@@ -248,8 +248,8 @@ function resolveActivateProgram(
     state.log.push({ type: 'resourceChange', playerId, resource: 'U', delta: 1 });
   }
 
-  // AIRCOM passive: first AIR → gain +1 I
-  if (p.directorate === 'AIRCOM' && card.domain === 'AIR') {
+  // AIRCOM passive: first AIR each year → gain +1 I
+  if (airgcomDiscount) {
     p.resources.secondary.I += 1;
     state.log.push({ type: 'resourceChange', playerId, resource: 'I', delta: 1 });
   }

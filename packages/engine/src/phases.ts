@@ -225,6 +225,55 @@ export function useNavseaReprogram(
   return true;
 }
 
+/** TRANSCOM once-per-year action: convert 2 U into 1 of any budget line. */
+export function useTranscomConversion(
+  state: GameState,
+  playerId: string,
+  to: BudgetLine,
+): boolean {
+  const player = state.players[playerId];
+  if (!player) return false;
+  if (player.directorate !== 'TRANSCOM') return false;
+  if (player.usedOncePerYear) return false;
+  if (player.resources.budget.U < 2) return false;
+
+  player.resources.budget.U -= 2;
+  player.resources.budget[to] += 1;
+  player.usedOncePerYear = true;
+
+  state.log.push({ type: 'resourceChange', playerId, resource: 'U', delta: -2 });
+  state.log.push({ type: 'resourceChange', playerId, resource: to, delta: 1 });
+
+  return true;
+}
+
+/** SPACECY once-per-year action: peek next crisis, optionally bury it by paying 1 PC. */
+export function useSpacecyCrisisPeek(
+  state: GameState,
+  playerId: string,
+  bury: boolean,
+): boolean {
+  const player = state.players[playerId];
+  if (!player) return false;
+  if (player.directorate !== 'SPACECY') return false;
+  if (player.usedOncePerYear) return false;
+  if (state.phase.type !== 'quarter' || state.phase.step !== 'crisisPulse') return false;
+  if (state.decks.crises.length === 0) return false;
+  if (bury && player.resources.secondary.PC < 1) return false;
+
+  state.log.push({ type: 'crisisPeek', playerId, cardId: state.decks.crises[0].id });
+
+  if (bury) {
+    player.resources.secondary.PC -= 1;
+    state.log.push({ type: 'resourceChange', playerId, resource: 'PC', delta: -1 });
+    const buried = state.decks.crises.shift()!;
+    state.decks.crises.push(buried);
+  }
+
+  player.usedOncePerYear = true;
+  return true;
+}
+
 // === Quarter Phases (Phase C) ===
 
 export function setupCrisisPulse(state: GameState): void {
@@ -433,6 +482,12 @@ export function processYearEnd(state: GameState): void {
       if (isComplete) {
         p.si += ac.card.rewardSI;
         state.log.push({ type: 'contractCompleted', playerId: pid, contractId: ac.card.id, si: ac.card.rewardSI });
+        // MARFOR once/year: first completed contract each fiscal year gives +1 PC.
+        if (p.directorate === 'MARFOR' && !p.usedOncePerYear) {
+          p.resources.secondary.PC += 1;
+          p.usedOncePerYear = true;
+          state.log.push({ type: 'resourceChange', playerId: pid, resource: 'PC', delta: 1 });
+        }
         // Apply contract reward effects
         if (ac.card.rewardEffects) {
           for (const effect of ac.card.rewardEffects) {
@@ -525,6 +580,24 @@ function scoreTheaterControl(state: GameState): void {
 
     // Only score if someone has presence
     if (rankings.length === 0 || rankings[0].strength === 0) continue;
+
+    // AIRCOM once/year: if tied for first in a theater, AIRCOM takes outright first.
+    const topStrength = rankings[0].strength;
+    const tiedTop = rankings.filter(r => r.strength === topStrength);
+    if (tiedTop.length > 1) {
+      const aircomWinner = tiedTop.find(r => {
+        const pl = state.players[r.playerId];
+        return pl.directorate === 'AIRCOM' && !pl.usedOncePerYear;
+      });
+      if (aircomWinner) {
+        state.players[aircomWinner.playerId].usedOncePerYear = true;
+        rankings.sort((a, b) => {
+          if (a.playerId === aircomWinner.playerId) return -1;
+          if (b.playerId === aircomWinner.playerId) return 1;
+          return b.strength - a.strength;
+        });
+      }
+    }
 
     const scored: Array<{ playerId: string; si: number }> = [];
 
