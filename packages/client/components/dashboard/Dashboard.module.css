@@ -699,7 +699,7 @@
 
 .handCard {
   flex-shrink: 0;
-  width: 160px;
+  width: 190px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-top: 2px solid var(--domain-color, var(--border-subtle));

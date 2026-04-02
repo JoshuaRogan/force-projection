@@ -10,7 +10,7 @@ export interface CostReduction {
   /** Which orders/actions this applies to */
   scope: 'deploy' | 'activate' | 'negotiate' | 'all';
   /** Optional filter: only applies to specific domain, subtag, or theater */
-  filter?: { domain?: string; subtag?: string; theater?: string; orderCategory?: string };
+  filter?: { domain?: string; subtag?: string; theater?: string; orderCategory?: string; order?: string; action?: string };
   /** Which resource is reduced */
   resource: string;
   /** How much to reduce */

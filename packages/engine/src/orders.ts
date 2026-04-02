@@ -1,10 +1,11 @@
 import type {
   GameState, PlayerState, OrderChoice, OrderCategory,
-  TheaterId, BudgetLine, Effect, CostReduction,
+  TheaterId, BudgetLine, Effect, CostReduction, CostContext,
 } from '@fp/shared';
 import {
   ORDER_RESOLUTION_SEQUENCE, ORDERS, THEATER_SLOTS, STRENGTH_VALUES,
-  canAfford, payCost, BUDGET_LINES, SECONDARY_RESOURCES, THEATER_IDS, calcStrength,
+  canAfford, payCost, BUDGET_LINES, SECONDARY_RESOURCES, THEATER_IDS,
+  applyCostReductions, evaluateCondition,
 } from '@fp/shared';
 
 // === Main resolver: process all orders for the current quarter ===
@@ -154,11 +155,16 @@ function resolveStartProgram(
   // Check pipeline slot is free
   if (slot < 0 || slot >= p.portfolio.pipeline.length || p.portfolio.pipeline[slot] !== null) return;
 
-  // Check can afford pipeline cost
-  if (!canAfford(p.resources, card.pipelineCost)) return;
+  // Check can afford pipeline cost (with reductions)
+  const pipeCtx: CostContext = {
+    orderCategory: 'Procure', orderId: 'startProgram', action: 'pipeline',
+    domain: card.domain, subtags: card.subtags as string[],
+  };
+  const pipeCost = applyCostReductions(card.pipelineCost, p.costReductions, pipeCtx);
+  if (!canAfford(p.resources, pipeCost)) return;
 
   // Pay and place
-  payCost(p.resources, card.pipelineCost);
+  payCost(p.resources, pipeCost);
   p.hand.splice(cardIdx, 1);
   p.portfolio.pipeline[slot] = { card, yearsInPipeline: 0 };
 
@@ -203,12 +209,17 @@ function resolveActivateProgram(
     return;
   }
 
-  // Apply AIRCOM passive discount before affordability check
+  // Apply AIRCOM passive discount, then general cost reductions
   let cost = { ...card.activeCost, budget: { ...card.activeCost.budget } };
   const airgcomDiscount = p.directorate === 'AIRCOM' && card.domain === 'AIR' && !p.firstAirActivatedThisYear;
   if (airgcomDiscount) {
     cost.budget.A = Math.max(0, (cost.budget.A ?? 0) - 1);
   }
+  const actCtx: CostContext = {
+    orderCategory: 'Procure', orderId: 'activateProgram', action: 'activate',
+    domain: card.domain, subtags: card.subtags as string[],
+  };
+  cost = applyCostReductions(cost, p.costReductions, actCtx);
 
   if (!canAfford(p.resources, cost)) {
     state.log.push({ type: 'orderFailed', playerId, order: 'activateProgram', reason: 'insufficient resources' });
@@ -331,8 +342,10 @@ function resolveBuildBase(
   // Check slot
   if (presence.bases >= THEATER_SLOTS.bases) return;
 
-  // Cost: 2U + 1 of any line
-  const cost = { budget: { U: 2, [choice.extraBudgetLine]: 1 } };
+  // Cost: 2U + 1 of any line, with cost reductions applied
+  const baseCost = { budget: { U: 2, [choice.extraBudgetLine]: 1 } };
+  const ctx: CostContext = { orderCategory: 'Deploy', orderId: 'buildBase', theater };
+  const cost = applyCostReductions(baseCost, p.costReductions, ctx);
   if (!canAfford(p.resources, cost)) return;
 
   payCost(p.resources, cost);
@@ -361,7 +374,7 @@ function resolveForwardOps(
   // Check slot
   if (presence.forwardOps >= THEATER_SLOTS.forwardOps) return;
 
-  // Cost: 1L + 2U
+  // Cost: 1L + 2U with directorate + cost reduction discounts
   let lCost = 1;
   let uCost = 2;
 
@@ -375,7 +388,9 @@ function resolveForwardOps(
     lCost = Math.max(0, lCost - 1);
   }
 
-  const cost = { budget: { U: uCost }, secondary: { L: lCost } };
+  const baseCost = { budget: { U: uCost }, secondary: { L: lCost } };
+  const ctx: CostContext = { orderCategory: 'Deploy', orderId: 'forwardOps', theater };
+  const cost = applyCostReductions(baseCost, p.costReductions, ctx);
   if (!canAfford(p.resources, cost)) return;
 
   payCost(p.resources, cost);
@@ -433,9 +448,10 @@ function resolveStationPrograms(
 function resolveMajorExercise(state: GameState, playerId: string): void {
   const p = state.players[playerId];
 
-  // Cost: 1M + 1U
-  let mCost = 1;
-  const cost = { budget: { U: 1 }, secondary: { M: mCost } };
+  // Cost: 1M + 1U (with reductions)
+  const baseCost = { budget: { U: 1 }, secondary: { M: 1 } };
+  const ctx: CostContext = { orderCategory: 'Sustain', orderId: 'majorExercise' };
+  const cost = applyCostReductions(baseCost, p.costReductions, ctx);
   if (!canAfford(p.resources, cost)) {
     state.log.push({ type: 'orderFailed', playerId, order: 'majorExercise', reason: 'insufficientResources' });
     return;
@@ -671,10 +687,23 @@ export function resolveEffect(state: GameState, playerId: string, effect: Effect
       break;
     }
     case 'reduceCost': {
+      // Determine scope from params
+      let scope: CostReduction['scope'];
+      if (params.orderCategory) {
+        scope = (params.orderCategory as string).toLowerCase() as CostReduction['scope'];
+      } else if (params.action === 'pipeline' || params.action === 'activate') {
+        scope = 'activate';
+      } else if (params.domain || params.subtag) {
+        scope = 'activate';
+      } else if (params.theater) {
+        // Theater-only reductions are deploy-scoped (buildBase/forwardOps in a theater)
+        scope = 'deploy';
+      } else {
+        scope = 'all';
+      }
+
       const reduction: CostReduction = {
-        scope: (params.orderCategory as string)
-          ? (params.orderCategory as string).toLowerCase() as CostReduction['scope']
-          : (params.domain || params.subtag) ? 'activate' : 'all',
+        scope,
         filter: {},
         resource: (params.resource as string) ?? 'U',
         amount: (params.amount as number) ?? 1,
@@ -683,6 +712,8 @@ export function resolveEffect(state: GameState, playerId: string, effect: Effect
       if (params.domain) reduction.filter!.domain = params.domain as string;
       if (params.subtag) reduction.filter!.subtag = params.subtag as string;
       if (params.orderCategory) reduction.filter!.orderCategory = params.orderCategory as string;
+      if (params.order) reduction.filter!.order = params.order as string;
+      if (params.action) reduction.filter!.action = params.action as string;
       p.costReductions.push(reduction);
       state.log.push({ type: 'costReductionApplied', playerId, sourceCardId: reduction.sourceCardId ?? 'unknown' });
       break;
@@ -749,39 +780,7 @@ export function resolveEffect(state: GameState, playerId: string, effect: Effect
   }
 }
 
-/** Evaluate a condition for conditionalSI effects */
-export function evaluateCondition(
-  state: GameState,
-  playerId: string,
-  condition: string,
-  params: Record<string, unknown>,
-): boolean {
-  const p = state.players[playerId];
-  switch (condition) {
-    case 'readiness':
-      return p.readiness >= ((params.threshold as number) ?? 0);
-    case 'leadsAnyTheater':
-      for (const tid of THEATER_IDS) {
-        const myStr = calcStrength(p.theaterPresence[tid]);
-        if (myStr > 0 && state.turnOrder
-          .filter(pid => pid !== playerId)
-          .every(pid2 => calcStrength(state.players[pid2].theaterPresence[tid]) < myStr)) {
-          return true;
-        }
-      }
-      return false;
-    case 'baseCount': {
-      const count = Object.values(p.theaterPresence).filter(pr => pr.bases > 0).length;
-      return count >= ((params.threshold as number) ?? 0);
-    }
-    case 'forwardOpsCount': {
-      const count = Object.values(p.theaterPresence).filter(pr => pr.forwardOps > 0).length;
-      return count >= ((params.threshold as number) ?? 0);
-    }
-    default:
-      return false;
-  }
-}
+// evaluateCondition is now in @fp/shared (shared/src/rules.ts)
 
 /** Fire sustain effects on active programs that match a specific trigger */
 export function fireSustainTrigger(state: GameState, playerId: string, trigger: string): void {

@@ -1,5 +1,5 @@
 import type { ProgramCard as ProgramCardType } from '@fp/shared';
-import { THEATER_NAMES } from '@fp/shared';
+import { THEATER_NAMES, hasSIBonus } from '@fp/shared';
 import { colorizeDesc } from '../../utils/colorizeDesc';
 import { SubtagIcon } from '../icons';
 import { CostDisplay } from './CostDisplay';
@@ -9,13 +9,6 @@ import styles from './Cards.module.css';
 const DOMAIN_LABELS: Record<string, string> = {
   AIR: 'Air', SEA: 'Sea', EXP: 'Expeditionary', SPACE_CYBER: 'Space/Cyber',
 };
-
-function hasSIBonus(card: ProgramCardType): boolean {
-  if ((card.printedSI ?? 0) > 0) return true;
-  return [...card.activateEffects, ...card.sustainEffects].some(
-    e => e.type === 'gainSI' || e.type === 'conditionalSI'
-  );
-}
 
 export function ProgramCard({ card, layout = 'vertical' }: { card: ProgramCardType; layout?: 'horizontal' | 'vertical' }) {
   const siBonus = hasSIBonus(card);

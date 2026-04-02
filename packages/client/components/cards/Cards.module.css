@@ -1,6 +1,6 @@
 /* === Shared Card Shell === */
 .card {
-  width: var(--card-width, 220px);
+  width: var(--card-width, 260px);
   border-radius: var(--radius-lg);
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);

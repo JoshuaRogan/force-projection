@@ -1,15 +1,9 @@
 import type { Portfolio, ProgramCard, PlayerState, GameState } from '@fp/shared';
+import { hasSIBonus } from '@fp/shared';
 import { SubtagIcon } from '../icons';
 import { useCardModal } from '../cards/CardModalContext';
 import { evaluateSustainStatus } from '../../utils/sustainStatus';
 import styles from './Dashboard.module.css';
-
-function hasSIBonus(card: ProgramCard): boolean {
-  if ((card.printedSI ?? 0) > 0) return true;
-  return [...card.activateEffects, ...card.sustainEffects].some(
-    e => e.type === 'gainSI' || e.type === 'conditionalSI'
-  );
-}
 
 const DOMAIN_COLORS: Record<string, string> = {
   AIR: 'var(--color-domain-air)', SEA: 'var(--color-domain-sea)',

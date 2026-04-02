@@ -1,12 +1,13 @@
 import type {
-  GameState, GamePhase, QuarterStep, PlayerState, AgendaVoteState,
+  GameState, GamePhase, QuarterStep,
 } from '@fp/shared';
 import {
   BUDGET_LINES, SECONDARY_RESOURCES, THEATER_IDS,
   calcStrength, THEATER_CONTROL_SCORING,
+  evaluateCondition, checkContractComplete,
 } from '@fp/shared';
 import { SeededRNG } from './rng.js';
-import { resolveEffect, evaluateCondition } from './orders.js';
+import { resolveEffect } from './orders.js';
 
 // === Phase transition helpers ===
 
@@ -404,7 +405,7 @@ export function processYearEnd(state: GameState): void {
 
     for (let i = 0; i < p.contracts.length; i++) {
       const ac = p.contracts[i];
-      const isComplete = checkContractComplete(p, ac);
+      const isComplete = checkContractComplete(p, ac.card.requirements);
       if (isComplete) {
         p.si += ac.card.rewardSI;
         state.log.push({ type: 'contractCompleted', playerId: pid, contractId: ac.card.id, si: ac.card.rewardSI });
@@ -480,106 +481,7 @@ export function processYearEnd(state: GameState): void {
   }
 }
 
-function checkContractComplete(player: PlayerState, ac: import('@fp/shared').ActiveContract): boolean {
-  // Simplified completion check — checks requirement types we can evaluate
-  for (const req of ac.card.requirements) {
-    switch (req.type) {
-      case 'readinessThreshold': {
-        const threshold = (req.params as any).threshold ?? 0;
-        if (player.readiness < threshold) return false;
-        break;
-      }
-      case 'sustainOrderCount': {
-        const needed = (req.params as any).quarters ?? 0;
-        if (player.sustainOrdersThisYear.length < needed) return false;
-        break;
-      }
-      case 'theaterPresence': {
-        const needed = (req.params as any).count ?? 0;
-        let count = 0;
-        for (const presence of Object.values(player.theaterPresence)) {
-          if (presence.bases > 0 || presence.alliances > 0 || presence.forwardOps > 0) count++;
-        }
-        if (count < needed) return false;
-        break;
-      }
-      case 'baseInTheater': {
-        const theater = (req.params as any).theater;
-        if (theater && player.theaterPresence[theater as keyof typeof player.theaterPresence]?.bases < 1) return false;
-        break;
-      }
-      case 'forwardOpsInTheater': {
-        const theaters = (req.params as any).theaters as string[] | undefined;
-        const count = (req.params as any).count as number | undefined;
-        if (theaters) {
-          const hasAny = theaters.some(t => player.theaterPresence[t as keyof typeof player.theaterPresence]?.forwardOps > 0);
-          if (!hasAny) return false;
-        } else if (count) {
-          let fwdCount = 0;
-          for (const presence of Object.values(player.theaterPresence)) {
-            if (presence.forwardOps > 0) fwdCount++;
-          }
-          if (fwdCount < count) return false;
-        }
-        break;
-      }
-      case 'allianceCount': {
-        const theater = (req.params as any).theater as string | undefined;
-        const neededCount = (req.params as any).count ?? 0;
-        const neededTheaters = (req.params as any).theaters as number | undefined;
-        if (theater) {
-          if (player.theaterPresence[theater as keyof typeof player.theaterPresence]?.alliances < neededCount) return false;
-        } else if (neededTheaters) {
-          let theatersWithAlliance = 0;
-          let totalAlliances = 0;
-          for (const presence of Object.values(player.theaterPresence)) {
-            if (presence.alliances > 0) {
-              theatersWithAlliance++;
-              totalAlliances += presence.alliances;
-            }
-          }
-          if (totalAlliances < neededCount || theatersWithAlliance < neededTheaters) return false;
-        }
-        break;
-      }
-      case 'activeProgramTag': {
-        const subtag = (req.params as any).subtag as string | undefined;
-        const domainCount = (req.params as any).domainCount as number | undefined;
-        const needed2 = (req.params as any).count ?? 0;
-        if (subtag) {
-          let tagCount = 0;
-          for (const slot of player.portfolio.active) {
-            if (slot && slot.card.subtags.includes(subtag as any)) tagCount++;
-          }
-          if (tagCount < needed2) return false;
-        } else if (domainCount) {
-          const domains = new Set<string>();
-          for (const slot of player.portfolio.active) {
-            if (slot) domains.add(slot.card.domain);
-          }
-          if (domains.size < domainCount) return false;
-        }
-        break;
-      }
-      case 'stationProgram': {
-        const theater = (req.params as any).theater as string | undefined;
-        const theaterCount = (req.params as any).theaterCount as number | undefined;
-        if (theater) {
-          const hasStation = player.stationedPrograms.some(sp => sp.theater === theater);
-          if (!hasStation) return false;
-        } else if (theaterCount) {
-          const theaters = new Set(player.stationedPrograms.map(sp => sp.theater));
-          if (theaters.size < theaterCount) return false;
-        }
-        break;
-      }
-      // custom requirements not auto-checked
-      default:
-        break;
-    }
-  }
-  return true;
-}
+// checkContractComplete is now imported from @fp/shared (shared/src/rules.ts)
 
 // === Theater Control Scoring ===
 

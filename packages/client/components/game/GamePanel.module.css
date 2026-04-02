@@ -32,8 +32,8 @@
 /* Wide card display — horizontal layout, fills panel width, square art */
 .wideCard {
   --card-width: 100%;
-  --card-art-width: 220px;
-  height: 220px;
+  --card-art-width: 260px;
+  height: 260px;
   overflow: hidden;
 }
 
@@ -108,7 +108,7 @@
 
 .voteLayout > :first-child {
   flex-shrink: 0;
-  width: 220px;
+  width: 260px;
 }
 
 .voteControls {

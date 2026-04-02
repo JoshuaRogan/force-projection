@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import type { GameState, OrderChoice, OrderId, TheaterId, ProgramCard, BudgetLine, SecondaryResource } from '@fp/shared';
-import { ORDERS, THEATER_NAMES, THEATER_IDS, BUDGET_LINES, BUDGET_LINE_NAMES, SECONDARY_RESOURCE_NAMES, canAfford } from '@fp/shared';
+import type { GameState, OrderChoice, OrderId, TheaterId, ProgramCard, BudgetLine, SecondaryResource, OrderValidation } from '@fp/shared';
+import {
+  ORDERS, THEATER_NAMES, THEATER_IDS, BUDGET_LINES, BUDGET_LINE_NAMES, SECONDARY_RESOURCE_NAMES,
+  canAfford, validateOrder, getEffectiveBuildBaseCost, getEffectiveForwardOpsCost,
+  getEffectiveActivationCost, getEffectivePipelineCost,
+} from '@fp/shared';
 import { ResourceIcon } from '../icons/ResourceIcon';
 import { resourceColor, resourceFullName } from '../ui/ResourceToken';
 import { colorizeDesc } from '../../utils/colorizeDesc';
@@ -31,16 +35,19 @@ function getOrderCost(orderId: OrderId, player: Player): OrderCostSpec | null {
   switch (orderId) {
     case 'majorExercise':
       return { budget: { U: 1 }, secondary: { M: 1 } };
-    case 'buildBase':
-      return { budget: { U: 2 }, note: '+ 1 any line' };
+    case 'buildBase': {
+      const hasReductions = player.costReductions.length > 0;
+      return { budget: { U: 2 }, note: hasReductions ? '+ 1 any line (reduced)' : '+ 1 any line' };
+    }
     case 'forwardOps': {
-      let uCost = 2;
-      let lCost = 1;
-      if (player.directorate === 'MARFOR') uCost = Math.max(0, uCost - 1);
-      if (player.directorate === 'TRANSCOM') lCost = Math.max(0, lCost - 1);
+      // Use engine cost function (accounts for directorate + cost reductions)
+      const fwdCost = getEffectiveForwardOpsCost(player, THEATER_IDS[0]);
       const spec: OrderCostSpec = {};
-      if (uCost > 0) spec.budget = { U: uCost };
-      if (lCost > 0) spec.secondary = { L: lCost };
+      const uVal = fwdCost.budget.U ?? 0;
+      const lVal = fwdCost.secondary?.L ?? 0;
+      if (uVal > 0) spec.budget = { U: uVal };
+      if (lVal > 0) spec.secondary = { L: lVal };
+      if (player.costReductions.length > 0) spec.note = 'varies by theater';
       return spec;
     }
     case 'negotiate':
@@ -145,112 +152,6 @@ function AffordabilityTooltip({ reason, anchor }: {
 
 type Player = GameState['players'][string];
 
-function canAffordOrder(orderId: OrderId, player: Player): boolean {
-  const res = player.resources;
-  switch (orderId) {
-    case 'lobby':
-    case 'contracting':
-    case 'logisticsSurge':
-    case 'intelFocus':
-      return true;
-
-    case 'negotiate':
-      // Need a base in any theater OR at least 1 PC
-      return Object.values(player.theaterPresence).some(p => p.bases > 0)
-        || res.secondary.PC >= 1;
-
-    case 'startProgram':
-      return player.hand.length > 0
-        && player.portfolio.pipeline.some(s => s === null)
-        && player.hand.some(c => canAfford(res, c.pipelineCost));
-
-    case 'activateProgram':
-      return player.portfolio.pipeline.some(s => s !== null)
-        && player.portfolio.active.some(s => s === null)
-        && player.portfolio.pipeline.some(s => s && canAfford(res, s.card.activeCost));
-
-    case 'refitMothball':
-      // Can mothball any active program (free) OR reactivate a mothballed one (U:1 + primary line:1)
-      return player.portfolio.active.some(s => s !== null)
-        || (player.portfolio.mothballed.length > 0
-            && (res.budget.U >= 3
-                || (res.budget.U >= 1 && BUDGET_LINES.some(l => l !== 'U' && (res.budget[l] ?? 0) >= 1))));
-
-    case 'buildBase':
-      // Cost: U:2 + 1 of any budget line (including U, making it U:3 if chosen)
-      return res.budget.U >= 2
-        && (res.budget.U >= 3 || BUDGET_LINES.some(l => l !== 'U' && (res.budget[l] ?? 0) >= 1));
-
-    case 'forwardOps': {
-      const hasBase = Object.values(player.theaterPresence).some(p => p.bases > 0);
-      if (!hasBase) return false;
-      let lCost = 1;
-      let uCost = 2;
-      if (player.directorate === 'MARFOR') uCost = Math.max(0, uCost - 1);
-      if (player.directorate === 'TRANSCOM') lCost = Math.max(0, lCost - 1);
-      return canAfford(res, { budget: { U: uCost }, secondary: { L: lCost } });
-    }
-
-    case 'stationPrograms':
-      return player.portfolio.active.some(s => s?.card.stationing != null);
-
-    case 'majorExercise':
-      return canAfford(res, { budget: { U: 1 }, secondary: { M: 1 } });
-
-    default:
-      return true;
-  }
-}
-
-function affordabilityReason(orderId: OrderId, player: Player): string {
-  const res = player.resources;
-  switch (orderId) {
-    case 'majorExercise': {
-      const missing: string[] = [];
-      if ((res.budget.U ?? 0) < 1) missing.push(`1 ${BUDGET_LINE_NAMES.U}`);
-      if ((res.secondary.M ?? 0) < 1) missing.push(`1 ${SECONDARY_RESOURCE_NAMES.M}`);
-      return `Need ${missing.join(' + ')}`;
-    }
-    case 'buildBase': {
-      if ((res.budget.U ?? 0) < 2) return `Need 2 ${BUDGET_LINE_NAMES.U} (have ${res.budget.U ?? 0})`;
-      return 'Need 1 of any budget line';
-    }
-    case 'forwardOps': {
-      const hasBase = Object.values(player.theaterPresence).some(p => p.bases > 0);
-      if (!hasBase) return 'No base in any theater';
-      let lCost = 1;
-      let uCost = 2;
-      if (player.directorate === 'MARFOR') uCost = Math.max(0, uCost - 1);
-      if (player.directorate === 'TRANSCOM') lCost = Math.max(0, lCost - 1);
-      const missing: string[] = [];
-      if ((res.budget.U ?? 0) < uCost) missing.push(`${uCost} ${BUDGET_LINE_NAMES.U}`);
-      if (lCost > 0 && (res.secondary.L ?? 0) < lCost) missing.push(`${lCost} ${SECONDARY_RESOURCE_NAMES.L}`);
-      return `Need ${missing.join(' + ')}`;
-    }
-    case 'startProgram': {
-      if (player.hand.length === 0) return 'No cards in hand';
-      if (!player.portfolio.pipeline.some(s => s === null)) return 'Pipeline full';
-      return "Can't afford any card in hand";
-    }
-    case 'activateProgram': {
-      if (!player.portfolio.pipeline.some(s => s !== null)) return 'No programs in pipeline';
-      if (!player.portfolio.active.some(s => s === null)) return 'Active slots full';
-      return "Can't afford activation cost";
-    }
-    case 'negotiate':
-      return `Need a base in a theater or 1 ${SECONDARY_RESOURCE_NAMES.PC}`;
-    case 'stationPrograms':
-      return 'No active programs with stationing capability';
-    case 'refitMothball': {
-      if (!player.portfolio.active.some(s => s !== null) && player.portfolio.mothballed.length === 0)
-        return 'No programs to refit';
-      return "Can't afford reactivation cost";
-    }
-    default:
-      return 'Cannot afford';
-  }
-}
-
 export function OrdersPanel({
   gameState,
   humanPlayerId,
@@ -268,6 +169,21 @@ export function OrdersPanel({
   const clearHover = useCallback(() => setHoveredOrder(prev => prev === null ? prev : null), []);
   const player = gameState.players[humanPlayerId];
   const alreadySubmitted = player.selectedOrders !== null;
+
+  // Compute validation for all orders (accounts for cost reductions)
+  const orderValidations = useMemo(() => {
+    const ALL_ORDER_IDS: OrderId[] = [
+      'lobby', 'negotiate', 'contracting',
+      'startProgram', 'activateProgram', 'refitMothball',
+      'buildBase', 'forwardOps', 'stationPrograms',
+      'majorExercise', 'logisticsSurge', 'intelFocus',
+    ];
+    const result: Record<string, OrderValidation> = {};
+    for (const oid of ALL_ORDER_IDS) {
+      result[oid] = validateOrder(gameState, humanPlayerId, oid);
+    }
+    return result;
+  }, [gameState, humanPlayerId]);
 
   if (alreadySubmitted) {
     return (
@@ -335,8 +251,9 @@ export function OrdersPanel({
                 const isDimmed = selectedOrders.length >= 2 && !isSelected;
                 const selectedIdx = selectedOrders.indexOf(oid);
                 const needsConfig = isSelected && NEEDS_PARAMS.has(oid) && orderParams[selectedIdx] === undefined;
-                const affordable = isSelected || canAffordOrder(oid, player);
-                const reason = !affordable ? affordabilityReason(oid, player) : undefined;
+                const validation = orderValidations[oid];
+                const affordable = isSelected || validation?.canAfford !== false;
+                const reason = !affordable ? validation?.reason : undefined;
                 return (
                   <button
                     key={oid}
@@ -374,8 +291,8 @@ export function OrdersPanel({
             <div className={styles.orderDescHeader}>
               <span className={styles.orderDescName}>{ORDERS[hoveredOrder].name}</span>
               <span className={styles.orderDescCategory}>{ORDERS[hoveredOrder].category}</span>
-              {!canAffordOrder(hoveredOrder, player) && (
-                <span className={styles.orderDescUnaffordable}>{affordabilityReason(hoveredOrder, player)}</span>
+              {!orderValidations[hoveredOrder]?.canAfford && (
+                <span className={styles.orderDescUnaffordable}>{orderValidations[hoveredOrder]?.reason ?? 'Cannot afford'}</span>
               )}
             </div>
             <OrderCostRow orderId={hoveredOrder} player={player} />
@@ -499,7 +416,7 @@ function OrderParamPicker({
         .filter(i => i >= 0);
       const effectivePipeSlot = emptyPipeSlots.includes(selectedSlot) ? selectedSlot : (emptyPipeSlots[0] ?? 0);
       const startCardDef = hand.find(c => c.id === selectedCard);
-      const startAffordable = startCardDef ? canAfford(player.resources, startCardDef.pipelineCost) : true;
+      const startAffordable = startCardDef ? canAfford(player.resources, getEffectivePipelineCost(player, startCardDef)) : true;
       return (
         <div className={styles.paramPicker}>
           <div className={styles.paramTitle}>{orderDef.name}: Pick Card & Slot</div>
@@ -511,7 +428,8 @@ function OrderParamPicker({
               <div className={styles.paramLabel}>Card from hand:</div>
               <div className={styles.paramOptions}>
                 {hand.map(card => {
-                  const affordable = canAfford(player.resources, card.pipelineCost);
+                  const effective = getEffectivePipelineCost(player, card);
+                  const affordable = canAfford(player.resources, effective);
                   return (
                     <button
                       key={card.id}
@@ -521,10 +439,10 @@ function OrderParamPicker({
                         !affordable ? styles.paramOptionUnaffordable : '',
                       ].filter(Boolean).join(' ')}
                       onClick={() => affordable && setSelectedCard(card.id)}
-                      data-reason={affordable ? undefined : `need ${formatCost(card.pipelineCost)}`}
+                      data-reason={affordable ? undefined : `need ${formatCost(effective)}`}
                     >
                       <span>{card.name} ({card.domain})</span>
-                      <span className={styles.paramOptionCost}>{formatCost(card.pipelineCost)}</span>
+                      <span className={styles.paramOptionCost}>{formatCost(effective)}</span>
                     </button>
                   );
                 })}
@@ -574,7 +492,7 @@ function OrderParamPicker({
       // Auto-select the first available empty slot if selectedSlot isn't valid
       const effectiveSlot = emptyActiveSlots.includes(selectedSlot) ? selectedSlot : (emptyActiveSlots[0] ?? 0);
       const selectedCardDef = pipeCards.find(p => p.card.id === selectedCard);
-      const selectedAffordable = selectedCardDef ? canAfford(player.resources, selectedCardDef.card.activeCost) : true;
+      const selectedAffordable = selectedCardDef ? canAfford(player.resources, getEffectiveActivationCost(player, selectedCardDef.card)) : true;
       return (
         <div className={styles.paramPicker}>
           <div className={styles.paramTitle}>{orderDef.name}: Pick Program</div>
@@ -586,7 +504,8 @@ function OrderParamPicker({
               <div className={styles.paramLabel}>Program to activate:</div>
               <div className={styles.paramOptions}>
                 {pipeCards.map(({ card }) => {
-                  const affordable = canAfford(player.resources, card.activeCost);
+                  const effective = getEffectiveActivationCost(player, card);
+                  const affordable = canAfford(player.resources, effective);
                   return (
                     <button
                       key={card.id}
@@ -596,10 +515,10 @@ function OrderParamPicker({
                         !affordable ? styles.paramOptionUnaffordable : '',
                       ].filter(Boolean).join(' ')}
                       onClick={() => affordable && setSelectedCard(card.id)}
-                      data-reason={affordable ? undefined : `need ${formatCost(card.activeCost)}`}
+                      data-reason={affordable ? undefined : `need ${formatCost(effective)}`}
                     >
                       <span>{card.name} ({card.domain})</span>
-                      <span className={styles.paramOptionCost}>{formatCost(card.activeCost)}</span>
+                      <span className={styles.paramOptionCost}>{formatCost(effective)}</span>
                     </button>
                   );
                 })}
@@ -706,67 +625,97 @@ function OrderParamPicker({
       );
     }
 
-    case 'buildBase':
+    case 'buildBase': {
+      const bbValidation = validateOrder(gameState, player.id, 'buildBase');
+      const bbValidTheaters = bbValidation.validTheaters ?? [];
+      const bbValidBudgetLines = bbValidation.validBudgetLines ?? {};
+      const effectiveBBTheater = bbValidTheaters.includes(theater) ? theater : (bbValidTheaters[0] ?? theater);
+      const currentTheaterLines = bbValidBudgetLines[effectiveBBTheater] ?? [];
+      const effectiveBL = currentTheaterLines.includes(budgetLine) ? budgetLine : (currentTheaterLines[0] ?? budgetLine);
+      const effectiveCost = getEffectiveBuildBaseCost(player, effectiveBBTheater, effectiveBL);
+      const costStr = formatCost(effectiveCost);
       return (
         <div className={styles.paramPicker}>
           <div className={styles.paramTitle}>{orderDef.name}: Pick Theater & Budget</div>
           <div className={styles.paramDesc}>{colorizeDesc(orderDef.description)}</div>
           <div className={styles.paramLabel}>Theater:</div>
           <div className={styles.paramOptions}>
-            {THEATER_IDS.map(tid => (
-              <button
-                key={tid}
-                className={`${styles.paramOption} ${theater === tid ? styles.paramOptionSelected : ''}`}
-                onClick={() => setTheater(tid)}
-              >
-                {THEATER_NAMES[tid]}
-              </button>
-            ))}
+            {THEATER_IDS.map(tid => {
+              const valid = bbValidTheaters.includes(tid);
+              return (
+                <button
+                  key={tid}
+                  className={[
+                    styles.paramOption,
+                    effectiveBBTheater === tid ? styles.paramOptionSelected : '',
+                    !valid ? styles.paramOptionUnaffordable : '',
+                  ].filter(Boolean).join(' ')}
+                  onClick={() => valid && setTheater(tid)}
+                  data-reason={valid ? undefined : 'cannot afford'}
+                >
+                  {THEATER_NAMES[tid]}
+                </button>
+              );
+            })}
           </div>
-          <div className={styles.paramLabel}>Extra budget line (pays 2U + 1 of):</div>
+          <div className={styles.paramLabel}>Extra budget line{costStr ? ` (effective cost: ${costStr})` : ''}:</div>
           <div className={styles.paramOptions}>
-            {BUDGET_LINES.map(bl => (
-              <button
-                key={bl}
-                className={`${styles.paramOption} ${budgetLine === bl ? styles.paramOptionSelected : ''}`}
-                onClick={() => setBudgetLine(bl)}
-              >
-                {bl} - {BUDGET_LINE_NAMES[bl]}
-              </button>
-            ))}
+            {BUDGET_LINES.map(bl => {
+              const valid = currentTheaterLines.includes(bl);
+              return (
+                <button
+                  key={bl}
+                  className={[
+                    styles.paramOption,
+                    effectiveBL === bl ? styles.paramOptionSelected : '',
+                    !valid ? styles.paramOptionUnaffordable : '',
+                  ].filter(Boolean).join(' ')}
+                  onClick={() => valid && setBudgetLine(bl)}
+                  data-reason={valid ? undefined : 'cannot afford'}
+                >
+                  {bl} - {BUDGET_LINE_NAMES[bl]}
+                </button>
+              );
+            })}
           </div>
           <div className={styles.paramActions}>
-            <button className={styles.btnPrimary} onClick={() => onConfirm({ order: 'buildBase', theater, extraBudgetLine: budgetLine })}>
+            <button
+              className={styles.btnPrimary}
+              disabled={bbValidTheaters.length === 0}
+              onClick={() => onConfirm({ order: 'buildBase', theater: effectiveBBTheater, extraBudgetLine: effectiveBL })}
+            >
               Confirm
             </button>
             <button className={styles.paramCancelBtn} onClick={onCancel}>Cancel</button>
           </div>
         </div>
       );
+    }
 
     case 'forwardOps': {
-      const validForwardOpsTheaters = THEATER_IDS.filter(tid => player.theaterPresence[tid].bases >= 1);
-      const effectiveFwdTheater = validForwardOpsTheaters.includes(theater) ? theater : (validForwardOpsTheaters[0] ?? theater);
+      const fwdValidation = validateOrder(gameState, player.id, 'forwardOps');
+      const validFwdTheaters = fwdValidation.validTheaters ?? [];
+      const effectiveFwdTheater = validFwdTheaters.includes(theater) ? theater : (validFwdTheaters[0] ?? theater);
       return (
         <div className={styles.paramPicker}>
           <div className={styles.paramTitle}>{orderDef.name}: Pick Theater</div>
           <div className={styles.paramDesc}>{colorizeDesc(orderDef.description)}</div>
-          {validForwardOpsTheaters.length === 0 ? (
-            <div className={styles.paramWarning}>You need a Base in a theater before deploying Forward Ops there.</div>
+          {validFwdTheaters.length === 0 ? (
+            <div className={styles.paramWarning}>{fwdValidation.reason ?? 'No valid theater for Forward Ops.'}</div>
           ) : (
             <div className={styles.paramOptions}>
               {THEATER_IDS.map(tid => {
-                const hasBase = player.theaterPresence[tid].bases >= 1;
+                const valid = validFwdTheaters.includes(tid);
                 return (
                   <button
                     key={tid}
                     className={[
                       styles.paramOption,
                       effectiveFwdTheater === tid ? styles.paramOptionSelected : '',
-                      !hasBase ? styles.paramOptionUnaffordable : '',
+                      !valid ? styles.paramOptionUnaffordable : '',
                     ].filter(Boolean).join(' ')}
-                    onClick={() => hasBase && setTheater(tid)}
-                    data-reason={hasBase ? undefined : 'no base here'}
+                    onClick={() => valid && setTheater(tid)}
+                    data-reason={valid ? undefined : 'no base or cannot afford'}
                   >
                     {THEATER_NAMES[tid]}
                   </button>
@@ -777,7 +726,7 @@ function OrderParamPicker({
           <div className={styles.paramActions}>
             <button
               className={styles.btnPrimary}
-              disabled={validForwardOpsTheaters.length === 0}
+              disabled={validFwdTheaters.length === 0}
               onClick={() => onConfirm({ order: 'forwardOps', theater: effectiveFwdTheater })}
             >
               Confirm
