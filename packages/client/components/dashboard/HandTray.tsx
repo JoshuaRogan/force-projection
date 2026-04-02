@@ -1,4 +1,5 @@
 import type { ProgramCard, BudgetLine, SecondaryResource } from '@fp/shared';
+import { hasSIBonus } from '@fp/shared';
 import { useCardModal } from '../cards/CardModalContext';
 import { CARD_ART_VARIANTS } from '../cards/cardArtVariants';
 import { ResourceToken } from '../ui/ResourceToken';
@@ -39,10 +40,7 @@ export function HandTray({ hand }: { hand: ProgramCard[] }) {
           const domainColor = DOMAIN_COLORS[card.domain];
           const variant = CARD_ART_VARIANTS[card.id] ?? 1;
           const artSrc = `/cards/programs/${card.id}-v${variant}.png`;
-          const hasSI = (card.printedSI ?? 0) > 0 ||
-            [...card.activateEffects, ...card.sustainEffects].some(
-              e => e.type === 'gainSI' || e.type === 'conditionalSI'
-            );
+          const hasSI = hasSIBonus(card);
           return (
             <div
               key={card.id}

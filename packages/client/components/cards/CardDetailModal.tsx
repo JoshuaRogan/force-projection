@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import type { ProgramCard, ContractCard, AgendaCard, CrisisCard, BudgetLine, SecondaryResource } from '@fp/shared';
-import { THEATER_NAMES } from '@fp/shared';
+import { THEATER_NAMES, hasSIBonus } from '@fp/shared';
 import type { CardDetailData, SustainEffectStatus } from './CardModalContext';
 import { SubtagIcon, RequirementIcon } from '../icons';
 import { ResourceToken } from '../ui/ResourceToken';
@@ -214,12 +214,7 @@ function CrisisBody({ card }: { card: CrisisCard }) {
   );
 }
 
-function programHasSIBonus(card: ProgramCard): boolean {
-  if ((card.printedSI ?? 0) > 0) return true;
-  return [...card.activateEffects, ...card.sustainEffects].some(
-    e => e.type === 'gainSI' || e.type === 'conditionalSI'
-  );
-}
+// hasSIBonus imported from @fp/shared
 
 export function CardDetailModal({ data }: { data: CardDetailData }) {
   const meta = TYPE_META[data.type];
@@ -233,7 +228,7 @@ export function CardDetailModal({ data }: { data: CardDetailData }) {
   const prose = data.card.prose;
 
   const siBonus =
-    data.type === 'program' ? programHasSIBonus(data.card) :
+    data.type === 'program' ? hasSIBonus(data.card) :
     data.type === 'contract' ? data.card.rewardSI > 0 :
     false;
 
