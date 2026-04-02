@@ -21,7 +21,7 @@ export type CardDetailData =
 
 export type CardModalData =
   | CardDetailData
-  | { type: 'directorate'; directorate: DirectorateDefinition };
+  | { type: 'directorate'; directorate: DirectorateDefinition; intro?: boolean };
 
 interface CardModalContextType {
   showCard: (data: CardModalData) => void;
@@ -51,7 +51,7 @@ function CardModalOverlay({ data, onClose }: { data: CardModalData; onClose: () 
       <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
         <button className={styles.modalClose} onClick={onClose} aria-label="Close">✕</button>
         {data.type === 'directorate'
-          ? <DirectorateModal directorate={data.directorate} />
+          ? <DirectorateModal directorate={data.directorate} intro={data.intro} />
           : <CardDetailModal data={data} />}
       </div>
     </div>

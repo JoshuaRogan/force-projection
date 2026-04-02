@@ -51,7 +51,7 @@ function BonusChips({ label, pool }: { label: string; pool: Partial<Record<strin
   );
 }
 
-export function DirectorateModal({ directorate }: { directorate: DirectorateDefinition }) {
+export function DirectorateModal({ directorate, intro }: { directorate: DirectorateDefinition; intro?: boolean }) {
   const accent = DIRECTORATE_ACCENT[directorate.id] ?? 'var(--color-accent)';
 
   const hasStartBonuses =
@@ -62,6 +62,14 @@ export function DirectorateModal({ directorate }: { directorate: DirectorateDefi
   return (
     <div className={styles.modal} style={{ '--accent': accent } as React.CSSProperties}>
       <div className={styles.accentBar} />
+
+      {/* Intro banner */}
+      {intro && (
+        <div className={dStyles.introBanner}>
+          <span className={dStyles.introLabel}>Your Assignment</span>
+          <span className={dStyles.introText}>You have been assigned command of this directorate. Its abilities and bonuses are yours for the duration of the game.</span>
+        </div>
+      )}
 
       {/* Art hero */}
       <div className={styles.artHero}>

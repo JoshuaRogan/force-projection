@@ -55,7 +55,7 @@ function GameBoard({ seed }: { seed: number }) {
     if (!shownIntroRef.current) {
       shownIntroRef.current = true;
       const dir = DIRECTORATES[humanPlayer.directorate];
-      if (dir) showCard({ type: 'directorate', directorate: dir });
+      if (dir) showCard({ type: 'directorate', directorate: dir, intro: true });
     }
   }, [humanPlayer.directorate, showCard]);
   const agenda = gameState.currentAgenda?.agenda;

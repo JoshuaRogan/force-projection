@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import * as assert from 'node:assert/strict';
 import { GameEngine } from './engine.js';
 import type { OrderChoice } from '@fp/shared';
+import { PROGRAM_CARDS } from '@fp/shared';
 
 describe('GameEngine', () => {
 
@@ -218,6 +219,52 @@ describe('GameEngine', () => {
     }
 
     engine.endQuarter();
+  });
+
+  it('should fire activate effects (V-22 Osprey +1 L)', () => {
+    const engine = createTestGame();
+    engine.start();
+    engine.submitVote('p1', 0, true);
+    engine.submitVote('p2', 0, true);
+    engine.resolveVotes();
+    engine.endContractMarket();
+    engine.endCrisisPulse();
+
+    const p1 = engine.getPlayer('p1');
+    const v22 = PROGRAM_CARDS.find(c => c.id === 'prog-v22')!;
+    assert.ok(v22, 'V-22 card should exist');
+
+    // Inject V-22 into player's hand and give enough resources
+    p1.hand.push(v22);
+    p1.resources.budget.A = 10;
+    p1.resources.budget.E = 10;
+    p1.resources.budget.U = 10;
+
+    const lBefore = p1.resources.secondary.L;
+
+    engine.submitOrders('p1', [
+      { order: 'activateProgram', cardId: v22.id, activeSlot: 0 },
+      { order: 'lobby' },
+    ]);
+    engine.submitOrders('p2', [
+      { order: 'lobby' },
+      { order: 'logisticsSurge' },
+    ]);
+    engine.revealAndResolve();
+
+    // Check the +1 L activate effect fired
+    const lAfter = p1.resources.secondary.L;
+    assert.equal(lAfter, lBefore + 1, `V-22 activate should give +1 L (before=${lBefore}, after=${lAfter})`);
+
+    // Check the card is now in active slot
+    assert.ok(p1.portfolio.active[0], 'V-22 should be in active slot 0');
+    assert.equal(p1.portfolio.active[0]!.card.id, 'prog-v22');
+
+    // Check log has the effect
+    const resourceLog = engine.state.log.filter(
+      e => e.type === 'resourceChange' && e.playerId === 'p1' && e.resource === 'L'
+    );
+    assert.ok(resourceLog.length > 0, 'should have L resource change in log');
   });
 
   it('determinism: same seed produces same game', () => {

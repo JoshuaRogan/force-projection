@@ -1,3 +1,28 @@
+/* Intro banner — shown only on game start */
+.introBanner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-md) var(--space-xl);
+  background: color-mix(in srgb, var(--accent, #3b82f6) 10%, var(--bg-elevated));
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, #3b82f6) 25%, transparent);
+}
+
+.introLabel {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent, #3b82f6);
+}
+
+.introText {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
 /* Ability block — used for passive and once-per-year */
 .abilityBlock {
   font-size: var(--font-size-xs);
