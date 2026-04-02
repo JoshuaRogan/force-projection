@@ -1,6 +1,7 @@
-import type { Portfolio, ProgramCard } from '@fp/shared';
+import type { Portfolio, ProgramCard, PlayerState, GameState } from '@fp/shared';
 import { SubtagIcon } from '../icons';
 import { useCardModal } from '../cards/CardModalContext';
+import { evaluateSustainStatus } from '../../utils/sustainStatus';
 import styles from './Dashboard.module.css';
 
 function hasSIBonus(card: ProgramCard): boolean {
@@ -15,7 +16,7 @@ const DOMAIN_COLORS: Record<string, string> = {
   EXP: 'var(--color-domain-exp)', SPACE_CYBER: 'var(--color-domain-space-cyber)',
 };
 
-export function PortfolioPanel({ portfolio }: { portfolio: Portfolio }) {
+export function PortfolioPanel({ portfolio, player, gameState }: { portfolio: Portfolio; player?: PlayerState; gameState?: GameState }) {
   const { showCard } = useCardModal();
 
   return (
@@ -27,7 +28,11 @@ export function PortfolioPanel({ portfolio }: { portfolio: Portfolio }) {
             key={i}
             className={`${styles.portfolioSlot} ${slot ? styles.portfolioSlotFilled : ''} ${slot ? styles.portfolioSlotClickable : ''}`}
             style={slot ? { borderColor: DOMAIN_COLORS[slot.card.domain] } : undefined}
-            onClick={slot ? () => showCard({ type: 'program', card: slot.card }) : undefined}
+            onClick={slot ? () => showCard({
+              type: 'program',
+              card: slot.card,
+              sustainStatus: player && gameState ? evaluateSustainStatus(slot, player, gameState) : undefined,
+            }) : undefined}
           >
             {slot ? (
               <>

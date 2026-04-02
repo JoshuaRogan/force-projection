@@ -49,7 +49,7 @@ export function PersonalView({
       <div className={styles.body}>
         {/* Left: player stats */}
         <aside className={styles.statsCol}>
-          <PlayerDashboard player={humanPlayer} />
+          <PlayerDashboard player={humanPlayer} gameState={gameState} />
         </aside>
 
         {/* Right: phase panel + event feed */}

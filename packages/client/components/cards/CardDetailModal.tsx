@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import type { ProgramCard, ContractCard, AgendaCard, CrisisCard, BudgetLine, SecondaryResource } from '@fp/shared';
 import { THEATER_NAMES } from '@fp/shared';
-import type { CardModalData } from './CardModalContext';
+import type { CardDetailData, SustainEffectStatus } from './CardModalContext';
 import { SubtagIcon, RequirementIcon } from '../icons';
 import { ResourceToken } from '../ui/ResourceToken';
 import { colorizeDesc } from '../../utils/colorizeDesc';
@@ -66,7 +66,36 @@ function EffectList({ items }: { items: Array<{ description: string }> }) {
   );
 }
 
-function ProgramBody({ card }: { card: ProgramCard }) {
+function SustainStatusRow({ effect, status }: { effect: { description: string }; status?: SustainEffectStatus }) {
+  if (!status) {
+    return <li>{colorizeDesc(effect.description)}</li>;
+  }
+
+  const { conditionMet, totalAwards } = status;
+
+  return (
+    <li className={styles.sustainRow}>
+      {conditionMet !== null && (
+        <span
+          className={`${styles.sustainCheck} ${conditionMet ? styles.sustainCheckMet : styles.sustainCheckUnmet}`}
+          title={conditionMet ? 'Condition currently met' : 'Condition not met'}
+        >
+          {conditionMet ? '☑' : '☐'}
+        </span>
+      )}
+      <span className={styles.sustainDesc}>{colorizeDesc(effect.description)}</span>
+      {totalAwards > 0 && (
+        <span className={styles.sustainAwards} title={`Awarded ${totalAwards} time${totalAwards !== 1 ? 's' : ''}`}>
+          {Array.from({ length: totalAwards }, (_, i) => (
+            <span key={i} className={styles.sustainAwardStar}>★</span>
+          ))}
+        </span>
+      )}
+    </li>
+  );
+}
+
+function ProgramBody({ card, sustainStatus }: { card: ProgramCard; sustainStatus?: SustainEffectStatus[] }) {
   return (
     <>
       {card.subtags.length > 0 && (
@@ -96,7 +125,11 @@ function ProgramBody({ card }: { card: ProgramCard }) {
       )}
       {card.sustainEffects.length > 0 && (
         <Section label="Sustain">
-          <EffectList items={card.sustainEffects} />
+          <ul className={styles.effectList}>
+            {card.sustainEffects.map((e, i) => (
+              <SustainStatusRow key={i} effect={e} status={sustainStatus?.[i]} />
+            ))}
+          </ul>
         </Section>
       )}
       {card.stationing && (
@@ -188,7 +221,7 @@ function programHasSIBonus(card: ProgramCard): boolean {
   );
 }
 
-export function CardDetailModal({ data }: { data: CardModalData }) {
+export function CardDetailModal({ data }: { data: CardDetailData }) {
   const meta = TYPE_META[data.type];
   const accent = data.type === 'program'
     ? (DOMAIN_ACCENT[data.card.domain] ?? ACCENT_COLORS[data.type])
@@ -230,7 +263,7 @@ export function CardDetailModal({ data }: { data: CardModalData }) {
 
         <div className={styles.divider} />
 
-        {data.type === 'program'  && <ProgramBody  card={data.card} />}
+        {data.type === 'program'  && <ProgramBody  card={data.card} sustainStatus={data.sustainStatus} />}
         {data.type === 'contract' && <ContractBody card={data.card} />}
         {data.type === 'agenda'   && <AgendaBody   card={data.card} />}
         {data.type === 'crisis'   && <CrisisBody   card={data.card} />}

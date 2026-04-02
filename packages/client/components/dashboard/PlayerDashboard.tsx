@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { PlayerState } from '@fp/shared';
+import type { PlayerState, GameState } from '@fp/shared';
 import { DIRECTORATES } from '@fp/shared';
 import { useCardModal } from '../cards/CardModalContext';
 import { colorizeDesc } from '../../utils/colorizeDesc';
@@ -61,7 +61,7 @@ function SIInfoModal({ si, onClose }: { si: number; onClose: () => void }) {
   );
 }
 
-export function PlayerDashboard({ player }: { player: PlayerState }) {
+export function PlayerDashboard({ player, gameState }: { player: PlayerState; gameState?: GameState }) {
   const { showCard } = useCardModal();
   const [showSIInfo, setShowSIInfo] = useState(false);
   const dir = DIRECTORATES[player.directorate];
@@ -133,7 +133,7 @@ export function PlayerDashboard({ player }: { player: PlayerState }) {
       )}
 
       {/* Portfolio */}
-      <PortfolioPanel portfolio={player.portfolio} />
+      <PortfolioPanel portfolio={player.portfolio} player={player} gameState={gameState} />
     </div>
   );
 }

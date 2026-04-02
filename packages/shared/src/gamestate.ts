@@ -4,6 +4,30 @@ import type { PlayerResources } from './resources.js';
 import type { TheaterId, TheaterPresence } from './theaters.js';
 import type { OrderChoice } from './orders.js';
 
+// === Year-scoped modifiers (reset at year start) ===
+
+export interface CostReduction {
+  /** Which orders/actions this applies to */
+  scope: 'deploy' | 'activate' | 'negotiate' | 'all';
+  /** Optional filter: only applies to specific domain, subtag, or theater */
+  filter?: { domain?: string; subtag?: string; theater?: string; orderCategory?: string };
+  /** Which resource is reduced */
+  resource: string;
+  /** How much to reduce */
+  amount: number;
+  /** Source card ID for debugging */
+  sourceCardId?: string;
+}
+
+export interface CrisisImmunity {
+  /** Which crisis domains/tags this blocks (empty = any) */
+  matchTag?: string;
+  /** How many times this can trigger (default 1) */
+  uses: number;
+  /** Source card ID */
+  sourceCardId?: string;
+}
+
 // === Game Configuration ===
 
 export interface GameConfig {
@@ -48,6 +72,8 @@ export interface PortfolioSlot {
   card: ProgramCard;
   /** For pipeline: how many years it has been in the pipeline */
   yearsInPipeline?: number;
+  /** Count of how many times each sustain effect has awarded (indexed by sustainEffects index) */
+  sustainAwardCounts?: number[];
 }
 
 export interface Portfolio {
@@ -84,6 +110,9 @@ export interface PlayerState {
   usedOncePerYear: boolean;            // directorate ability
   firstAirActivatedThisYear: boolean;  // for AIRCOM passive
   firstNetworkActivatedThisYear: boolean; // for SPACECY passive
+  costReductions: CostReduction[];     // active cost reductions for this year
+  coveredTheaters: TheaterId[];        // theaters treated as "covered" for contracts
+  crisisImmunities: CrisisImmunity[]; // ignore first matching crisis penalty
 
   // Per-quarter tracking
   selectedOrders: [OrderChoice, OrderChoice] | null;
@@ -180,5 +209,11 @@ export type GameEvent =
   | { type: 'theaterControlScored'; theater: TheaterId; rankings: Array<{ playerId: string; si: number }> }
   | { type: 'sustainEffect'; playerId: string; cardId: string; timing: string }
   | { type: 'orderFailed'; playerId: string; order: string; reason: string }
+  | { type: 'agendaEffectApplied'; playerId: string; passed: boolean; effectIdx: number }
+  | { type: 'crisisEffectApplied'; playerId: string; crisisId: string; category: 'immediate' | 'response' | 'penalty'; effectIdx: number }
+  | { type: 'crisisPeek'; playerId: string; cardId: string }
+  | { type: 'triggerEffect'; playerId: string; cardId: string; trigger: string }
+  | { type: 'costReductionApplied'; playerId: string; sourceCardId: string }
+  | { type: 'crisisImmunityUsed'; playerId: string; sourceCardId: string }
   | { type: 'yearEnd'; fiscalYear: number }
   | { type: 'gameEnd'; finalScores: Record<string, number> };

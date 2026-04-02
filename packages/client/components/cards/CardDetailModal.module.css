@@ -193,6 +193,54 @@
   opacity: 0.75;
 }
 
+/* Sustain status rows */
+.sustainRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  line-height: 1.5;
+  padding-left: 0;
+}
+
+.sustainRow::before {
+  display: none;
+}
+
+.sustainCheck {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  margin-top: -1px;
+}
+
+.sustainCheckMet {
+  color: var(--color-success);
+}
+
+.sustainCheckUnmet {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.sustainDesc {
+  flex: 1;
+}
+
+.sustainAwards {
+  flex-shrink: 0;
+  display: inline-flex;
+  gap: 1px;
+  margin-left: 4px;
+}
+
+.sustainAwardStar {
+  color: var(--color-si);
+  font-size: 0.75rem;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-si) 50%, transparent));
+}
+
 /* Requirements list */
 .requireList {
   list-style: none;

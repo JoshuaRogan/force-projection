@@ -19,4 +19,8 @@ export const CARD_ART_VARIANTS: Record<string, number> = {
 
   // Crises
   // 'crisis-cyber-attack': 2,
+
+  // Directorates
+  'AIRCOM': 2,
+  'SPACECY': 2,
 };

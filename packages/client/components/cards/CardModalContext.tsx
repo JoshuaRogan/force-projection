@@ -6,11 +6,21 @@ import { CardDetailModal } from './CardDetailModal';
 import { DirectorateModal } from './DirectorateModal';
 import styles from './Cards.module.css';
 
-export type CardModalData =
-  | { type: 'program'; card: ProgramCard }
+export interface SustainEffectStatus {
+  /** null = no checkable condition (passive/trigger), true = condition met, false = not met */
+  conditionMet: boolean | null;
+  /** How many times this effect has awarded */
+  totalAwards: number;
+}
+
+export type CardDetailData =
+  | { type: 'program'; card: ProgramCard; sustainStatus?: SustainEffectStatus[] }
   | { type: 'contract'; card: ContractCard }
   | { type: 'crisis'; card: CrisisCard }
-  | { type: 'agenda'; card: AgendaCard }
+  | { type: 'agenda'; card: AgendaCard };
+
+export type CardModalData =
+  | CardDetailData
   | { type: 'directorate'; directorate: DirectorateDefinition };
 
 interface CardModalContextType {

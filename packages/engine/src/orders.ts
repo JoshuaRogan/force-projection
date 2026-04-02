@@ -1,6 +1,6 @@
 import type {
   GameState, PlayerState, OrderChoice, OrderCategory,
-  TheaterId, BudgetLine, Effect,
+  TheaterId, BudgetLine, Effect, CostReduction,
 } from '@fp/shared';
 import {
   ORDER_RESOLUTION_SEQUENCE, ORDERS, THEATER_SLOTS, STRENGTH_VALUES,
@@ -108,6 +108,9 @@ function resolveNegotiate(
   presence.alliances += 1;
   boardPresence.alliances += 1;
   state.log.push({ type: 'alliancePlaced', playerId, theater });
+
+  // Fire placeAlliance trigger on active programs
+  fireSustainTrigger(state, playerId, 'placeAlliance');
 }
 
 function resolveContracting(state: GameState, playerId: string): void {
@@ -337,6 +340,9 @@ function resolveBuildBase(
   boardPresence.bases += 1;
 
   state.log.push({ type: 'basePlaced', playerId, theater });
+
+  // Fire deploy trigger on active programs
+  fireSustainTrigger(state, playerId, 'deploy');
 }
 
 function resolveForwardOps(
@@ -377,6 +383,9 @@ function resolveForwardOps(
   boardPresence.forwardOps += 1;
 
   state.log.push({ type: 'forwardOpsPlaced', playerId, theater });
+
+  // Fire deploy trigger on active programs
+  fireSustainTrigger(state, playerId, 'deploy');
 }
 
 function resolveStationPrograms(
@@ -397,8 +406,14 @@ function resolveStationPrograms(
     if (!slot.card.stationing) continue;
     if (!slot.card.stationing.theaters.includes(theater)) continue;
 
-    // Remove any previous stationing for this slot
-    p.stationedPrograms = p.stationedPrograms.filter(sp => sp.activeSlot !== activeSlot);
+    // Remove any previous stationing for this slot and subtract old strength
+    const oldStationing = p.stationedPrograms.find(sp => sp.activeSlot === activeSlot);
+    if (oldStationing) {
+      const oldStrength = slot.card.stationing.strength;
+      p.theaterPresence[oldStationing.theater].stationedStrength -= oldStrength;
+      state.board.theaters[oldStationing.theater].presence[playerId].stationedStrength -= oldStrength;
+      p.stationedPrograms = p.stationedPrograms.filter(sp => sp.activeSlot !== activeSlot);
+    }
 
     // Add new stationing
     p.stationedPrograms.push({ activeSlot, theater });
@@ -431,14 +446,7 @@ function resolveMajorExercise(state: GameState, playerId: string): void {
   state.log.push({ type: 'resourceChange', playerId, resource: 'readiness', delta: 2 });
 
   // Fire sustain effects on active programs that trigger on Major Exercise
-  for (const slot of p.portfolio.active) {
-    if (!slot) continue;
-    for (const effect of slot.card.sustainEffects) {
-      if (effect.params.trigger === 'majorExercise') {
-        resolveEffect(state, playerId, effect);
-      }
-    }
-  }
+  fireSustainTrigger(state, playerId, 'majorExercise');
 
   // Draw 1 card
   if (state.decks.programs.length > 0) {
@@ -475,6 +483,12 @@ function resolveIntelFocus(
   p.resources.secondary.I += 2;
   state.log.push({ type: 'resourceChange', playerId, resource: 'I', delta: 2 });
 
+  // Fire intelFocus trigger on active programs
+  fireSustainTrigger(state, playerId, 'intelFocus');
+
+  // Reactive trigger: opponentGainsI (from the +2 I we just gave)
+  fireReactiveTrigger(state, playerId, 'opponentGainsI');
+
   // Optional: spend 1 I to change resolution position (tracked but not enforced here)
   if (choice.spendI && p.resources.secondary.I >= 1) {
     p.resources.secondary.I -= 1;
@@ -486,7 +500,7 @@ function resolveIntelFocus(
   }
 }
 
-/** Apply a card effect to a player. Used for activateEffects and contract immediateAward. */
+/** Apply a card effect to a player. Used for activateEffects, sustain effects, contract awards, agenda/crisis effects. */
 export function resolveEffect(state: GameState, playerId: string, effect: Effect): void {
   const p = state.players[playerId];
   const params = effect.params;
@@ -508,20 +522,56 @@ export function resolveEffect(state: GameState, playerId: string, effect: Effect
         if (amt !== 0) {
           p.resources.secondary[res] += amt;
           state.log.push({ type: 'resourceChange', playerId, resource: res, delta: amt });
+          // Reactive trigger: opponentGainsI
+          if (res === 'I' && amt > 0) {
+            fireReactiveTrigger(state, playerId, 'opponentGainsI');
+          }
         }
       }
       break;
     }
     case 'gainSI': {
       const si = (params.si as number) ?? 0;
-      if (si !== 0) {
+      // Handle "per N of subtag" variants (e.g. +1 SI per 2 Network programs)
+      const per = params.per as number | undefined;
+      const subtag = params.subtag as string | undefined;
+      if (per && subtag) {
+        let count = 0;
+        for (const slot of p.portfolio.active) {
+          if (slot && slot.card.subtags.includes(subtag as any)) count++;
+        }
+        const multiplier = Math.floor(count / per);
+        const totalSI = si * multiplier;
+        if (totalSI !== 0) {
+          p.si += totalSI;
+          state.log.push({ type: 'siChange', playerId, delta: totalSI, reason: 'cardEffect' });
+        }
+      } else if (si !== 0) {
         p.si += si;
         state.log.push({ type: 'siChange', playerId, delta: si, reason: 'cardEffect' });
       }
       break;
     }
     case 'gainProduction': {
-      if (params.choice) break; // player-choice variants deferred
+      if (params.choice) {
+        // Player-choice variant: apply first option as default
+        // (e.g. ['productionI', 'placeAlliance'] → gain +1 I production)
+        const choices = params.choice as string[];
+        if (choices.length > 0) {
+          const first = choices[0];
+          if (first.startsWith('production')) {
+            const res = first.replace('production', '');
+            if (SECONDARY_RESOURCES.includes(res as any)) {
+              p.resources.production.secondary[res as keyof typeof p.resources.production.secondary] += 1;
+            } else if (BUDGET_LINES.includes(res as any)) {
+              p.resources.production.budget[res as keyof typeof p.resources.production.budget] += 1;
+            }
+          } else if (first === 'placeAlliance') {
+            resolveEffect(state, playerId, { type: 'placeAlliance', description: '', params: { count: 1 } });
+          }
+        }
+        break;
+      }
       for (const line of BUDGET_LINES) {
         const amt = (params[line] as number | undefined) ?? 0;
         if (amt !== 0) p.resources.production.budget[line] += amt;
@@ -536,6 +586,15 @@ export function resolveEffect(state: GameState, playerId: string, effect: Effect
       const count = (params.count as number) ?? 1;
       const drawn = state.decks.programs.splice(0, count);
       p.hand.push(...drawn);
+      break;
+    }
+    case 'discardCards': {
+      const count = (params.count as number) ?? 1;
+      // Discard from end of hand (simplified — real game needs player choice)
+      for (let i = 0; i < count && p.hand.length > 0; i++) {
+        const discarded = p.hand.pop()!;
+        state.decks.programDiscard.push(discarded);
+      }
       break;
     }
     case 'modifyReadiness': {
@@ -570,6 +629,8 @@ export function resolveEffect(state: GameState, playerId: string, effect: Effect
         state.board.theaters[target].presence[playerId].alliances += 1;
         state.log.push({ type: 'alliancePlaced', playerId, theater: target });
         placed.push(target);
+        // Fire placeAlliance trigger on active programs
+        fireSustainTrigger(state, playerId, 'placeAlliance');
       }
       break;
     }
@@ -586,31 +647,173 @@ export function resolveEffect(state: GameState, playerId: string, effect: Effect
       }
       break;
     }
-    case 'conditionalSI': {
-      const timing = params.timing as string | undefined;
-      if (timing && timing !== 'activation') break;
-      const condition = params.condition as string;
-      const si = (params.si as number) ?? 0;
-      let met = false;
-      if (condition === 'readiness') {
-        met = p.readiness >= ((params.threshold as number) ?? 0);
-      } else if (condition === 'leadsAnyTheater') {
-        for (const tid of THEATER_IDS) {
-          const myStr = calcStrength(p.theaterPresence[tid]);
-          if (myStr > 0 && state.turnOrder
-            .filter(pid => pid !== playerId)
-            .every(pid2 => calcStrength(state.players[pid2].theaterPresence[tid]) < myStr)) {
-            met = true; break;
+    case 'placeForwardOps': {
+      const theaters = params.theaters as string[] | undefined;
+      const costModifier = (params.costModifier as number | undefined) ?? 0;
+      if (!theaters) break;
+      const target = (theaters as TheaterId[]).find(tid => {
+        if (p.theaterPresence[tid].forwardOps >= THEATER_SLOTS.forwardOps) return false;
+        if (p.theaterPresence[tid].bases < 1) return false; // need a base
+        return true;
+      });
+      if (target) {
+        // Pay reduced cost (base cost 1L + 2U, modified)
+        let lCost = Math.max(0, 1 + costModifier);
+        let uCost = Math.max(0, 2 + costModifier);
+        const cost = { budget: { U: uCost }, secondary: { L: lCost } };
+        if (canAfford(p.resources, cost)) {
+          payCost(p.resources, cost);
+          p.theaterPresence[target].forwardOps += 1;
+          state.board.theaters[target].presence[playerId].forwardOps += 1;
+          state.log.push({ type: 'forwardOpsPlaced', playerId, theater: target });
+        }
+      }
+      break;
+    }
+    case 'reduceCost': {
+      const reduction: CostReduction = {
+        scope: (params.orderCategory as string)
+          ? (params.orderCategory as string).toLowerCase() as CostReduction['scope']
+          : (params.domain || params.subtag) ? 'activate' : 'all',
+        filter: {},
+        resource: (params.resource as string) ?? 'U',
+        amount: (params.amount as number) ?? 1,
+      };
+      if (params.theater) reduction.filter!.theater = params.theater as string;
+      if (params.domain) reduction.filter!.domain = params.domain as string;
+      if (params.subtag) reduction.filter!.subtag = params.subtag as string;
+      if (params.orderCategory) reduction.filter!.orderCategory = params.orderCategory as string;
+      p.costReductions.push(reduction);
+      state.log.push({ type: 'costReductionApplied', playerId, sourceCardId: reduction.sourceCardId ?? 'unknown' });
+      break;
+    }
+    case 'satisfyContractStep': {
+      const tag = params.tag as string | undefined;
+      // Progress the first contract that has a matching requirement
+      for (const ac of p.contracts) {
+        for (const req of ac.card.requirements) {
+          if (req.type === 'activeProgramTag' && tag) {
+            const reqSubtag = (req.params as any).subtag as string | undefined;
+            if (reqSubtag === tag || !reqSubtag) {
+              const key = `satisfiedStep_${tag}`;
+              ac.progress[key] = ((ac.progress[key] as number) ?? 0) + 1;
+              break;
+            }
           }
         }
       }
+      break;
+    }
+    case 'conditionalSI': {
+      const timing = params.timing as string | undefined;
+      // Only fire at activation-time here; yearEnd and endgame are handled in phases.ts
+      if (timing && timing !== 'activation') break;
+      const condition = params.condition as string;
+      const si = (params.si as number) ?? 0;
+      let met = evaluateCondition(state, playerId, condition, params);
       if (met && si !== 0) {
         p.si += si;
         state.log.push({ type: 'siChange', playerId, delta: si, reason: 'cardEffect' });
       }
       break;
     }
+    case 'ignoreFirstCrisis': {
+      const matchTag = params.matchTag as string | undefined;
+      p.crisisImmunities.push({
+        matchTag,
+        uses: 1,
+        sourceCardId: params.sourceCardId as string | undefined,
+      });
+      break;
+    }
+    case 'coverTheater': {
+      const theater = params.theater as TheaterId | undefined;
+      if (theater && !p.coveredTheaters.includes(theater)) {
+        p.coveredTheaters.push(theater);
+      }
+      break;
+    }
+    case 'freeProgramming': {
+      // Mark that this player can reprogram for free this year
+      // Implemented as a cost reduction with scope 'all' for PC
+      p.costReductions.push({
+        scope: 'all',
+        resource: 'PC',
+        amount: 99, // effectively free
+        sourceCardId: params.sourceCardId as string | undefined,
+      });
+      break;
+    }
     default:
       break;
+  }
+}
+
+/** Evaluate a condition for conditionalSI effects */
+export function evaluateCondition(
+  state: GameState,
+  playerId: string,
+  condition: string,
+  params: Record<string, unknown>,
+): boolean {
+  const p = state.players[playerId];
+  switch (condition) {
+    case 'readiness':
+      return p.readiness >= ((params.threshold as number) ?? 0);
+    case 'leadsAnyTheater':
+      for (const tid of THEATER_IDS) {
+        const myStr = calcStrength(p.theaterPresence[tid]);
+        if (myStr > 0 && state.turnOrder
+          .filter(pid => pid !== playerId)
+          .every(pid2 => calcStrength(state.players[pid2].theaterPresence[tid]) < myStr)) {
+          return true;
+        }
+      }
+      return false;
+    case 'baseCount': {
+      const count = Object.values(p.theaterPresence).filter(pr => pr.bases > 0).length;
+      return count >= ((params.threshold as number) ?? 0);
+    }
+    case 'forwardOpsCount': {
+      const count = Object.values(p.theaterPresence).filter(pr => pr.forwardOps > 0).length;
+      return count >= ((params.threshold as number) ?? 0);
+    }
+    default:
+      return false;
+  }
+}
+
+/** Fire sustain effects on active programs that match a specific trigger */
+export function fireSustainTrigger(state: GameState, playerId: string, trigger: string): void {
+  const p = state.players[playerId];
+  for (const slot of p.portfolio.active) {
+    if (!slot) continue;
+    for (let ei = 0; ei < slot.card.sustainEffects.length; ei++) {
+      const effect = slot.card.sustainEffects[ei];
+      if (effect.params.trigger !== trigger) continue;
+
+      // For modifyReadiness with a trigger, apply the bonus directly
+      if (effect.type === 'modifyReadiness') {
+        const bonus = (effect.params.bonus as number) ?? 0;
+        if (bonus !== 0) {
+          p.readiness += bonus;
+          state.log.push({ type: 'resourceChange', playerId, resource: 'readiness', delta: bonus });
+        }
+      } else {
+        resolveEffect(state, playerId, effect);
+      }
+
+      if (!slot.sustainAwardCounts) slot.sustainAwardCounts = new Array(slot.card.sustainEffects.length).fill(0);
+      slot.sustainAwardCounts[ei]++;
+      state.log.push({ type: 'triggerEffect', playerId, cardId: slot.card.id, trigger });
+    }
+  }
+}
+
+/** Fire reactive triggers on OTHER players' active programs (e.g. opponentGainsI) */
+function fireReactiveTrigger(state: GameState, triggeringPlayerId: string, trigger: string): void {
+  for (const pid of state.turnOrder) {
+    if (pid === triggeringPlayerId) continue;
+    fireSustainTrigger(state, pid, trigger);
   }
 }

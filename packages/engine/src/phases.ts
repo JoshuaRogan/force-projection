@@ -6,7 +6,7 @@ import {
   calcStrength, THEATER_CONTROL_SCORING,
 } from '@fp/shared';
 import { SeededRNG } from './rng.js';
-import { resolveEffect } from './orders.js';
+import { resolveEffect, evaluateCondition } from './orders.js';
 
 // === Phase transition helpers ===
 
@@ -48,11 +48,30 @@ export function startFiscalYear(state: GameState): void {
     p.usedOncePerYear = false;
     p.firstAirActivatedThisYear = false;
     p.firstNetworkActivatedThisYear = false;
+    p.costReductions = [];
+    p.coveredTheaters = [];
+    p.crisisImmunities = [];
     p.sustainOrdersThisYear = [];
   }
 
   // Produce resources for all players
   produceResources(state);
+
+  // Apply yearStart sustain effects from all active programs
+  for (const pid of state.turnOrder) {
+    for (const slot of state.players[pid].portfolio.active) {
+      if (!slot) continue;
+      for (let ei = 0; ei < slot.card.sustainEffects.length; ei++) {
+        const effect = slot.card.sustainEffects[ei];
+        if ((effect.params as Record<string, unknown>)?.timing === 'yearStart') {
+          resolveEffect(state, pid, effect);
+          if (!slot.sustainAwardCounts) slot.sustainAwardCounts = new Array(slot.card.sustainEffects.length).fill(0);
+          slot.sustainAwardCounts[ei]++;
+          state.log.push({ type: 'sustainEffect', playerId: pid, cardId: slot.card.id, timing: 'yearStart' });
+        }
+      }
+    }
+  }
 
   // Move to Congress phase
   state.phase = { type: 'congress' };
@@ -131,6 +150,17 @@ export function resolveAgenda(state: GameState): void {
 
   state.log.push({ type: 'agendaResult', passed: state.currentAgenda.passed });
 
+  // Apply agenda effects to all players
+  const effects = state.currentAgenda.passed
+    ? state.currentAgenda.agenda.passEffects
+    : state.currentAgenda.agenda.failEffects;
+  for (let ei = 0; ei < effects.length; ei++) {
+    for (const pid of state.turnOrder) {
+      resolveEffect(state, pid, effects[ei]);
+      state.log.push({ type: 'agendaEffectApplied', playerId: pid, passed: state.currentAgenda.passed, effectIdx: ei });
+    }
+  }
+
   // Move to contract market
   state.phase = { type: 'contractMarket' };
   log(state, state.phase);
@@ -177,6 +207,48 @@ export function setupCrisisPulse(state: GameState): void {
     const crisis = state.decks.crises.shift()!;
     state.currentCrisis = crisis;
     state.log.push({ type: 'crisisRevealed', crisisId: crisis.id });
+
+    // Apply crisis immediateEffects to all players
+    for (const pid of state.turnOrder) {
+      for (let ei = 0; ei < crisis.immediateEffects.length; ei++) {
+        resolveEffect(state, pid, crisis.immediateEffects[ei]);
+        state.log.push({ type: 'crisisEffectApplied', playerId: pid, crisisId: crisis.id, category: 'immediate', effectIdx: ei });
+      }
+    }
+
+    // Fire crisisReveal sustain effects from all active programs
+    for (const pid of state.turnOrder) {
+      for (const slot of state.players[pid].portfolio.active) {
+        if (!slot) continue;
+        for (let ei = 0; ei < slot.card.sustainEffects.length; ei++) {
+          const effect = slot.card.sustainEffects[ei];
+          if ((effect.params as Record<string, unknown>)?.timing === 'crisisReveal') {
+            resolveEffect(state, pid, effect);
+            if (!slot.sustainAwardCounts) slot.sustainAwardCounts = new Array(slot.card.sustainEffects.length).fill(0);
+            slot.sustainAwardCounts[ei]++;
+            state.log.push({ type: 'sustainEffect', playerId: pid, cardId: slot.card.id, timing: 'crisisReveal' });
+          }
+        }
+      }
+    }
+
+    // Fire crisisPeek sustain effects (let player see next crisis)
+    for (const pid of state.turnOrder) {
+      for (const slot of state.players[pid].portfolio.active) {
+        if (!slot) continue;
+        for (let ei = 0; ei < slot.card.sustainEffects.length; ei++) {
+          const effect = slot.card.sustainEffects[ei];
+          if ((effect.params as Record<string, unknown>)?.timing === 'crisisPeek') {
+            if (state.decks.crises.length > 0) {
+              state.log.push({ type: 'crisisPeek', playerId: pid, cardId: state.decks.crises[0].id });
+            }
+            if (!slot.sustainAwardCounts) slot.sustainAwardCounts = new Array(slot.card.sustainEffects.length).fill(0);
+            slot.sustainAwardCounts[ei]++;
+            state.log.push({ type: 'sustainEffect', playerId: pid, cardId: slot.card.id, timing: 'crisisPeek' });
+          }
+        }
+      }
+    }
   }
 
   // Reset per-quarter player flags
@@ -188,9 +260,12 @@ export function setupCrisisPulse(state: GameState): void {
   for (const pid of state.turnOrder) {
     for (const slot of state.players[pid].portfolio.active) {
       if (!slot) continue;
-      for (const effect of slot.card.sustainEffects) {
+      for (let ei = 0; ei < slot.card.sustainEffects.length; ei++) {
+        const effect = slot.card.sustainEffects[ei];
         if ((effect.params as Record<string, unknown>)?.timing === 'quarterStart') {
           resolveEffect(state, pid, effect);
+          if (!slot.sustainAwardCounts) slot.sustainAwardCounts = new Array(slot.card.sustainEffects.length).fill(0);
+          slot.sustainAwardCounts[ei]++;
           state.log.push({ type: 'sustainEffect', playerId: pid, cardId: slot.card.id, timing: 'quarterStart' });
         }
       }
@@ -294,33 +369,28 @@ export function processYearEnd(state: GameState): void {
     const p = state.players[pid];
     for (const slot of p.portfolio.active) {
       if (!slot) continue;
-      for (const effect of slot.card.sustainEffects) {
+      for (let ei = 0; ei < slot.card.sustainEffects.length; ei++) {
+        const effect = slot.card.sustainEffects[ei];
         const params = effect.params as Record<string, unknown>;
         if (params?.timing !== 'yearEnd') continue;
+
         if (effect.type === 'conditionalSI') {
           const condition = params.condition as string;
           const si = (params.si as number) ?? 0;
-          let met = false;
-          if (condition === 'readiness') {
-            met = p.readiness >= ((params.threshold as number) ?? 0);
-          } else if (condition === 'leadsAnyTheater') {
-            for (const tid of THEATER_IDS) {
-              const myStr = calcStrength(p.theaterPresence[tid]);
-              if (myStr > 0 && state.turnOrder
-                .filter(pid2 => pid2 !== pid)
-                .every(pid2 => calcStrength(state.players[pid2].theaterPresence[tid]) < myStr)) {
-                met = true; break;
-              }
-            }
-          } else if (condition === 'baseCount') {
-            const count = Object.values(p.theaterPresence).filter(pr => pr.bases > 0).length;
-            met = count >= ((params.threshold as number) ?? 0);
-          }
+          const met = evaluateCondition(state, pid, condition, params);
           if (met && si !== 0) {
             p.si += si;
+            if (!slot.sustainAwardCounts) slot.sustainAwardCounts = new Array(slot.card.sustainEffects.length).fill(0);
+            slot.sustainAwardCounts[ei]++;
             state.log.push({ type: 'siChange', playerId: pid, delta: si, reason: 'sustainEffect' });
             state.log.push({ type: 'sustainEffect', playerId: pid, cardId: slot.card.id, timing: 'yearEnd' });
           }
+        } else {
+          // Handle all other yearEnd sustain effect types (gainSI with per/subtag, etc.)
+          resolveEffect(state, pid, effect);
+          if (!slot.sustainAwardCounts) slot.sustainAwardCounts = new Array(slot.card.sustainEffects.length).fill(0);
+          slot.sustainAwardCounts[ei]++;
+          state.log.push({ type: 'sustainEffect', playerId: pid, cardId: slot.card.id, timing: 'yearEnd' });
         }
       }
     }
@@ -338,10 +408,22 @@ export function processYearEnd(state: GameState): void {
       if (isComplete) {
         p.si += ac.card.rewardSI;
         state.log.push({ type: 'contractCompleted', playerId: pid, contractId: ac.card.id, si: ac.card.rewardSI });
+        // Apply contract reward effects
+        if (ac.card.rewardEffects) {
+          for (const effect of ac.card.rewardEffects) {
+            resolveEffect(state, pid, effect);
+          }
+        }
         completed.push(i);
       } else {
         p.si += ac.card.failurePenaltySI; // negative
         state.log.push({ type: 'contractFailed', playerId: pid, contractId: ac.card.id, penalty: ac.card.failurePenaltySI });
+        // Apply contract failure effects
+        if (ac.card.failureEffects) {
+          for (const effect of ac.card.failureEffects) {
+            resolveEffect(state, pid, effect);
+          }
+        }
         failed.push(i);
       }
     }
@@ -359,6 +441,37 @@ export function processYearEnd(state: GameState): void {
 
   // Advance to next year or game end
   if (state.fiscalYear >= state.config.fiscalYears) {
+    // Fire endgame sustain effects before final scoring
+    for (const pid of state.turnOrder) {
+      const p = state.players[pid];
+      for (const slot of p.portfolio.active) {
+        if (!slot) continue;
+        for (let ei = 0; ei < slot.card.sustainEffects.length; ei++) {
+          const effect = slot.card.sustainEffects[ei];
+          const params = effect.params as Record<string, unknown>;
+          if (params?.timing !== 'endgame') continue;
+
+          if (effect.type === 'conditionalSI') {
+            const condition = params.condition as string;
+            const si = (params.si as number) ?? 0;
+            const met = evaluateCondition(state, pid, condition, params);
+            if (met && si !== 0) {
+              p.si += si;
+              if (!slot.sustainAwardCounts) slot.sustainAwardCounts = new Array(slot.card.sustainEffects.length).fill(0);
+              slot.sustainAwardCounts[ei]++;
+              state.log.push({ type: 'siChange', playerId: pid, delta: si, reason: 'endgameSustain' });
+              state.log.push({ type: 'sustainEffect', playerId: pid, cardId: slot.card.id, timing: 'endgame' });
+            }
+          } else {
+            resolveEffect(state, pid, effect);
+            if (!slot.sustainAwardCounts) slot.sustainAwardCounts = new Array(slot.card.sustainEffects.length).fill(0);
+            slot.sustainAwardCounts[ei]++;
+            state.log.push({ type: 'sustainEffect', playerId: pid, cardId: slot.card.id, timing: 'endgame' });
+          }
+        }
+      }
+    }
+
     state.phase = { type: 'gameEnd' };
     log(state, state.phase);
   } else {

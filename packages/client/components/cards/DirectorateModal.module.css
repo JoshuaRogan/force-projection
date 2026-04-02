@@ -1,0 +1,40 @@
+/* Ability block — used for passive and once-per-year */
+.abilityBlock {
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  line-height: 1.6;
+  padding: var(--space-sm) var(--space-md);
+  background: color-mix(in srgb, var(--accent, #3b82f6) 6%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--accent, #3b82f6) 45%, transparent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* Starting bonuses */
+.bonusGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.bonusRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.bonusLabel {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  min-width: 110px;
+}
+
+.bonusChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}

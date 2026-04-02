@@ -8,6 +8,7 @@ import { PhasePanel } from '@/components/game/PhasePanel';
 import { PhaseTimeline } from '@/components/game/PhaseTimeline';
 import { EventFeed } from '@/components/game/EventFeed';
 import { CardModalProvider, useCardModal } from '@/components/cards';
+import { DIRECTORATES } from '@fp/shared';
 import { ViewSwitcher, PersonalView, MapView } from '@/components/views';
 import type { ViewMode } from '@/components/views';
 import gameStyles from './game.module.css';
@@ -44,9 +45,19 @@ function GameBoard({ seed }: { seed: number }) {
   const [viewMode, setViewMode] = useState<ViewMode>('command');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [handOpen, setHandOpen] = useState(true);
+  const shownIntroRef = useRef(false);
 
   const { gameState, humanPlayerId } = game;
   const humanPlayer = gameState.players[humanPlayerId];
+
+  // Show directorate info on game start
+  useEffect(() => {
+    if (!shownIntroRef.current) {
+      shownIntroRef.current = true;
+      const dir = DIRECTORATES[humanPlayer.directorate];
+      if (dir) showCard({ type: 'directorate', directorate: dir });
+    }
+  }, [humanPlayer.directorate, showCard]);
   const agenda = gameState.currentAgenda?.agenda;
   const crisis = gameState.currentCrisis;
   const handCount = humanPlayer.hand.length;
@@ -142,7 +153,7 @@ function GameBoard({ seed }: { seed: number }) {
               </button>
               <aside className={`${gameStyles.sidebar} ${sidebarOpen ? '' : gameStyles.sidebarClosed}`}>
                 <div className={gameStyles.playerDashboardArea}>
-                  <PlayerDashboard player={humanPlayer} />
+                  <PlayerDashboard player={humanPlayer} gameState={gameState} />
                 </div>
                 <div className={gameStyles.eventFeedWrapper}>
                   <EventFeed events={game.events} gameState={gameState} />

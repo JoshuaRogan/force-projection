@@ -56,6 +56,18 @@ function formatEvent(event: GameEvent, state: GameState): string | null {
       }
       return `${THEATER_NAMES[event.theater]} control scored`;
     }
+    case 'sustainEffect': {
+      return `${playerName(state, event.playerId)} sustain effect triggered (${event.timing})`;
+    }
+    case 'triggerEffect': {
+      return `${playerName(state, event.playerId)} triggered effect (${event.trigger})`;
+    }
+    case 'agendaEffectApplied':
+    case 'crisisEffectApplied':
+    case 'crisisPeek':
+    case 'costReductionApplied':
+    case 'crisisImmunityUsed':
+    case 'orderFailed':
     case 'phaseChange':
     case 'agendaRevealed':
     case 'agendaVote':
