@@ -91,158 +91,191 @@ export default function TutorialPage() {
   );
 
   return (
-    <div className={styles.page}>
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <div>
-            <div className={styles.headerEyebrow}>Command Briefing</div>
-            <h1 className={styles.headerTitle}>Force Projection: Joint Command</h1>
-          </div>
-          <Link href="/" className={styles.backBtn}>Back to Menu</Link>
+    <div className={styles.root}>
+      <div className={styles.corners} />
+
+      <div className={styles.domainStrip}>
+        <span style={{ background: 'var(--color-air)' }} />
+        <span style={{ background: 'var(--color-sea)' }} />
+        <span style={{ background: 'var(--color-exp)' }} />
+        <span style={{ background: 'var(--color-space)' }} />
+        <span style={{ background: 'var(--color-sustain)' }} />
+      </div>
+
+      <div className={styles.sysBar}>
+        <div className={styles.sysBarLeft}>
+          <span className={styles.sysDot} />
+          <span>// Force Projection Doctrine Brief</span>
+          <span className={styles.sysSep}>|</span>
+          <span>REV: CURRENT BUILD</span>
         </div>
-      </header>
+        <div className={styles.sysBarRight}>
+          <Link href="/" className={styles.sysLink}>Main Menu</Link>
+          <span className={styles.sysSep}>|</span>
+          <Link href="/gallery" className={styles.sysLink}>Card Gallery</Link>
+          <span className={styles.sysSep}>|</span>
+          <Link href="/game" className={styles.sysLink}>New Game</Link>
+        </div>
+      </div>
 
-      {/* Sticky nav */}
-      <nav className={styles.nav}>
-        {SECTIONS.map(s => (
-          <a
-            key={s.id}
-            href={`#${s.id}`}
-            className={`${styles.navLink} ${activeSection === s.id ? styles.navLinkActive : ''}`}
-            onClick={() => setActiveSection(s.id)}
-          >
-            {s.label}
-          </a>
-        ))}
-      </nav>
-
-      <main className={styles.main}>
-
-        {/* === OBJECTIVE === */}
-        <section id="objective" className={styles.section}>
-          <h2 className={styles.sectionTitle}>Objective</h2>
-          <p className={styles.lead}>
-            Accumulate the most <strong className={styles.highlight}>Strategic Influence (SI)</strong> across
-            3–5 fiscal years. SI represents your directorate's ability to shape US foreign and defense policy —
-            earned by activating programs, controlling theaters, completing contracts, and scoring at year-end.
-          </p>
-          <div className={styles.calloutGrid}>
-            <div className={styles.callout}>
-              <div className={styles.calloutValue} style={{ color: 'var(--color-si)' }}>SI</div>
-              <div className={styles.calloutLabel}>Strategic Influence — the win condition. Track it on your dashboard.</div>
+      <div className={styles.page}>
+        {/* Header */}
+        <header className={styles.header}>
+          <div className={styles.headerInner}>
+            <div>
+              <div className={styles.headerEyebrow}>Command Briefing</div>
+              <h1 className={styles.headerTitle}>Force Projection: Joint Command</h1>
             </div>
-            <div className={styles.callout}>
-              <div className={styles.calloutValue}>6</div>
-              <div className={styles.calloutLabel}>Theaters to contest. Control them by building presence and stationing programs.</div>
-            </div>
-            <div className={styles.callout}>
-              <div className={styles.calloutValue}>12</div>
-              <div className={styles.calloutLabel}>Actions to choose from each quarter. Pick 2 — they resolve in strict category order.</div>
-            </div>
-            <div className={styles.callout}>
-              <div className={styles.calloutValue}>5</div>
-              <div className={styles.calloutLabel}>Directorates (factions) — each with distinct passives and a once-per-year power.</div>
-            </div>
+            <Link href="/" className={styles.backBtn}>Back to Menu</Link>
           </div>
-        </section>
+        </header>
 
-        {/* === GAME FLOW === */}
-        <section id="flow" className={styles.section}>
-          <h2 className={styles.sectionTitle}>Game Flow</h2>
-          <p className={styles.sectionDesc}>Each fiscal year follows this sequence. A full game runs 3–5 years.</p>
+        {/* Sticky nav */}
+        <nav className={styles.nav}>
+          {SECTIONS.map(s => (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              className={`${styles.navLink} ${activeSection === s.id ? styles.navLinkActive : ''}`}
+              onClick={() => setActiveSection(s.id)}
+            >
+              {s.label}
+            </a>
+          ))}
+        </nav>
 
-          <div className={styles.flowYear}>
-            <div className={styles.flowPhase} style={{ '--phase-color': 'var(--color-card-agenda)' } as React.CSSProperties}>
-              <div className={styles.flowPhaseLetter}>A</div>
-              <div className={styles.flowPhaseContent}>
-                <div className={styles.flowPhaseName}>Congress</div>
-                <div className={styles.flowPhaseDesc}>Vote on the Congressional Agenda using Political Capital. The outcome applies budget bonuses or penalties to all players for the year.</div>
+        <main className={styles.main}>
+          {/* === OBJECTIVE === */}
+          <section id="objective" className={styles.section}>
+            <h2 className={styles.sectionTitle}>Objective</h2>
+            <p className={styles.lead}>
+              Accumulate the most <strong className={styles.highlight}>Strategic Influence (SI)</strong> across
+              a standard <strong>4 fiscal years</strong> (with 3- and 5-year variants supported by config).
+              SI represents your directorate&apos;s ability to shape policy and theater posture.
+            </p>
+            <p className={styles.sectionDesc}>
+              You earn SI by activating programs, controlling theaters, completing contracts, and resolving
+              year-end scoring effects.
+            </p>
+            <div className={styles.calloutGrid}>
+              <div className={styles.callout}>
+                <div className={styles.calloutValue} style={{ color: 'var(--color-si)' }}>SI</div>
+                <div className={styles.calloutLabel}>Strategic Influence — the win condition tracked on your dashboard.</div>
+              </div>
+              <div className={styles.callout}>
+                <div className={styles.calloutValue}>6</div>
+                <div className={styles.calloutLabel}>Theaters to contest through bases, alliances, forward ops, and stationed programs.</div>
+              </div>
+              <div className={styles.callout}>
+                <div className={styles.calloutValue}>12</div>
+                <div className={styles.calloutLabel}>Orders available each quarter. Pick 2, then resolve by category sequence.</div>
+              </div>
+              <div className={styles.callout}>
+                <div className={styles.calloutValue}>16</div>
+                <div className={styles.calloutLabel}>Quarters in the standard game (4 years × 4 quarters).</div>
               </div>
             </div>
-            <div className={styles.flowArrow}>→</div>
-            <div className={styles.flowPhase} style={{ '--phase-color': 'var(--color-card-contract)' } as React.CSSProperties}>
-              <div className={styles.flowPhaseLetter}>B</div>
-              <div className={styles.flowPhaseContent}>
-                <div className={styles.flowPhaseName}>Contract Market</div>
-                <div className={styles.flowPhaseDesc}>A public market of contracts is revealed. Each player may claim up to 2 active contracts to pursue this year.</div>
-              </div>
-            </div>
-            <div className={styles.flowArrow}>→</div>
-            <div className={styles.flowPhase} style={{ '--phase-color': 'var(--color-info)' } as React.CSSProperties}>
-              <div className={styles.flowPhaseLetter}>C</div>
-              <div className={styles.flowPhaseContent}>
-                <div className={styles.flowPhaseName}>4 Quarters</div>
-                <div className={styles.flowPhaseDesc}>Each quarter: reveal a Crisis, plan 2 Orders simultaneously, resolve them in sequence, then clean up.</div>
-              </div>
-            </div>
-            <div className={styles.flowArrow}>→</div>
-            <div className={styles.flowPhase} style={{ '--phase-color': 'var(--color-si)' } as React.CSSProperties}>
-              <div className={styles.flowPhaseLetter}>D</div>
-              <div className={styles.flowPhaseContent}>
-                <div className={styles.flowPhaseName}>Year End</div>
-                <div className={styles.flowPhaseDesc}>Score theater control (4/2/1 SI for 1st/2nd/3rd), evaluate contracts, pay sustain costs for active programs.</div>
-              </div>
-            </div>
-          </div>
+          </section>
 
-          <div className={styles.quarterBreakdown}>
-            <div className={styles.quarterTitle}>Inside a Quarter</div>
-            <div className={styles.quarterSteps}>
-              {[
-                { label: 'Crisis Pulse', desc: 'A Crisis card is revealed. Players without adequate readiness or presence face penalties.' },
-                { label: 'Plan Orders', desc: 'All players simultaneously choose 2 orders from the 12 available. Choices are hidden until revealed.' },
-                { label: 'Resolve Orders', desc: 'Orders execute in category sequence: Influence → Procure → Deploy → Sustain. Ties broken by Intel spend.' },
-                { label: 'Cleanup', desc: 'Production runs — each budget line and secondary resource refills by its production rate.' },
-              ].map((step, i) => (
-                <div key={i} className={styles.quarterStep}>
-                  <div className={styles.quarterStepNum}>{i + 1}</div>
-                  <div>
-                    <div className={styles.quarterStepLabel}>{step.label}</div>
-                    <div className={styles.quarterStepDesc}>{step.desc}</div>
+          {/* === GAME FLOW === */}
+          <section id="flow" className={styles.section}>
+            <h2 className={styles.sectionTitle}>Game Flow</h2>
+            <p className={styles.sectionDesc}>Each fiscal year follows this sequence. Standard game length is 4 years.</p>
+
+            <div className={styles.flowYear}>
+              <div className={styles.flowPhase} style={{ '--phase-color': 'var(--color-card-agenda)' } as React.CSSProperties}>
+                <div className={styles.flowPhaseLetter}>A</div>
+                <div className={styles.flowPhaseContent}>
+                  <div className={styles.flowPhaseName}>Congress</div>
+                  <div className={styles.flowPhaseDesc}>Vote on the Congressional Agenda using Political Capital. The outcome applies pass/fail effects to every player.</div>
+                </div>
+              </div>
+              <div className={styles.flowArrow}>→</div>
+              <div className={styles.flowPhase} style={{ '--phase-color': 'var(--color-card-contract)' } as React.CSSProperties}>
+                <div className={styles.flowPhaseLetter}>B</div>
+                <div className={styles.flowPhaseContent}>
+                  <div className={styles.flowPhaseName}>Contract Market</div>
+                  <div className={styles.flowPhaseDesc}>The market refills to 3 visible contracts. Players can take contracts up to the 2-active-contract cap.</div>
+                </div>
+              </div>
+              <div className={styles.flowArrow}>→</div>
+              <div className={styles.flowPhase} style={{ '--phase-color': 'var(--color-info)' } as React.CSSProperties}>
+                <div className={styles.flowPhaseLetter}>C</div>
+                <div className={styles.flowPhaseContent}>
+                  <div className={styles.flowPhaseName}>4 Quarters</div>
+                  <div className={styles.flowPhaseDesc}>Each quarter: reveal Crisis, plan 2 Orders simultaneously, resolve by category, then cleanup and draw for next quarter.</div>
+                </div>
+              </div>
+              <div className={styles.flowArrow}>→</div>
+              <div className={styles.flowPhase} style={{ '--phase-color': 'var(--color-si)' } as React.CSSProperties}>
+                <div className={styles.flowPhaseLetter}>D</div>
+                <div className={styles.flowPhaseContent}>
+                  <div className={styles.flowPhaseName}>Year End</div>
+                  <div className={styles.flowPhaseDesc}>Process year-end sustain effects, score contracts, and score theater control ({THEATER_CONTROL_SCORING.first}/{THEATER_CONTROL_SCORING.second}/{THEATER_CONTROL_SCORING.third} SI).</div>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.quarterBreakdown}>
+              <div className={styles.quarterTitle}>Inside a Quarter</div>
+              <div className={styles.quarterSteps}>
+                {[
+                  { label: 'Crisis Pulse', desc: 'A Crisis card is revealed. Immediate crisis effects resolve, then quarter-start sustain effects trigger.' },
+                  { label: 'Plan Orders', desc: 'All players choose 2 orders simultaneously. Choices remain hidden until reveal.' },
+                  { label: 'Resolve Orders', desc: 'Orders execute in category sequence: Influence → Procure → Deploy → Sustain.' },
+                  { label: 'Cleanup', desc: 'Discard down to hand limit, clear selected orders, then draw for the next quarter (Q1-Q3).' },
+                ].map((step, i) => (
+                  <div key={i} className={styles.quarterStep}>
+                    <div className={styles.quarterStepNum}>{i + 1}</div>
+                    <div>
+                      <div className={styles.quarterStepLabel}>{step.label}</div>
+                      <div className={styles.quarterStepDesc}>{step.desc}</div>
+                    </div>
                   </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* === RESOURCES === */}
+          <section id="resources" className={styles.section}>
+            <h2 className={styles.sectionTitle}>Resources</h2>
+            <p className={styles.sectionDesc}>
+              You manage two pools of resources. Budget lines fund specific program domains; secondary resources
+              support orders, activations, and political tempo. Each has current amount plus production rates.
+            </p>
+            <p className={styles.sectionDesc}>
+              Core production is applied at the start of each fiscal year, with additional gains coming from orders,
+              contracts, agendas, and sustain effects throughout the year.
+            </p>
+
+            <h3 className={styles.subTitle}>Budget Lines</h3>
+            <div className={styles.resourceGrid}>
+              {BUDGET_LINES.map(r => (
+                <div key={r.key} className={styles.resourceCard} style={{ '--res-color': r.color } as React.CSSProperties}>
+                  <div className={styles.resourceKey}>{r.key}</div>
+                  <div className={styles.resourceName}>{r.name}</div>
+                  <div className={styles.resourceDesc}>{r.desc}</div>
                 </div>
               ))}
             </div>
-          </div>
-        </section>
 
-        {/* === RESOURCES === */}
-        <section id="resources" className={styles.section}>
-          <h2 className={styles.sectionTitle}>Resources</h2>
-          <p className={styles.sectionDesc}>
-            You manage two pools of resources. Budget lines fund specific program domains. Secondary resources
-            are spent on orders, activations, and special actions. Both pools have a current amount and a
-            production rate — production runs every quarter during Cleanup.
-          </p>
+            <h3 className={styles.subTitle} style={{ marginTop: '1.5rem' }}>Secondary Resources</h3>
+            <div className={styles.resourceGrid}>
+              {SECONDARY_RESOURCES.map(r => (
+                <div key={r.key} className={styles.resourceCard} style={{ '--res-color': r.color } as React.CSSProperties}>
+                  <div className={styles.resourceKey}>{r.key}</div>
+                  <div className={styles.resourceName}>{r.name}</div>
+                  <div className={styles.resourceDesc}>{r.desc}</div>
+                </div>
+              ))}
+            </div>
 
-          <h3 className={styles.subTitle}>Budget Lines</h3>
-          <div className={styles.resourceGrid}>
-            {BUDGET_LINES.map(r => (
-              <div key={r.key} className={styles.resourceCard} style={{ '--res-color': r.color } as React.CSSProperties}>
-                <div className={styles.resourceKey}>{r.key}</div>
-                <div className={styles.resourceName}>{r.name}</div>
-                <div className={styles.resourceDesc}>{r.desc}</div>
-              </div>
-            ))}
-          </div>
-
-          <h3 className={styles.subTitle} style={{ marginTop: '1.5rem' }}>Secondary Resources</h3>
-          <div className={styles.resourceGrid}>
-            {SECONDARY_RESOURCES.map(r => (
-              <div key={r.key} className={styles.resourceCard} style={{ '--res-color': r.color } as React.CSSProperties}>
-                <div className={styles.resourceKey}>{r.key}</div>
-                <div className={styles.resourceName}>{r.name}</div>
-                <div className={styles.resourceDesc}>{r.desc}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className={styles.tip}>
-            <strong>Reprogramming:</strong> You can move budget between lines by spending Political Capital.
-            TRANSCOM can convert 2U → 1 of any line once per year for free.
-          </div>
-        </section>
+            <div className={styles.tip}>
+              <strong>Reprogramming:</strong> Budget conversion is effect-driven (for example by directorate powers
+              or agenda/card effects), with Political Capital still serving as the key influence resource.
+            </div>
+          </section>
 
         {/* === THE 12 ORDERS === */}
         <section id="orders" className={styles.section}>
@@ -423,7 +456,8 @@ export default function TutorialPage() {
           <Link href="/game" className={styles.ctaBtn}>Start a Game</Link>
         </div>
 
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
