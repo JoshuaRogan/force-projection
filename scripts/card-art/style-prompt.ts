@@ -131,3 +131,21 @@ export function crisisSubject(card: {
 }): string {
   return `${card.name} — ${card.immediateRule}. A dramatic crisis scene conveying urgency and threat.`;
 }
+
+const DIRECTORATE_FLAVOR: Record<string, string> = {
+  NAVSEA:   'naval shipyards, fleet operations, warships under construction and at sea',
+  AIRCOM:   'air dominance, fighter jets, aerial command and control, sky and clouds',
+  MARFOR:   'expeditionary ground forces, amphibious assault, marines in the field',
+  SPACECY:  'space operations, satellite networks, cyber command, digital battlespace',
+  TRANSCOM: 'strategic airlift, sealift, logistics hubs, global mobility and sustainment',
+};
+
+/** Build a subject description from a directorate definition */
+export function directorateSubject(directorate: {
+  id: string;
+  name: string;
+  subtitle: string;
+}): string {
+  const flavor = DIRECTORATE_FLAVOR[directorate.id] ?? directorate.subtitle;
+  return `${directorate.name} — ${directorate.subtitle}. Visual theme: ${flavor}. Depict the essence of this military command as a bold emblem or scene.`;
+}

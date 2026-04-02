@@ -1,7 +1,14 @@
-import type { Portfolio } from '@fp/shared';
+import type { Portfolio, ProgramCard } from '@fp/shared';
 import { SubtagIcon } from '../icons';
 import { useCardModal } from '../cards/CardModalContext';
 import styles from './Dashboard.module.css';
+
+function hasSIBonus(card: ProgramCard): boolean {
+  if ((card.printedSI ?? 0) > 0) return true;
+  return [...card.activateEffects, ...card.sustainEffects].some(
+    e => e.type === 'gainSI' || e.type === 'conditionalSI'
+  );
+}
 
 const DOMAIN_COLORS: Record<string, string> = {
   AIR: 'var(--color-domain-air)', SEA: 'var(--color-domain-sea)',
@@ -24,7 +31,12 @@ export function PortfolioPanel({ portfolio }: { portfolio: Portfolio }) {
           >
             {slot ? (
               <>
-                <span className={styles.slotName}>{slot.card.name}</span>
+                <span
+                  className={styles.slotName}
+                  style={hasSIBonus(slot.card) ? { color: 'var(--color-si)', fontWeight: 700 } : undefined}
+                >
+                  {slot.card.name}{hasSIBonus(slot.card) && <span style={{ marginLeft: 3, fontSize: '0.8em' }}>★</span>}
+                </span>
                 <span className={styles.slotDomain}>{slot.card.domain}</span>
                 {slot.card.subtags.length > 0 && (
                   <div className={styles.slotSubtags}>
@@ -52,7 +64,12 @@ export function PortfolioPanel({ portfolio }: { portfolio: Portfolio }) {
           >
             {slot ? (
               <>
-                <span className={styles.slotName}>{slot.card.name}</span>
+                <span
+                  className={styles.slotName}
+                  style={hasSIBonus(slot.card) ? { color: 'var(--color-si)', fontWeight: 700 } : undefined}
+                >
+                  {slot.card.name}{hasSIBonus(slot.card) && <span style={{ marginLeft: 3, fontSize: '0.8em' }}>★</span>}
+                </span>
                 <span className={styles.slotDomain}>Year {slot.yearsInPipeline ?? 0}</span>
               </>
             ) : (
@@ -73,7 +90,12 @@ export function PortfolioPanel({ portfolio }: { portfolio: Portfolio }) {
                 style={{ opacity: 0.6 }}
                 onClick={() => showCard({ type: 'program', card })}
               >
-                <span className={styles.slotName}>{card.name}</span>
+                <span
+                  className={styles.slotName}
+                  style={hasSIBonus(card) ? { color: 'var(--color-si)', fontWeight: 700 } : undefined}
+                >
+                  {card.name}{hasSIBonus(card) && <span style={{ marginLeft: 3, fontSize: '0.8em' }}>★</span>}
+                </span>
               </div>
             ))}
           </div>

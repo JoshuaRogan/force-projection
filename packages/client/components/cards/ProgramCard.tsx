@@ -10,14 +10,24 @@ const DOMAIN_LABELS: Record<string, string> = {
   AIR: 'Air', SEA: 'Sea', EXP: 'Expeditionary', SPACE_CYBER: 'Space/Cyber',
 };
 
+function hasSIBonus(card: ProgramCardType): boolean {
+  if ((card.printedSI ?? 0) > 0) return true;
+  return [...card.activateEffects, ...card.sustainEffects].some(
+    e => e.type === 'gainSI' || e.type === 'conditionalSI'
+  );
+}
+
 export function ProgramCard({ card, layout = 'vertical' }: { card: ProgramCardType; layout?: 'horizontal' | 'vertical' }) {
+  const siBonus = hasSIBonus(card);
   return (
     <div className={`${styles.card} ${styles.programCard} ${styles[`domain${card.domain}`]} ${layout === 'horizontal' ? styles.cardHorizontal : ''}`}>
       <CardArt id={card.id} type="programs" name={card.name} />
 
       <div className={styles.cardDetails}>
         <div className={styles.cardHeader}>
-          <div className={styles.cardTitle}>{card.name}</div>
+          <div className={`${styles.cardTitle} ${siBonus ? styles.siCardTitle : ''}`}>
+            {card.name}{siBonus && <span className={styles.siStar}>★</span>}
+          </div>
           <div className={styles.cardSubtitle}>{DOMAIN_LABELS[card.domain]} Program</div>
         </div>
 
@@ -68,13 +78,11 @@ export function ProgramCard({ card, layout = 'vertical' }: { card: ProgramCardTy
           )}
         </div>
 
-        <div className={styles.cardFooter}>
-          {card.printedSI ? (
+        {card.printedSI ? (
+          <div className={styles.cardFooter}>
             <span className={styles.siBadge}>+{card.printedSI} SI</span>
-          ) : (
-            <span>No printed SI</span>
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

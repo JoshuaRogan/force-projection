@@ -19,7 +19,9 @@ export function ContractCard({
 
       <div className={styles.cardDetails}>
         <div className={styles.cardHeader}>
-          <div className={styles.cardTitle}>{card.name}</div>
+          <div className={`${styles.cardTitle} ${card.rewardSI > 0 ? styles.siCardTitle : ''}`}>
+            {card.name}{card.rewardSI > 0 && <span className={styles.siStar}>★</span>}
+          </div>
           <div className={styles.cardSubtitle}>Contract</div>
         </div>
 

@@ -101,6 +101,17 @@
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.9);
 }
 
+.siCardName {
+  color: var(--color-si);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.9), 0 0 24px color-mix(in srgb, var(--color-si) 50%, transparent);
+}
+
+.siStar {
+  margin-left: 6px;
+  font-size: 0.75em;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-si) 70%, transparent));
+}
+
 /* === Body === */
 .body {
   padding: var(--space-lg) var(--space-xl) var(--space-xl);

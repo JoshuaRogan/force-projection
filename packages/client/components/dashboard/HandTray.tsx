@@ -34,12 +34,15 @@ export function HandTray({ hand }: { hand: ProgramCard[] }) {
 
   return (
     <div className={styles.handTray}>
-      <div className={styles.handTrayHeader}>Hand ({hand.length}) — click any card to view details</div>
       <div className={styles.handList}>
         {hand.map(card => {
           const domainColor = DOMAIN_COLORS[card.domain];
           const variant = CARD_ART_VARIANTS[card.id] ?? 1;
           const artSrc = `/cards/programs/${card.id}-v${variant}.png`;
+          const hasSI = (card.printedSI ?? 0) > 0 ||
+            [...card.activateEffects, ...card.sustainEffects].some(
+              e => e.type === 'gainSI' || e.type === 'conditionalSI'
+            );
           return (
             <div
               key={card.id}
@@ -54,7 +57,12 @@ export function HandTray({ hand }: { hand: ProgramCard[] }) {
                 </span>
               </div>
               <div className={styles.handCardInfo}>
-                <div className={styles.handCardName}>{card.name}</div>
+                <div
+                  className={styles.handCardName}
+                  style={hasSI ? { color: 'var(--color-si)', fontWeight: 700 } : undefined}
+                >
+                  {card.name}{hasSI && <span style={{ marginLeft: 3, fontSize: '0.85em', filter: 'drop-shadow(0 0 3px color-mix(in srgb, var(--color-si) 60%, transparent))' }}>★</span>}
+                </div>
                 <div className={styles.handCardCostRows}>
                   <div className={styles.handCardCostRow}>
                     <span className={styles.handCardCostLabel}>P</span>

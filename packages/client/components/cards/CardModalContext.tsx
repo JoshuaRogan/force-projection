@@ -1,15 +1,17 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import type { ProgramCard, ContractCard, CrisisCard, AgendaCard } from '@fp/shared';
+import type { ProgramCard, ContractCard, CrisisCard, AgendaCard, DirectorateDefinition } from '@fp/shared';
 import { CardDetailModal } from './CardDetailModal';
+import { DirectorateModal } from './DirectorateModal';
 import styles from './Cards.module.css';
 
 export type CardModalData =
   | { type: 'program'; card: ProgramCard }
   | { type: 'contract'; card: ContractCard }
   | { type: 'crisis'; card: CrisisCard }
-  | { type: 'agenda'; card: AgendaCard };
+  | { type: 'agenda'; card: AgendaCard }
+  | { type: 'directorate'; directorate: DirectorateDefinition };
 
 interface CardModalContextType {
   showCard: (data: CardModalData) => void;
@@ -38,7 +40,9 @@ function CardModalOverlay({ data, onClose }: { data: CardModalData; onClose: () 
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
         <button className={styles.modalClose} onClick={onClose} aria-label="Close">✕</button>
-        <CardDetailModal data={data} />
+        {data.type === 'directorate'
+          ? <DirectorateModal directorate={data.directorate} />
+          : <CardDetailModal data={data} />}
       </div>
     </div>
   );

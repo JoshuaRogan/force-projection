@@ -79,23 +79,8 @@ function GameBoard({ seed }: { seed: number }) {
           </button>
         )}
 
-        {/* Panel visibility toggles — always in top bar */}
-        <div className={gameStyles.panelToggles}>
-          <button
-            className={`${gameStyles.panelToggleBtn} ${sidebarOpen ? gameStyles.panelToggleBtnActive : ''}`}
-            onClick={() => setSidebarOpen(o => !o)}
-          >
-            <span className={gameStyles.panelToggleDot} />
-            Stats
-          </button>
-          <button
-            className={`${gameStyles.panelToggleBtn} ${handOpen ? gameStyles.panelToggleBtnActive : ''}`}
-            onClick={() => setHandOpen(o => !o)}
-          >
-            <span className={gameStyles.panelToggleDot} />
-            Hand {handCount > 0 && `(${handCount})`}
-          </button>
-        </div>
+        {/* spacer to push right section */}
+        <div style={{ flex: 1 }} />
 
         <div className={gameStyles.topBarRight}>
           {gameState.turnOrder

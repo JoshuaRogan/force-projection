@@ -181,6 +181,13 @@ function CrisisBody({ card }: { card: CrisisCard }) {
   );
 }
 
+function programHasSIBonus(card: ProgramCard): boolean {
+  if ((card.printedSI ?? 0) > 0) return true;
+  return [...card.activateEffects, ...card.sustainEffects].some(
+    e => e.type === 'gainSI' || e.type === 'conditionalSI'
+  );
+}
+
 export function CardDetailModal({ data }: { data: CardModalData }) {
   const meta = TYPE_META[data.type];
   const accent = data.type === 'program'
@@ -192,6 +199,11 @@ export function CardDetailModal({ data }: { data: CardModalData }) {
 
   const prose = data.card.prose;
 
+  const siBonus =
+    data.type === 'program' ? programHasSIBonus(data.card) :
+    data.type === 'contract' ? data.card.rewardSI > 0 :
+    false;
+
   return (
     <div className={styles.modal} style={{ '--accent': accent } as React.CSSProperties}>
       <div className={styles.accentBar} />
@@ -201,7 +213,9 @@ export function CardDetailModal({ data }: { data: CardModalData }) {
         <ArtInner id={data.card.id} folder={meta.artFolder} name={data.card.name} />
         <div className={styles.nameOverlay}>
           <div className={styles.typePill}>{subtitleParts.join(' · ')}</div>
-          <h2 className={styles.cardName}>{data.card.name}</h2>
+          <h2 className={`${styles.cardName} ${siBonus ? styles.siCardName : ''}`}>
+            {data.card.name}{siBonus && <span className={styles.siStar}>★</span>}
+          </h2>
         </div>
       </div>
 
@@ -223,13 +237,11 @@ export function CardDetailModal({ data }: { data: CardModalData }) {
       </div>
 
       {/* Footer */}
-      {data.type === 'program' && (
+      {data.type === 'program' && data.card.printedSI ? (
         <div className={styles.footer}>
-          {data.card.printedSI
-            ? <span className={styles.siBadge}>+{data.card.printedSI} SI</span>
-            : <span className={styles.footerMuted}>No printed SI</span>}
+          <span className={styles.siBadge}>+{data.card.printedSI} SI</span>
         </div>
-      )}
+      ) : null}
       {data.type === 'contract' && (
         <div className={styles.footer}>
           <span className={styles.siBadge}>+{data.card.rewardSI} SI on complete</span>

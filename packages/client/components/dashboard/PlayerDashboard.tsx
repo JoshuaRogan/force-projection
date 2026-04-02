@@ -79,7 +79,14 @@ export function PlayerDashboard({ player }: { player: PlayerState }) {
           <div className={styles.playerName} style={{ color: DIRECTORATE_CSS[player.directorate] }}>
             {player.name}
           </div>
-          <div className={styles.directorate}>{dir.name}</div>
+          <button
+            className={styles.directorateBtn}
+            style={{ color: DIRECTORATE_CSS[player.directorate] }}
+            onClick={() => showCard({ type: 'directorate', directorate: dir })}
+            title={`View ${dir.name} abilities`}
+          >
+            {dir.name} ·  {dir.subtitle}
+          </button>
         </div>
         <button className={styles.siBadge} onClick={() => setShowSIInfo(true)} title="Strategic Influence — your score">
           <span className={styles.siValue}>{player.si}</span>

@@ -137,6 +137,18 @@
   border: 1px solid var(--border-subtle);
 }
 
+/* SI card title highlight */
+.siCardTitle {
+  color: var(--color-si);
+}
+
+.siStar {
+  color: var(--color-si);
+  font-size: 0.85em;
+  margin-left: 4px;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-si) 60%, transparent));
+}
+
 /* SI badge */
 .siBadge {
   display: inline-flex;

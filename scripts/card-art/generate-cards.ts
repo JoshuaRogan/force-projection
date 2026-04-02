@@ -34,6 +34,7 @@ import {
   contractSubject,
   agendaSubject,
   crisisSubject,
+  directorateSubject,
 } from './style-prompt';
 
 // Import card data directly from source (tsx resolves .ts imports)
@@ -41,13 +42,14 @@ import { PROGRAM_CARDS } from '../../packages/shared/src/data/programs';
 import { CONTRACT_CARDS } from '../../packages/shared/src/data/contracts';
 import { AGENDA_CARDS } from '../../packages/shared/src/data/agendas';
 import { CRISIS_CARDS } from '../../packages/shared/src/data/crises';
+import { DIRECTORATES } from '../../packages/shared/src/directorates';
 
 // ── Card → prompt mapping ──────────────────────────────────────────────
 
 interface CardEntry {
   id: string;
   subject: string;
-  type: 'programs' | 'contracts' | 'agendas' | 'crises';
+  type: 'programs' | 'contracts' | 'agendas' | 'crises' | 'directorates';
 }
 
 function buildCardList(typeFilter?: string): CardEntry[] {
@@ -71,6 +73,11 @@ function buildCardList(typeFilter?: string): CardEntry[] {
   if (!typeFilter || typeFilter === 'crises') {
     for (const c of CRISIS_CARDS) {
       entries.push({ id: c.id, subject: crisisSubject(c), type: 'crises' });
+    }
+  }
+  if (!typeFilter || typeFilter === 'directorates') {
+    for (const d of Object.values(DIRECTORATES)) {
+      entries.push({ id: d.id, subject: directorateSubject(d), type: 'directorates' });
     }
   }
 

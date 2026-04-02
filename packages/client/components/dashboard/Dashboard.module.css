@@ -42,6 +42,24 @@
   margin-top: 3px;
 }
 
+.directorateBtn {
+  all: unset;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 3px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity var(--transition-normal);
+}
+
+.directorateBtn:hover {
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .siBadge {
   all: unset;
   display: flex;
@@ -669,22 +687,7 @@
 
 /* === Hand Tray === */
 .handTray {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  border-top-color: color-mix(in srgb, var(--color-card-program) 20%, var(--border-subtle));
-  padding: var(--space-sm) var(--space-md);
-  box-shadow: var(--shadow-md);
-}
-
-.handTrayHeader {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-bottom: var(--space-xs);
+  padding: var(--space-xs) var(--space-md) var(--space-sm);
 }
 
 .handList {

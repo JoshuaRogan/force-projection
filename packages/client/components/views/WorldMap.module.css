@@ -56,12 +56,26 @@
   padding: 5px 14px;
   background: rgba(167, 139, 250, 0.05);
   border-top: 1px dashed rgba(74, 85, 128, 0.5);
-  cursor: default;
+  cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
 }
 
 .spaceCyberBar:hover {
-  cursor: crosshair;
+  background: rgba(167, 139, 250, 0.08);
+}
+
+.spaceCyberSelected {
+  border-top-style: solid;
+  border-top-width: 2px;
+}
+
+.spaceCyberHint {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: rgba(232, 236, 244, 0.25);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .spaceCyberLabel {
@@ -80,14 +94,33 @@
 }
 
 .spaceBadge {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px 1px 4px;
+  border-radius: 10px;
   flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.spaceBadgeLabel {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: rgba(10, 12, 20, 0.9);
+  letter-spacing: 0.04em;
+}
+
+.spaceBadgeStr {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: rgba(10, 12, 20, 0.9);
 }
 
 .spaceLeader {
-  box-shadow: 0 0 4px currentColor;
+  box-shadow: 0 0 6px currentColor;
+  opacity: 1;
   animation: leaderPulse 2.4s ease-in-out infinite;
 }
 
@@ -166,16 +199,195 @@
   text-align: right;
 }
 
+.tooltipEmpty {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 2px 0;
+}
+
+/* ── Theater detail panel (on click) ──────────────────────────────────────── */
+
+.detailPanel {
+  position: absolute;
+  width: 300px;
+  background: color-mix(in srgb, var(--bg-card) 96%, transparent);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg), 0 0 40px rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
+  z-index: 20;
+  overflow: hidden;
+  animation: detailIn 140ms ease;
+}
+
+@keyframes detailIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--color-si);
+  background: var(--bg-elevated);
+}
+
+.detailTitle {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.detailLeader {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+
+.detailClose {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0 0 0 8px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: color var(--transition-fast);
+}
+
+.detailClose:hover {
+  color: var(--text-primary);
+}
+
+.detailEmpty {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 12px;
+  text-align: center;
+}
+
+.detailRows {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  transition: background var(--transition-fast);
+}
+
+.detailRow:hover {
+  background: var(--bg-hover);
+}
+
+.detailRowHuman {
+  background: color-mix(in srgb, var(--dir-color) 6%, transparent);
+}
+
+.detailRowLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 70px;
+}
+
+.detailPlayerName {
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.detailPlayerDir {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--dir-color, var(--text-muted));
+}
+
+.detailAssets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  flex: 1;
+}
+
+.detailChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--dir-color, var(--text-secondary));
+  background: color-mix(in srgb, var(--dir-color, var(--text-muted)) 10%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--dir-color, var(--text-muted)) 20%, var(--border-subtle));
+  border-radius: 3px;
+  padding: 2px 5px 2px 4px;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.detailChipLabel {
+  opacity: 0.8;
+}
+
+.detailNone {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.detailStr {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--dir-color, var(--text-primary));
+  min-width: 20px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .tooltipPresence {
   display: flex;
   gap: 3px;
   margin-left: auto;
-  color: var(--text-muted);
-  font-size: 0.55rem;
 }
 
-.tooltipPresence span {
-  background: var(--bg-elevated);
+.tooltipChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--dir-color, var(--text-muted));
+  background: color-mix(in srgb, var(--dir-color, var(--text-muted)) 10%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--dir-color, var(--text-muted)) 25%, var(--border-subtle));
   border-radius: 2px;
-  padding: 0 3px;
+  padding: 1px 4px 1px 3px;
+  line-height: 1;
+  white-space: nowrap;
 }
