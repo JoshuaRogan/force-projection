@@ -66,14 +66,19 @@ function SIInfoModal({ si, onClose, audience = 'self' }: { si: number; onClose: 
 
 export type PlayerDashboardVisibility = 'self' | 'public';
 
+/** `mothballed-only`: active + pipeline omitted (shown in personal view hero). */
+export type PortfolioSidebarMode = 'full' | 'mothballed-only';
+
 export function PlayerDashboard({
   player,
   gameState,
   visibility = 'self',
+  portfolioSidebarMode = 'full',
 }: {
   player: PlayerState;
   gameState?: GameState;
   visibility?: PlayerDashboardVisibility;
+  portfolioSidebarMode?: PortfolioSidebarMode;
 }) {
   const { showCard } = useCardModal();
   const [showSIInfo, setShowSIInfo] = useState(false);
@@ -174,6 +179,7 @@ export function PlayerDashboard({
         player={player}
         gameState={gameState}
         visibility={isPublic ? 'public' : 'full'}
+        hideActiveAndPipeline={!isPublic && portfolioSidebarMode === 'mothballed-only'}
       />
     </div>
   );

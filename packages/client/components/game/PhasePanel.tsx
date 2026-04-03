@@ -31,6 +31,8 @@ interface PhasePanelProps {
   onAcknowledgeCrisis: () => void;
   onSubmitContractChoice: (contractId: string) => void;
   onSubmitHandDiscard: (cardIds: string[]) => void;
+  /** Personal view: no order picker; use Strategic view to submit orders. */
+  hideOrdersPanel?: boolean;
 }
 
 const PHASE_HELP: Record<string, string> = {
@@ -180,6 +182,15 @@ export function PhasePanel(props: PhasePanelProps) {
         );
       }
       if (phase.step === 'planOrders') {
+        if (props.hideOrdersPanel) {
+          const p = gameState.players[humanPlayerId];
+          const locked = p?.selectedOrders;
+          if (locked) {
+            const lines = locked.map(choice => ORDERS[choice.order].name);
+            return <WaitingPanel title="Orders locked in" lines={lines} />;
+          }
+          return null;
+        }
         return (
           <>
             {helpElement}

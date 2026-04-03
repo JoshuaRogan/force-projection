@@ -268,7 +268,6 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
           humanPlayerId={humanPlayerId}
           gameId={gameId}
           humanPlayer={humanPlayer}
-          events={game.events}
           recentEvents={game.recentEvents}
           showingResolution={game.showingResolution}
           onVote={game.submitVote}

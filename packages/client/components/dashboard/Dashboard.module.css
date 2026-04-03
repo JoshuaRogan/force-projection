@@ -770,6 +770,11 @@
   box-shadow: 0 6px 20px rgba(0,0,0,0.5);
 }
 
+.handCard:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--border-accent) 75%, transparent);
+  outline-offset: 2px;
+}
+
 .handCardArtWrap {
   position: relative;
   width: 100%;
@@ -855,4 +860,38 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.handCardMeta {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.25;
+}
+
+.handCardEmpty {
+  flex-shrink: 0;
+  width: 190px;
+  align-self: stretch;
+  min-height: 260px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm);
+}
+
+.handCardEmptyLabel {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: center;
+  line-height: 1.3;
 }

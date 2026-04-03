@@ -4,7 +4,7 @@ import type { GameState, PlayerState, GameEvent, OrderChoice, BudgetLine } from 
 import { PlayerDashboard, HandTray } from '@/components/dashboard';
 import { PhasePanel } from '@/components/game/PhasePanel';
 import { PhaseTimeline } from '@/components/game/PhaseTimeline';
-import { EventFeed } from '@/components/game/EventFeed';
+import { PersonalPortfolioHero } from './PersonalPortfolioHero';
 import styles from './PersonalView.module.css';
 
 interface PersonalViewProps {
@@ -12,7 +12,6 @@ interface PersonalViewProps {
   humanPlayerId: string;
   gameId?: string;
   humanPlayer: PlayerState;
-  events: GameEvent[];
   recentEvents: GameEvent[];
   showingResolution: boolean;
   onVote: (amount: number, support: boolean) => void;
@@ -35,7 +34,6 @@ export function PersonalView({
   humanPlayerId,
   gameId,
   humanPlayer,
-  events,
   recentEvents,
   showingResolution,
   onVote,
@@ -52,6 +50,14 @@ export function PersonalView({
   onSubmitContractChoice,
   onSubmitHandDiscard,
 }: PersonalViewProps) {
+  const phase = gameState.phase;
+  const me = gameState.players[humanPlayerId];
+  const hidePhasePanelChrome =
+    phase.type === 'quarter' &&
+    phase.step === 'planOrders' &&
+    !showingResolution &&
+    me?.selectedOrders === null;
+
   return (
     <div className={styles.layout}>
       {/* Timeline — full width */}
@@ -63,40 +69,44 @@ export function PersonalView({
       <div className={styles.body}>
         {/* Left: player stats */}
         <aside className={styles.statsCol}>
-          <PlayerDashboard player={humanPlayer} gameState={gameState} />
+          <PlayerDashboard
+            player={humanPlayer}
+            gameState={gameState}
+            portfolioSidebarMode="mothballed-only"
+          />
         </aside>
 
-        {/* Right: phase panel + event feed */}
+        {/* Right: program strips + phase panel (no activity log) */}
         <main className={styles.mainCol}>
-          <div className={styles.phasePanel}>
-            <PhasePanel
-              gameState={gameState}
-              humanPlayerId={humanPlayerId}
-              gameId={gameId}
-              onVote={onVote}
-              onEndContractMarket={onEndContractMarket}
-              onSubmitOrders={onSubmitOrders}
-              onUseNavseaAbility={onUseNavseaAbility}
-              onUseTranscomAbility={onUseTranscomAbility}
-              onUseSpacecyAbility={onUseSpacecyAbility}
-              onBuryPeekedCrisis={onBuryPeekedCrisis}
-              finalScores={getFinalScores()}
-              onNewGame={onNewGame}
-              showingResolution={showingResolution}
-              recentEvents={recentEvents}
-              onSkipResolution={onSkipResolution}
-              onAcknowledgeCrisis={onAcknowledgeCrisis}
-              onSubmitContractChoice={onSubmitContractChoice}
-              onSubmitHandDiscard={onSubmitHandDiscard}
-            />
-          </div>
-          <div className={styles.feedWrapper}>
-            <EventFeed events={events} gameState={gameState} />
-          </div>
+          <PersonalPortfolioHero player={humanPlayer} gameState={gameState} />
+          {!hidePhasePanelChrome && (
+            <div className={styles.phasePanel}>
+              <PhasePanel
+                gameState={gameState}
+                humanPlayerId={humanPlayerId}
+                gameId={gameId}
+                onVote={onVote}
+                onEndContractMarket={onEndContractMarket}
+                onSubmitOrders={onSubmitOrders}
+                onUseNavseaAbility={onUseNavseaAbility}
+                onUseTranscomAbility={onUseTranscomAbility}
+                onUseSpacecyAbility={onUseSpacecyAbility}
+                onBuryPeekedCrisis={onBuryPeekedCrisis}
+                finalScores={getFinalScores()}
+                onNewGame={onNewGame}
+                showingResolution={showingResolution}
+                recentEvents={recentEvents}
+                onSkipResolution={onSkipResolution}
+                onAcknowledgeCrisis={onAcknowledgeCrisis}
+                onSubmitContractChoice={onSubmitContractChoice}
+                onSubmitHandDiscard={onSubmitHandDiscard}
+                hideOrdersPanel
+              />
+            </div>
+          )}
         </main>
       </div>
 
-      {/* Bottom: hand tray */}
       <footer className={styles.handArea}>
         <HandTray hand={humanPlayer.hand} />
       </footer>

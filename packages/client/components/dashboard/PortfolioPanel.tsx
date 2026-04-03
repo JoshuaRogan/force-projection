@@ -1,4 +1,4 @@
-import type { Portfolio, ProgramCard, PlayerState, GameState } from '@fp/shared';
+import type { Portfolio, PlayerState, GameState } from '@fp/shared';
 import { hasSIBonus } from '@fp/shared';
 import { SubtagIcon } from '../icons';
 import { useCardModal } from '../cards/CardModalContext';
@@ -17,20 +17,30 @@ export function PortfolioPanel({
   player,
   gameState,
   visibility = 'full',
+  /** When true (self view only), active + pipeline are omitted — shown elsewhere (e.g. personal view hero). */
+  hideActiveAndPipeline = false,
 }: {
   portfolio: Portfolio;
   player?: PlayerState;
   gameState?: GameState;
   visibility?: PortfolioVisibility;
+  hideActiveAndPipeline?: boolean;
 }) {
   const { showCard } = useCardModal();
   const showPipelineAndMothballed = visibility === 'full';
+  const omitPrograms = hideActiveAndPipeline && visibility === 'full';
+
+  if (omitPrograms && portfolio.mothballed.length === 0) {
+    return null;
+  }
 
   return (
     <div className={styles.section}>
-      <div className={styles.sectionTitle}>Active Programs</div>
-      <div className={styles.portfolioGrid}>
-        {portfolio.active.map((slot, i) => (
+      {!omitPrograms && (
+        <>
+          <div className={styles.sectionTitle}>Active Programs</div>
+          <div className={styles.portfolioGrid}>
+            {portfolio.active.map((slot, i) => (
           <div
             key={i}
             className={`${styles.portfolioSlot} ${slot ? styles.portfolioSlotFilled : ''} ${slot ? styles.portfolioSlotClickable : ''}`}
@@ -63,7 +73,9 @@ export function PortfolioPanel({
             )}
           </div>
         ))}
-      </div>
+          </div>
+        </>
+      )}
 
       {visibility === 'public' && (
         <>
@@ -80,7 +92,7 @@ export function PortfolioPanel({
         </>
       )}
 
-      {showPipelineAndMothballed && (
+      {showPipelineAndMothballed && !omitPrograms && (
         <>
           <div className={styles.sectionTitle}>Pipeline</div>
           <div className={styles.portfolioGrid}>
@@ -107,29 +119,29 @@ export function PortfolioPanel({
               </div>
             ))}
           </div>
+        </>
+      )}
 
-          {portfolio.mothballed.length > 0 && (
-            <>
-              <div className={styles.sectionTitle}>Mothballed ({portfolio.mothballed.length})</div>
-              <div className={styles.portfolioGrid}>
-                {portfolio.mothballed.map(card => (
-                  <div
-                    key={card.id}
-                    className={`${styles.portfolioSlot} ${styles.portfolioSlotFilled} ${styles.portfolioSlotClickable}`}
-                    style={{ opacity: 0.6 }}
-                    onClick={() => showCard({ type: 'program', card })}
-                  >
-                    <span
-                      className={styles.slotName}
-                      style={hasSIBonus(card) ? { color: 'var(--color-si)', fontWeight: 700 } : undefined}
-                    >
-                      {card.name}{hasSIBonus(card) && <span style={{ marginLeft: 3, fontSize: '0.8em' }}>★</span>}
-                    </span>
-                  </div>
-                ))}
+      {showPipelineAndMothballed && portfolio.mothballed.length > 0 && (
+        <>
+          <div className={styles.sectionTitle}>Mothballed ({portfolio.mothballed.length})</div>
+          <div className={styles.portfolioGrid}>
+            {portfolio.mothballed.map(card => (
+              <div
+                key={card.id}
+                className={`${styles.portfolioSlot} ${styles.portfolioSlotFilled} ${styles.portfolioSlotClickable}`}
+                style={{ opacity: 0.6 }}
+                onClick={() => showCard({ type: 'program', card })}
+              >
+                <span
+                  className={styles.slotName}
+                  style={hasSIBonus(card) ? { color: 'var(--color-si)', fontWeight: 700 } : undefined}
+                >
+                  {card.name}{hasSIBonus(card) && <span style={{ marginLeft: 3, fontSize: '0.8em' }}>★</span>}
+                </span>
               </div>
-            </>
-          )}
+            ))}
+          </div>
         </>
       )}
     </div>
