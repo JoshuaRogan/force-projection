@@ -93,6 +93,7 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
   const [viewMode, setViewMode] = useState<ViewMode>('command');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [handOpen, setHandOpen] = useState(true);
+  const [opponentProfileId, setOpponentProfileId] = useState<string | null>(null);
   const shownIntroRef = useRef(false);
 
   const { gameState, humanPlayerId } = game;
@@ -147,11 +148,17 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
             .map(pid => {
               const p = gameState.players[pid];
               return (
-                <div key={pid} className={gameStyles.opponentChip}>
+                <button
+                  key={pid}
+                  type="button"
+                  className={gameStyles.opponentChipBtn}
+                  onClick={() => setOpponentProfileId(pid)}
+                  title={`View public stats: ${p.name}`}
+                >
                   <span>{p.name}</span>
                   <span className={gameStyles.opponentDir}>{p.directorate}</span>
                   <span className={gameStyles.opponentSI}>{p.si}</span>
-                </div>
+                </button>
               );
             })}
           <button onClick={game.newGame} className={gameStyles.newGameBtn}>New Game</button>
@@ -216,22 +223,37 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
             </div>
           </div>
 
-          {/* Hand toggle bar — always visible */}
-          <button
-            className={gameStyles.handToggleBar}
-            onClick={() => setHandOpen(o => !o)}
+          {/* Hand dock: one overlay; bar is the top edge; whole block slides up when open */}
+          <div
+            id="game-hand-panel"
+            className={`${gameStyles.handDock} ${handOpen ? '' : gameStyles.handDockCollapsed}`}
+            role="region"
+            aria-label="Your hand"
           >
-            <span className={gameStyles.handToggleLabel}>
-              Hand ({handCount} card{handCount !== 1 ? 's' : ''})
-            </span>
-            <span className={`${gameStyles.handToggleChevron} ${handOpen ? gameStyles.handToggleChevronOpen : ''}`}>
-              ▲
-            </span>
-          </button>
-
-          {/* Collapsible hand tray */}
-          <div className={`${gameStyles.handArea} ${handOpen ? '' : gameStyles.handAreaClosed}`}>
-            <HandTray hand={humanPlayer.hand} />
+            <button
+              type="button"
+              className={gameStyles.handDockBar}
+              onClick={() => setHandOpen(o => !o)}
+              aria-expanded={handOpen}
+              aria-controls="game-hand-panel-body"
+            >
+              <span className={gameStyles.handDockBarLabel}>
+                Hand ({handCount} card{handCount !== 1 ? 's' : ''})
+              </span>
+              <span
+                className={`${gameStyles.handDockBarChevron} ${handOpen ? gameStyles.handDockBarChevronOpen : ''}`}
+                aria-hidden
+              >
+                ▲
+              </span>
+            </button>
+            <div
+              id="game-hand-panel-body"
+              className={gameStyles.handDockBody}
+              aria-hidden={!handOpen}
+            >
+              <HandTray hand={humanPlayer.hand} />
+            </div>
           </div>
         </div>
       )}
@@ -268,6 +290,41 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
           humanPlayerId={humanPlayerId}
           events={game.events}
         />
+      )}
+
+      {opponentProfileId && gameState.players[opponentProfileId] && (
+        <div
+          className={gameStyles.opponentStatsOverlay}
+          onClick={() => setOpponentProfileId(null)}
+          role="presentation"
+        >
+          <div
+            className={gameStyles.opponentStatsPanel}
+            onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Public stats: ${gameState.players[opponentProfileId].name}`}
+          >
+            <div className={gameStyles.opponentStatsToolbar}>
+              <span className={gameStyles.opponentStatsToolbarLabel}>Public record</span>
+              <button
+                type="button"
+                className={gameStyles.opponentStatsClose}
+                onClick={() => setOpponentProfileId(null)}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className={gameStyles.opponentStatsScroll}>
+              <PlayerDashboard
+                player={gameState.players[opponentProfileId]}
+                gameState={gameState}
+                visibility="public"
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

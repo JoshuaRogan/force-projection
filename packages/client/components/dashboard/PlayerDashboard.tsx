@@ -13,7 +13,8 @@ const DIRECTORATE_CSS: Record<string, string> = {
   TRANSCOM: 'var(--color-transcom)',
 };
 
-function SIInfoModal({ si, onClose }: { si: number; onClose: () => void }) {
+function SIInfoModal({ si, onClose, audience = 'self' }: { si: number; onClose: () => void; audience?: 'self' | 'other' }) {
+  const scoreLabel = audience === 'self' ? 'Your Score' : 'Strategic Influence';
   return (
     <div className={styles.resourceInfoOverlay} onClick={onClose}>
       <div className={styles.resourceInfoPanel} onClick={e => e.stopPropagation()}>
@@ -28,11 +29,13 @@ function SIInfoModal({ si, onClose }: { si: number; onClose: () => void }) {
           <div className={styles.resourceStatusRow}>
             <div className={styles.resourceStatusBlock}>
               <span className={styles.resourceStatusValue} style={{ color: 'var(--color-si)' }}>{si}</span>
-              <span className={styles.resourceStatusLabel}>Your Score</span>
+              <span className={styles.resourceStatusLabel}>{scoreLabel}</span>
             </div>
           </div>
           <p className={styles.resourceInfoDesc}>
-            Strategic Influence is your score. The player with the most SI at the end of the game wins.
+            {audience === 'self'
+              ? 'Strategic Influence is your score. The player with the most SI at the end of the game wins.'
+              : 'Strategic Influence is the player’s score toward winning. The highest SI at game end wins.'}
           </p>
           <div className={styles.resourceInfoUsedBlock}>
             <span className={styles.resourceInfoUsedLabel}>How to earn SI</span>
@@ -61,17 +64,31 @@ function SIInfoModal({ si, onClose }: { si: number; onClose: () => void }) {
   );
 }
 
-export function PlayerDashboard({ player, gameState }: { player: PlayerState; gameState?: GameState }) {
+export type PlayerDashboardVisibility = 'self' | 'public';
+
+export function PlayerDashboard({
+  player,
+  gameState,
+  visibility = 'self',
+}: {
+  player: PlayerState;
+  gameState?: GameState;
+  visibility?: PlayerDashboardVisibility;
+}) {
   const { showCard } = useCardModal();
   const [showSIInfo, setShowSIInfo] = useState(false);
   const dir = DIRECTORATES[player.directorate];
   const readinessPct = Math.min(100, Math.max(0, player.readiness * 10));
   const readinessColor = player.readiness >= 7 ? 'var(--color-success)'
     : player.readiness >= 4 ? 'var(--color-warning)' : 'var(--color-danger)';
+  const isPublic = visibility === 'public';
+  const siAudience = isPublic ? 'other' : 'self';
 
   return (
     <div className={styles.dashboard}>
-      {showSIInfo && <SIInfoModal si={player.si} onClose={() => setShowSIInfo(false)} />}
+      {showSIInfo && (
+        <SIInfoModal si={player.si} onClose={() => setShowSIInfo(false)} audience={siAudience} />
+      )}
 
       {/* Header */}
       <div className={styles.playerHeader}>
@@ -88,7 +105,11 @@ export function PlayerDashboard({ player, gameState }: { player: PlayerState; ga
             {dir.name} ·  {dir.subtitle}
           </button>
         </div>
-        <button className={styles.siBadge} onClick={() => setShowSIInfo(true)} title="Strategic Influence — your score">
+        <button
+          className={styles.siBadge}
+          onClick={() => setShowSIInfo(true)}
+          title={isPublic ? 'Strategic Influence — their score' : 'Strategic Influence — your score'}
+        >
           <span className={styles.siValue}>{player.si}</span>
           <span className={styles.siLabel}>Score</span>
         </button>
@@ -108,32 +129,52 @@ export function PlayerDashboard({ player, gameState }: { player: PlayerState; ga
       {/* Resources */}
       <ResourcePanel resources={player.resources} />
 
-      {/* Active Contracts */}
-      {player.contracts.length > 0 && (
+      {/* Contracts */}
+      {isPublic ? (
         <div className={styles.section}>
-          <div className={styles.sectionTitle}>Contracts — click to view</div>
-          {player.contracts.map(ac => (
-            <div
-              key={ac.card.id}
-              className={`${styles.contractCard} ${styles.contractCardClickable}`}
-              onClick={() => showCard({ type: 'contract', card: ac.card })}
-            >
-              <div className={styles.contractHeader}>
-                <span className={styles.contractName}>{ac.card.name}</span>
-                <span className={styles.contractReward}>+{ac.card.rewardSI} SI</span>
-              </div>
-              <div className={styles.contractReqs}>
-                {ac.card.requirements.map((req, i) => (
-                  <div key={i} className={styles.contractReq}>&#x2022; {colorizeDesc(req.description)}</div>
-                ))}
-              </div>
+          <div className={styles.sectionTitle}>Contracts</div>
+          <div className={styles.privatePlaceholder}>
+            <div className={styles.privatePlaceholderStrip}>
+              <span className={styles.privatePlaceholderGlyph} aria-hidden>◆</span>
+              <span className={styles.privatePlaceholderLabel}>Withheld — commander only</span>
             </div>
-          ))}
+            <p className={styles.privatePlaceholderDesc}>
+              Active defense contracts are not shown on other players’ dossiers.
+            </p>
+          </div>
         </div>
+      ) : (
+        player.contracts.length > 0 && (
+          <div className={styles.section}>
+            <div className={styles.sectionTitle}>Contracts — click to view</div>
+            {player.contracts.map(ac => (
+              <div
+                key={ac.card.id}
+                className={`${styles.contractCard} ${styles.contractCardClickable}`}
+                onClick={() => showCard({ type: 'contract', card: ac.card })}
+              >
+                <div className={styles.contractHeader}>
+                  <span className={styles.contractName}>{ac.card.name}</span>
+                  <span className={styles.contractReward}>+{ac.card.rewardSI} SI</span>
+                </div>
+                <div className={styles.contractReqs}>
+                  {ac.card.requirements.map((req, i) => (
+                    <div key={i} className={styles.contractReq}>&#x2022; {colorizeDesc(req.description)}</div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       )}
 
       {/* Portfolio */}
-      <PortfolioPanel portfolio={player.portfolio} player={player} gameState={gameState} />
+      <PortfolioPanel
+        portfolio={player.portfolio}
+        player={player}
+        gameState={gameState}
+        visibility={isPublic ? 'public' : 'full'}
+      />
     </div>
   );
 }
