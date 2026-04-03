@@ -262,12 +262,12 @@ export default function TutorialPage() {
                   <span className={styles.calloutMetrics}>
                     <span className={styles.calloutMetric}>4 per year</span>
                     <span className={styles.calloutMetric}>2 orders each</span>
-                    <span className={styles.calloutMetric}>{`${DEFAULT_CONFIG.drawPerQuarter} programs / qtr`}</span>
+                    <span className={styles.calloutMetric}>{`${DEFAULT_CONFIG.drawPerQuarter} programs × 2 / yr`}</span>
                   </span>
                 </div>
                 <p className={styles.calloutLabel}>
                   <C>
-                    {`Where most turns happen: Crisis, hidden orders, category resolution, cleanup — then each player draws ${DEFAULT_CONFIG.drawPerQuarter} programs before the next quarter (after Q1–Q3 only).`}
+                    {`Where most turns happen: Crisis, hidden orders, category resolution, cleanup — then after Q1 and Q3 cleanup each player draws ${DEFAULT_CONFIG.drawPerQuarter} programs (entering Q2 and Q4). No program draw after Q2 or Q4.`}
                   </C>
                 </p>
               </div>
@@ -296,7 +296,7 @@ export default function TutorialPage() {
                   { tag: 'Crisis', label: 'Crisis pulse', desc: 'Reveal the quarter Crisis. Immediate effects apply; quarter-start sustain effects may fire.' },
                   { tag: 'Commit', label: 'Plan orders', desc: 'Every player selects 2 orders face-down, then reveals together.' },
                   { tag: 'Resolve', label: 'Resolve orders', desc: 'Resolve in order: Influence → Procure → Deploy → Sustain (Intel Focus can spend 1I to shift timing).' },
-                  { tag: 'Cleanup', label: 'Cleanup & draw', desc: `Discard to hand limit (${DEFAULT_CONFIG.handLimit}), clear orders, then draw ${DEFAULT_CONFIG.drawPerQuarter} programs each before the next quarter (not after Q4).` },
+                  { tag: 'Cleanup', label: 'Cleanup', desc: `Discard to hand limit (${DEFAULT_CONFIG.handLimit}), clear orders, then advance. After Q1 and Q3 only, each player draws ${DEFAULT_CONFIG.drawPerQuarter} programs before the next quarter.` },
                 ].map(step => (
                   <div key={step.tag} className={styles.quarterStep}>
                     <div className={styles.quarterStepTag}>{step.tag}</div>

@@ -4,6 +4,11 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import type { GameState, GameEvent, OrderChoice, DirectorateId, BudgetLine } from '@fp/shared';
 import { DIRECTORATE_IDS, PROGRAM_CARDS, CONTRACT_CARDS, AGENDA_CARDS, CRISIS_CARDS } from '@fp/shared';
 import { GameEngine, SeededRNG } from '@fp/engine';
+
+function handDiscardExcessForPlayer(state: GameState, playerId: string): number {
+  const p = state.players[playerId];
+  return Math.max(0, p.hand.length - state.config.handLimit);
+}
 import { Bot, PERSONALITIES } from '@fp/simulation';
 
 const STORAGE_KEY = 'fp-game-state';
@@ -43,6 +48,7 @@ interface GameController {
   buryPeekedCrisis: () => void;
   endContractMarket: (chosenIds: string[]) => void;
   submitContractChoice: (contractId: string) => void;
+  submitHandDiscard: (cardIds: string[]) => void;
   getFinalScores: () => { winnerId: string; scores: Record<string, number> } | null;
   newGame: () => void;
   phaseLabel: string;
@@ -118,6 +124,9 @@ function needsHumanInput(state: GameState, humanId: string): boolean {
       if (phase.step === 'contractChoice') {
         const pending = state.players[humanId].pendingContractDraw;
         return pending !== null && pending.length > 0;
+      }
+      if (phase.step === 'handDiscard') {
+        return handDiscardExcessForPlayer(state, humanId) > 0;
       }
       return false;
     }
@@ -232,6 +241,24 @@ export function useGameController(seed: number = 42): GameController {
             }
             if (engine.allContractChoicesDone()) {
               engine.endContractChoices();
+            }
+            continue;
+          case 'handDiscard':
+            for (const [id] of bots) {
+              const p = engine.state.players[id];
+              const excess = Math.max(0, p.hand.length - engine.state.config.handLimit);
+              if (excess <= 0) continue;
+              const playerIdx = parseInt(id.replace('p', ''), 10) || 0;
+              const rng = new SeededRNG(engine.state.seed + playerIdx * 7919 + 31);
+              const cardIds = rng.pick(p.hand.map(c => c.id), excess);
+              try {
+                engine.submitHandDiscard(id, cardIds);
+              } catch { /* ignore */ }
+            }
+            if (engine.allHandDiscardsDone()) {
+              try {
+                engine.endHandDiscard();
+              } catch { /* ignore */ }
             }
             continue;
           case 'cleanup':
@@ -353,6 +380,17 @@ export function useGameController(seed: number = 42): GameController {
     rerenderAndAdvance();
   }, [engine, rerenderAndAdvance]);
 
+  const doSubmitHandDiscard = useCallback((cardIds: string[]) => {
+    try {
+      const ok = engine.submitHandDiscard(humanId, cardIds);
+      if (ok && engine.allHandDiscardsDone()) {
+        engine.endHandDiscard();
+      }
+    } catch { /* ignore */ }
+    saveState(engine.state);
+    rerenderAndAdvance();
+  }, [engine, rerenderAndAdvance]);
+
   const doUseNavseaAbility = useCallback((from: BudgetLine, to: BudgetLine) => {
     engine.useNavseaAbility(humanId, from, to);
     saveState(engine.state);
@@ -395,6 +433,7 @@ export function useGameController(seed: number = 42): GameController {
     endContractMarket: doEndContractMarket,
     submitOrders: doSubmitOrders,
     submitContractChoice: doSubmitContractChoice,
+    submitHandDiscard: doSubmitHandDiscard,
     useNavseaAbility: doUseNavseaAbility,
     useTranscomAbility: doUseTranscomAbility,
     useSpacecyAbility: doUseSpacecyAbility,
@@ -424,6 +463,7 @@ function getPhaseLabel(state: GameState): string {
         phase.step === 'planOrders' ? 'Plan Orders' :
         phase.step === 'resolveOrders' ? 'Resolving...' :
         phase.step === 'contractChoice' ? 'Contracting' :
+        phase.step === 'handDiscard' ? 'Discard' :
         'Cleanup'
       }`;
     case 'yearEnd': return `Year ${year} \u2014 Year End`;

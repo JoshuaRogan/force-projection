@@ -7,6 +7,7 @@ import { useServerGameController } from '@/components/game/useServerGameControll
 import { PlayerDashboard, HandTray } from '@/components/dashboard';
 import { TheaterBoard } from '@/components/theater';
 import { PhasePanel } from '@/components/game/PhasePanel';
+import { ProgramDrawReveal } from '@/components/game/ProgramDrawReveal';
 import { PhaseTimeline } from '@/components/game/PhaseTimeline';
 import { EventFeed } from '@/components/game/EventFeed';
 import { CardModalProvider, useCardModal } from '@/components/cards';
@@ -113,6 +114,7 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
 
   return (
     <div className={gameStyles.shell}>
+      <ProgramDrawReveal gameState={gameState} humanPlayerId={humanPlayerId} />
       {/* Top bar: always present across all views */}
       <header className={gameStyles.topBar}>
         <span className={gameStyles.title}>Force Projection</span>
@@ -188,6 +190,7 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
                   onUseSpacecyAbility={game.useSpacecyAbility}
                   onBuryPeekedCrisis={game.buryPeekedCrisis}
                   onSubmitContractChoice={game.submitContractChoice}
+                  onSubmitHandDiscard={game.submitHandDiscard}
                   finalScores={game.getFinalScores()}
                   onNewGame={game.newGame}
                   showingResolution={game.showingResolution}
@@ -280,6 +283,7 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
           onSkipResolution={game.skipResolution}
           onAcknowledgeCrisis={game.acknowledgeCrisis}
           onSubmitContractChoice={game.submitContractChoice}
+          onSubmitHandDiscard={game.submitHandDiscard}
         />
       )}
 

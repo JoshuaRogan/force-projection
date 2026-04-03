@@ -27,6 +27,7 @@ interface PersonalViewProps {
   onSkipResolution: () => void;
   onAcknowledgeCrisis: () => void;
   onSubmitContractChoice: (contractId: string) => void;
+  onSubmitHandDiscard: (cardIds: string[]) => void;
 }
 
 export function PersonalView({
@@ -49,6 +50,7 @@ export function PersonalView({
   onSkipResolution,
   onAcknowledgeCrisis,
   onSubmitContractChoice,
+  onSubmitHandDiscard,
 }: PersonalViewProps) {
   return (
     <div className={styles.layout}>
@@ -85,6 +87,7 @@ export function PersonalView({
               onSkipResolution={onSkipResolution}
               onAcknowledgeCrisis={onAcknowledgeCrisis}
               onSubmitContractChoice={onSubmitContractChoice}
+              onSubmitHandDiscard={onSubmitHandDiscard}
             />
           </div>
           <div className={styles.feedWrapper}>

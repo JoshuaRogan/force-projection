@@ -6,6 +6,25 @@ import { PROGRAM_CARDS } from '@fp/shared';
 
 describe('GameEngine', () => {
 
+  /** Auto-pick discards from end of hand (deterministic) then end quarter from cleanup. */
+  function endQuarterThroughCleanup(engine: GameEngine) {
+    while (engine.state.phase.type === 'quarter' && engine.state.phase.step === 'handDiscard') {
+      for (const pid of engine.state.turnOrder) {
+        const p = engine.getPlayer(pid);
+        const excess = Math.max(0, p.hand.length - engine.state.config.handLimit);
+        if (excess <= 0) continue;
+        const cardIds = p.hand.slice(-excess).map(c => c.id);
+        engine.submitHandDiscard(pid, cardIds);
+      }
+      if (engine.allHandDiscardsDone()) {
+        engine.endHandDiscard();
+      }
+    }
+    if (engine.state.phase.type === 'quarter' && engine.state.phase.step === 'cleanup') {
+      engine.endQuarter();
+    }
+  }
+
   function createTestGame(playerCount = 2) {
     const directorates = ['NAVSEA', 'AIRCOM', 'MARFOR', 'SPACECY', 'TRANSCOM'] as const;
     const players = Array.from({ length: playerCount }, (_, i) => ({
@@ -98,12 +117,13 @@ describe('GameEngine', () => {
     assert.ok(engine.allOrdersIn());
 
     engine.revealAndResolve();
-    assert.deepEqual(engine.state.phase, { type: 'quarter', quarter: 1, step: 'cleanup' });
+    const stepAfter = engine.state.phase.type === 'quarter' ? engine.state.phase.step : null;
+    assert.ok(stepAfter === 'cleanup' || stepAfter === 'handDiscard');
 
     // Check that lobby gave +2 PC
     assert.ok(engine.state.players['p1'].resources.secondary.PC >= 2);
 
-    engine.endQuarter();
+    endQuarterThroughCleanup(engine);
     // Should advance to Q2
     assert.deepEqual(engine.state.phase, { type: 'quarter', quarter: 2, step: 'crisisPulse' });
   });
@@ -134,7 +154,7 @@ describe('GameEngine', () => {
       }
 
       engine.revealAndResolve();
-      engine.endQuarter();
+      endQuarterThroughCleanup(engine);
     }
 
     // After Q4, year end processes and game should end (1-year game)
@@ -226,12 +246,13 @@ describe('GameEngine', () => {
     const first = engine.state.decks.crises[0]?.id;
     const second = engine.state.decks.crises[1]?.id;
 
-    engine.useSpacecyAbility('p1', true);
+    engine.useSpacecyAbility('p1');
+    assert.equal(p1.usedOncePerYear, true);
+    engine.buryPeekedCrisis('p1');
 
     assert.equal(p1.resources.secondary.PC, 1);
-    assert.equal(p1.usedOncePerYear, true);
     assert.equal(engine.state.decks.crises[0]?.id, second);
-    assert.throws(() => engine.useSpacecyAbility('p1', false), /not available/i);
+    assert.throws(() => engine.useSpacecyAbility('p1'), /not available/i);
     assert.ok(first, 'expected at least one crisis card');
   });
 
@@ -273,7 +294,7 @@ describe('GameEngine', () => {
       engine.submitOrders('p1', [{ order: 'logisticsSurge' }, { order: 'stationPrograms', assignments: [] }]);
       engine.submitOrders('p2', [{ order: 'logisticsSurge' }, { order: 'stationPrograms', assignments: [] }]);
       engine.revealAndResolve();
-      engine.endQuarter();
+      endQuarterThroughCleanup(engine);
     }
 
     assert.ok(p1.resources.secondary.PC >= pcBefore + 1);
@@ -308,7 +329,7 @@ describe('GameEngine', () => {
         engine.state.board.theaters.northAtlantic.presence.p1.bases = 1;
         engine.state.board.theaters.northAtlantic.presence.p2.bases = 1;
       }
-      engine.endQuarter();
+      endQuarterThroughCleanup(engine);
     }
 
     const p1 = engine.getPlayer('p1');
@@ -347,7 +368,7 @@ describe('GameEngine', () => {
       assert.equal(engine.state.board.theaters.indoPacific.presence['p1'].bases, 1);
     }
 
-    engine.endQuarter();
+    endQuarterThroughCleanup(engine);
   });
 
   it('should handle pipeline and activate program', () => {
@@ -393,7 +414,7 @@ describe('GameEngine', () => {
       }
     }
 
-    engine.endQuarter();
+    endQuarterThroughCleanup(engine);
   });
 
   it('should fire activate effects (V-22 Osprey +1 L)', () => {
@@ -457,7 +478,7 @@ describe('GameEngine', () => {
         engine.submitOrders('p1', [{ order: 'lobby' }, { order: 'logisticsSurge' }]);
         engine.submitOrders('p2', [{ order: 'lobby' }, { order: 'majorExercise' }]);
         engine.revealAndResolve();
-        engine.endQuarter();
+        endQuarterThroughCleanup(engine);
       }
 
       return engine.state.players;

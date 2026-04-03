@@ -107,6 +107,12 @@ function formatEventVerbose(event: GameEvent, state: GameState): string {
       return `Year ${event.fiscalYear} ended`;
     case 'gameEnd':
       return `Game Over — final scores recorded`;
+    case 'programsDrawn': {
+      const name = playerName(state, event.playerId);
+      return `${name} drew ${event.cardIds.length} program(s) for Q${event.enteringQuarter}`;
+    }
+    case 'programsDiscarded':
+      return `${playerName(state, event.playerId)} discarded ${event.cardIds.length} program(s) (hand limit)`;
   }
 }
 
@@ -137,6 +143,10 @@ function formatEventSummary(event: GameEvent, state: GameState): string | null {
       return `${playerName(state, event.playerId)} mothballed ${cardName(event.cardId)}`;
     case 'programReactivated':
       return `${playerName(state, event.playerId)} reactivated ${cardName(event.cardId)}`;
+    case 'programsDrawn':
+      return `${playerName(state, event.playerId)} drew ${event.cardIds.length} program(s) for Q${event.enteringQuarter}`;
+    case 'programsDiscarded':
+      return `${playerName(state, event.playerId)} discarded to hand limit`;
     case 'contractCompleted':
       return `${playerName(state, event.playerId)} completed a contract (+${event.si} SI)`;
     case 'contractFailed':
@@ -200,6 +210,8 @@ function eventIcon(event: GameEvent): string {
     case 'costReductionApplied': return '\u2193';
     case 'yearEnd': return '\u25C6';
     case 'gameEnd': return '\u2588';
+    case 'programsDrawn': return '\u2610';
+    case 'programsDiscarded': return '\u2717';
   }
 }
 
@@ -223,6 +235,8 @@ function eventCategory(event: GameEvent): 'phase' | 'action' | 'resource' | 'eff
     case 'programStationed':
     case 'contractTaken':
     case 'agendaVote':
+    case 'programsDrawn':
+    case 'programsDiscarded':
       return 'action';
     case 'resourceChange':
       return 'resource';

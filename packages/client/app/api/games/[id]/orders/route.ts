@@ -81,7 +81,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const needsContractChoice = engine.state.phase.type === 'quarter' &&
       engine.state.phase.step === 'contractChoice';
 
-    if (!needsContractChoice) {
+    const stepAfter = engine.state.phase.type === 'quarter' ? engine.state.phase.step : null;
+    if (stepAfter === 'cleanup') {
       engine.endQuarter();
     }
 

@@ -36,6 +36,8 @@ function PhaseStatus({ gameState }: { gameState: GameState }) {
     if (phase.step === 'crisisPulse') { label = `Q${qn} — Crisis`; sub = 'Crisis response phase'; }
     else if (phase.step === 'planOrders') { label = `Q${qn} — Orders`; sub = 'Players planning orders'; }
     else if (phase.step === 'resolveOrders') { label = `Q${qn} — Resolution`; sub = 'Resolving orders'; }
+    else if (phase.step === 'contractChoice') { label = `Q${qn} — Contracting`; sub = 'Choosing a contract'; }
+    else if (phase.step === 'handDiscard') { label = `Q${qn} — Discard`; sub = 'Trimming hand to limit'; }
     else { label = `Q${qn} — Cleanup`; sub = 'End-of-quarter cleanup'; }
   }
   else if (phase.type === 'yearEnd') { label = 'Year End'; sub = 'Annual scoring'; }

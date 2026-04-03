@@ -404,6 +404,103 @@
   border: 1px dashed var(--border-subtle);
 }
 
+/* === Hand discard (over limit) === */
+
+.discardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-md);
+  width: 100%;
+  margin: var(--space-md) 0;
+}
+
+.discardEntry {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.discardCardBtn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+  text-align: center;
+}
+
+.discardCardBtn:hover {
+  border-color: color-mix(in srgb, var(--domain-color, var(--border-accent)) 55%, var(--border-subtle));
+  transform: translateY(-2px);
+}
+
+.discardCardBtnSelected {
+  border-color: var(--color-warning);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-warning) 40%, transparent);
+  background: color-mix(in srgb, var(--color-warning) 8%, var(--bg-elevated));
+}
+
+.discardCardArt {
+  width: 100%;
+  max-width: 120px;
+  aspect-ratio: 5 / 7;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.discardCardName {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+
+.discardCardBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-warning);
+  color: var(--bg-dark);
+}
+
+.discardDetailBtn {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 100%;
+}
+
+.discardDetailBtn:hover {
+  border-color: var(--border-accent);
+  color: var(--text-primary);
+}
+
 /* === Orders Waiting Panel === */
 
 .waitingPanel {

@@ -35,6 +35,7 @@ interface GameController {
   buryPeekedCrisis: () => void;
   endContractMarket: (chosenIds: string[]) => void;
   submitContractChoice: (contractId: string) => void;
+  submitHandDiscard: (cardIds: string[]) => void;
   getFinalScores: () => { winnerId: string; scores: Record<string, number> } | null;
   newGame: () => void;
   phaseLabel: string;
@@ -138,6 +139,10 @@ export function useServerGameController(gameId: string, playerId: string): GameC
     action('contract-choice', { contractId });
   }, [action]);
 
+  const submitHandDiscard = useCallback((cardIds: string[]) => {
+    action('hand-discard', { cardIds });
+  }, [action]);
+
   const useNavseaAbility = useCallback((from: BudgetLine, to: BudgetLine) => {
     action('ability', { ability: 'navsea', from, to });
   }, [action]);
@@ -177,7 +182,7 @@ export function useServerGameController(gameId: string, playerId: string): GameC
       humanPlayerId: playerId,
       submitVote, submitOrders, endContractMarket, acknowledgeCrisis,
       useNavseaAbility, useTranscomAbility, useSpacecyAbility, buryPeekedCrisis,
-      submitContractChoice,
+      submitContractChoice, submitHandDiscard,
       getFinalScores, newGame, skipResolution,
       phaseLabel: 'Loading…',
       events: [], recentEvents: [], showingResolution: false,
@@ -196,6 +201,7 @@ export function useServerGameController(gameId: string, playerId: string): GameC
     useSpacecyAbility,
     buryPeekedCrisis,
     submitContractChoice,
+    submitHandDiscard,
     getFinalScores,
     newGame,
     skipResolution,
@@ -219,6 +225,7 @@ function getPhaseLabel(state: GameState): string {
         phase.step === 'planOrders' ? 'Plan Orders' :
         phase.step === 'resolveOrders' ? 'Resolving...' :
         phase.step === 'contractChoice' ? 'Contracting' :
+        phase.step === 'handDiscard' ? 'Discard' :
         'Cleanup'
       }`;
     case 'yearEnd': return `Year ${year} — Year End`;

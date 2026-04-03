@@ -64,8 +64,6 @@ export function runGame(config: RunConfig): SimulationResult {
     new SeededRNG(config.seed + i * 7919), // unique sub-seed per bot
   ));
 
-  const botMap = new Map(bots.map(b => [b.playerId, b]));
-
   // Play the game
   try {
     engine.start();
@@ -110,13 +108,37 @@ export function runGame(config: RunConfig): SimulationResult {
               engine.revealAndResolve();
               break;
 
+            case 'contractChoice':
+              for (const bot of bots) {
+                const pending = engine.state.players[bot.playerId]?.pendingContractDraw;
+                if (pending && pending.length > 0) {
+                  engine.submitContractChoice(bot.playerId, pending[0].id);
+                }
+              }
+              if (engine.allContractChoicesDone()) {
+                engine.endContractChoices();
+              }
+              break;
+
+            case 'handDiscard':
+              for (const bot of bots) {
+                const p = engine.state.players[bot.playerId];
+                const excess = Math.max(0, p.hand.length - engine.state.config.handLimit);
+                if (excess <= 0) continue;
+                const srng = new SeededRNG(config.seed + parseInt(bot.playerId.replace('p', ''), 10) * 7919 + 31);
+                const cardIds = srng.pick(p.hand.map(c => c.id), excess);
+                engine.submitHandDiscard(bot.playerId, cardIds);
+              }
+              if (engine.allHandDiscardsDone()) {
+                engine.endHandDiscard();
+              }
+              break;
+
             case 'cleanup':
               engine.endQuarter();
               break;
 
             case 'resolveOrders':
-              // Should not reach here — revealAndResolve moves past this
-              engine.endQuarter();
               break;
           }
           break;

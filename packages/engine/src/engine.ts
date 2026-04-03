@@ -7,6 +7,7 @@ import {
   revealOrders, endResolveOrders, quarterCleanup, processYearEnd,
   useNavseaReprogram, useTranscomConversion, useSpacecyCrisisPeek, buryPeekedCrisis,
   submitContractChoice, allContractChoicesDone, endContractChoices,
+  submitHandDiscard, allHandDiscardsDone, endHandDiscard,
 } from './phases.js';
 import { resolveAllOrders } from './orders.js';
 import { computeEndgameScoring, determineWinner } from './scoring.js';
@@ -78,10 +79,26 @@ export class GameEngine {
     return allContractChoicesDone(this.state);
   }
 
-  /** Advance from contractChoice to cleanup once all choices are in. */
+  /** Advance from contractChoice to handDiscard or cleanup once all choices are in. */
   endContractChoices(): void {
     this.assertQuarterStep('contractChoice');
     endContractChoices(this.state);
+  }
+
+  /** During handDiscard: discard `cardIds` so hand is at or under limit (exactly `excess` ids). */
+  submitHandDiscard(playerId: string, cardIds: string[]): boolean {
+    this.assertQuarterStep('handDiscard');
+    return submitHandDiscard(this.state, playerId, cardIds);
+  }
+
+  allHandDiscardsDone(): boolean {
+    return allHandDiscardsDone(this.state);
+  }
+
+  /** All players at hand limit — move to cleanup. */
+  endHandDiscard(): void {
+    this.assertQuarterStep('handDiscard');
+    endHandDiscard(this.state);
   }
 
   // === Quarter Phases ===

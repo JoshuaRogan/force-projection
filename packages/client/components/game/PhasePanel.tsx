@@ -5,6 +5,7 @@ import { ORDERS, THEATER_NAMES } from '@fp/shared';
 import { CongressPanel } from './CongressPanel';
 import { ContractMarketPanel } from './ContractMarketPanel';
 import { ContractChoicePanel } from './ContractChoicePanel';
+import { HandDiscardPanel } from './HandDiscardPanel';
 import { OrdersPanel } from './OrdersPanel';
 import { GameOverPanel } from './GameOverPanel';
 import { WaitingPanel } from './WaitingPanel';
@@ -29,6 +30,7 @@ interface PhasePanelProps {
   onSkipResolution: () => void;
   onAcknowledgeCrisis: () => void;
   onSubmitContractChoice: (contractId: string) => void;
+  onSubmitHandDiscard: (cardIds: string[]) => void;
 }
 
 const PHASE_HELP: Record<string, string> = {
@@ -36,6 +38,7 @@ const PHASE_HELP: Record<string, string> = {
   contractMarket: 'Pick contracts to pursue this year. Completing contracts earns SI (victory points). You can hold up to 2 active contracts.',
   planOrders: 'Choose 2 orders to execute this quarter. Orders resolve in category order: Influence, then Procure, Deploy, Sustain. Pick orders that advance your contracts and theater position.',
   gameEnd: 'Final scores include bonuses for program sets, contract completion, and theater presence.',
+  handDiscard: 'You are over your hand limit. Choose which programs to discard to the discard pile — only the count shown matters; pick the weakest or least relevant cards for your strategy.',
 };
 
 function playerName(state: GameState, playerId: string): string {
@@ -162,6 +165,18 @@ export function PhasePanel(props: PhasePanelProps) {
             humanPlayerId={humanPlayerId}
             onSubmitChoice={props.onSubmitContractChoice}
           />
+        );
+      }
+      if (phase.step === 'handDiscard') {
+        return (
+          <>
+            {helpElement}
+            <HandDiscardPanel
+              gameState={gameState}
+              humanPlayerId={humanPlayerId}
+              onSubmitDiscard={props.onSubmitHandDiscard}
+            />
+          </>
         );
       }
       if (phase.step === 'planOrders') {

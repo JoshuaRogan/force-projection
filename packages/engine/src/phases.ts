@@ -37,8 +37,20 @@ function stepOrdinal(step: QuarterStep): number {
     case 'planOrders': return 1;
     case 'resolveOrders': return 2;
     case 'contractChoice': return 3;
-    case 'cleanup': return 4;
+    case 'handDiscard': return 4;
+    case 'cleanup': return 5;
   }
+}
+
+/** How many program cards this player must discard to be at or under hand limit. */
+export function handDiscardExcess(state: GameState, playerId: string): number {
+  const p = state.players[playerId];
+  if (!p) return 0;
+  return Math.max(0, p.hand.length - state.config.handLimit);
+}
+
+export function anyPlayerMustDiscard(state: GameState): boolean {
+  return state.turnOrder.some(pid => handDiscardExcess(state, pid) > 0);
 }
 
 // === Start a new Fiscal Year ===
@@ -265,7 +277,11 @@ export function allContractChoicesDone(state: GameState): boolean {
 
 export function endContractChoices(state: GameState): void {
   if (state.phase.type !== 'quarter' || state.phase.step !== 'contractChoice') return;
-  state.phase = { type: 'quarter', quarter: state.phase.quarter, step: 'cleanup' };
+  if (anyPlayerMustDiscard(state)) {
+    state.phase = { type: 'quarter', quarter: state.phase.quarter, step: 'handDiscard' };
+  } else {
+    state.phase = { type: 'quarter', quarter: state.phase.quarter, step: 'cleanup' };
+  }
   log(state, state.phase);
 }
 
@@ -472,9 +488,54 @@ export function endResolveOrders(state: GameState): void {
 
   if (hasPendingChoices) {
     state.phase = { type: 'quarter', quarter: state.phase.quarter, step: 'contractChoice' };
+  } else if (anyPlayerMustDiscard(state)) {
+    state.phase = { type: 'quarter', quarter: state.phase.quarter, step: 'handDiscard' };
   } else {
     state.phase = { type: 'quarter', quarter: state.phase.quarter, step: 'cleanup' };
   }
+  log(state, state.phase);
+}
+
+/** Remove chosen programs from hand (handDiscard step). Each id must match a card in hand; ids must be unique. */
+export function submitHandDiscard(state: GameState, playerId: string, cardIds: string[]): boolean {
+  if (state.phase.type !== 'quarter' || state.phase.step !== 'handDiscard') return false;
+  const p = state.players[playerId];
+  if (!p) return false;
+  const limit = state.config.handLimit;
+  const excess = Math.max(0, p.hand.length - limit);
+  if (excess === 0) return true;
+  if (cardIds.length !== excess) return false;
+  if (new Set(cardIds).size !== cardIds.length) return false;
+
+  const toRemove = [...cardIds];
+  const newHand: typeof p.hand = [];
+  for (const card of p.hand) {
+    const idx = toRemove.indexOf(card.id);
+    if (idx >= 0) {
+      toRemove.splice(idx, 1);
+      state.decks.programDiscard.push(card);
+    } else {
+      newHand.push(card);
+    }
+  }
+  if (toRemove.length > 0) return false;
+  p.hand = newHand;
+  if (p.hand.length > limit) return false;
+
+  state.log.push({ type: 'programsDiscarded', playerId, cardIds, reason: 'handLimit' });
+  return true;
+}
+
+export function allHandDiscardsDone(state: GameState): boolean {
+  return state.turnOrder.every(pid => state.players[pid].hand.length <= state.config.handLimit);
+}
+
+export function endHandDiscard(state: GameState): void {
+  if (state.phase.type !== 'quarter' || state.phase.step !== 'handDiscard') return;
+  if (!allHandDiscardsDone(state)) {
+    throw new Error('Not all players have discarded to hand limit');
+  }
+  state.phase = { type: 'quarter', quarter: state.phase.quarter, step: 'cleanup' };
   log(state, state.phase);
 }
 
@@ -482,14 +543,7 @@ export function quarterCleanup(state: GameState): void {
   if (state.phase.type !== 'quarter') return;
   const quarter = state.phase.quarter;
 
-  // Discard down to hand limit
-  for (const pid of state.turnOrder) {
-    const p = state.players[pid];
-    while (p.hand.length > state.config.handLimit) {
-      const discarded = p.hand.pop()!;
-      state.decks.programDiscard.push(discarded);
-    }
-  }
+  // Hand limit discards happen in handDiscard step (player-chosen) before we reach cleanup.
 
   // Clear selected orders
   for (const pid of state.turnOrder) {
@@ -504,10 +558,19 @@ export function quarterCleanup(state: GameState): void {
     const nextQuarter = (quarter + 1) as 1 | 2 | 3 | 4;
     state.phase = { type: 'quarter', quarter: nextQuarter, step: 'crisisPulse' };
 
-    // Draw cards for new quarter
-    for (const pid of state.turnOrder) {
-      const drawn = state.decks.programs.splice(0, state.config.drawPerQuarter);
-      state.players[pid].hand.push(...drawn);
+    // Draw programs only after Q1 and Q3 cleanup (entering Q2 and Q4); not after Q2 or Q4.
+    if (quarter === 1 || quarter === 3) {
+      for (const pid of state.turnOrder) {
+        const drawn = state.decks.programs.splice(0, state.config.drawPerQuarter);
+        state.players[pid].hand.push(...drawn);
+        state.log.push({
+          type: 'programsDrawn',
+          playerId: pid,
+          cardIds: drawn.map(c => c.id),
+          enteringQuarter: nextQuarter,
+          fiscalYear: state.fiscalYear,
+        });
+      }
     }
   } else {
     state.phase = { type: 'yearEnd' };

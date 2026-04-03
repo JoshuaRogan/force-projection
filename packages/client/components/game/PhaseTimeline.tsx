@@ -80,6 +80,7 @@ function getQuarterSubstep(phase: GamePhase): string | null {
     case 'planOrders': return 'Plan Orders';
     case 'resolveOrders': return 'Resolving';
     case 'contractChoice': return 'Contracting';
+    case 'handDiscard': return 'Discard';
     case 'cleanup': return 'Cleanup';
   }
 }
@@ -93,11 +94,19 @@ export function PhaseTimeline({ gameState }: { gameState: GameState }) {
   return (
     <div className={styles.timeline}>
       <div className={styles.yearBadge}>
-        Year {year}/{maxYears}
+        <span className={styles.yearLabel}>Year</span>
+        <div className={styles.yearBadgeLine}>
+          <span className={styles.yearValue}>{year}</span>
+          <span className={styles.yearSlash}>/</span>
+          <span className={styles.yearMax}>{maxYears}</span>
+        </div>
       </div>
       <div className={styles.steps}>
         {steps.map((step, i) => (
-          <div key={step.id} className={styles.stepWrapper}>
+          <div
+            key={step.id}
+            className={[styles.stepWrapper, i === 0 ? styles.stepWrapperFirst : ''].filter(Boolean).join(' ')}
+          >
             {i > 0 && (
               <div className={`${styles.connector} ${step.isCompleted || step.isActive ? styles.connectorActive : ''}`} />
             )}

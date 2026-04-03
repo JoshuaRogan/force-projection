@@ -36,6 +36,7 @@ export interface GameConfig {
   handLimit: number;         // default 7
   activeSlots: number;       // default 6
   pipelineSlots: number;     // default 3
+  /** Cards taken from the program deck each time a draw happens (after Q1 and Q3 cleanup only). */
   drawPerQuarter: number;    // default 2
   maxActiveContracts: number;// default 2
 }
@@ -65,6 +66,7 @@ export type QuarterStep =
   | 'planOrders'
   | 'resolveOrders'
   | 'contractChoice'
+  | 'handDiscard'
   | 'cleanup';
 
 // === Portfolio (per-player program management) ===
@@ -227,4 +229,13 @@ export type GameEvent =
   | { type: 'costReductionApplied'; playerId: string; sourceCardId: string }
   | { type: 'crisisImmunityUsed'; playerId: string; sourceCardId: string }
   | { type: 'yearEnd'; fiscalYear: number }
-  | { type: 'gameEnd'; finalScores: Record<string, number> };
+  | { type: 'gameEnd'; finalScores: Record<string, number> }
+  /** Program deck draw after Q1 or Q3 cleanup (entering Q2 or Q4). */
+  | {
+      type: 'programsDrawn';
+      playerId: string;
+      cardIds: string[];
+      enteringQuarter: 1 | 2 | 3 | 4;
+      fiscalYear: number;
+    }
+  | { type: 'programsDiscarded'; playerId: string; cardIds: string[]; reason: 'handLimit' };

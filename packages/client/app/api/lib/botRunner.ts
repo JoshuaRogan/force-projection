@@ -1,5 +1,4 @@
-import { GameEngine } from '@fp/engine';
-import { SeededRNG } from '@fp/engine';
+import { GameEngine, SeededRNG } from '@fp/engine';
 import { Bot } from '@fp/simulation';
 import { PERSONALITIES } from '@fp/simulation';
 import type { GameState } from '@fp/shared';
@@ -63,6 +62,12 @@ export async function runBotActions(gameId: string, meta: GameMeta): Promise<Gam
   // Quarter - contractChoice: bots pick their drawn contracts
   if (phase.type === 'quarter' && phase.step === 'contractChoice') {
     await runBotContractChoices(gameId, state, meta, botSlots);
+    return getGameState(gameId);
+  }
+
+  // Quarter - handDiscard: bots randomly discard down to hand limit
+  if (phase.type === 'quarter' && phase.step === 'handDiscard') {
+    await runBotHandDiscards(gameId, state, meta, botSlots);
     return getGameState(gameId);
   }
 
@@ -164,10 +169,8 @@ async function runBotOrders(
     }
     engine.revealAndResolve();
 
-    const needsContractChoice = engine.state.phase.type === 'quarter' &&
-      engine.state.phase.step === 'contractChoice';
-
-    if (!needsContractChoice) {
+    const stepAfter = engine.state.phase.type === 'quarter' ? engine.state.phase.step : null;
+    if (stepAfter === 'cleanup') {
       engine.endQuarter();
     }
 
@@ -204,12 +207,48 @@ async function runBotContractChoices(
 
   if (engine.allContractChoicesDone()) {
     engine.endContractChoices();
-    engine.endQuarter();
+    const step = engine.state.phase.type === 'quarter' ? engine.state.phase.step : null;
+    if (step === 'cleanup') {
+      engine.endQuarter();
+    }
     await setGameState(gameId, engine.state);
-    // Recurse for next phase
     await runBotActions(gameId, meta);
   } else {
     // Humans still need to choose — just save bot choices
     await setGameState(gameId, engine.state);
   }
+}
+
+// --- Hand limit discard (bots pick randomly) ---
+
+async function runBotHandDiscards(
+  gameId: string,
+  state: GameState,
+  meta: GameMeta,
+  botSlots: GameMeta['slots'],
+): Promise<void> {
+  const current = await getGameState(gameId);
+  if (!current || current.phase.type !== 'quarter' || current.phase.step !== 'handDiscard') return;
+
+  const engine = GameEngine.fromState(current);
+
+  for (const slot of botSlots) {
+    const p = engine.state.players[slot.playerId];
+    if (!p) continue;
+    const excess = Math.max(0, p.hand.length - engine.state.config.handLimit);
+    if (excess <= 0) continue;
+    const rng = makeBotRng(state, slot.playerId);
+    const cardIds = rng.pick(p.hand.map(c => c.id), excess);
+    engine.submitHandDiscard(slot.playerId, cardIds);
+  }
+
+  if (engine.allHandDiscardsDone()) {
+    engine.endHandDiscard();
+    if (engine.state.phase.type === 'quarter' && engine.state.phase.step === 'cleanup') {
+      engine.endQuarter();
+    }
+  }
+
+  await setGameState(gameId, engine.state);
+  await runBotActions(gameId, meta);
 }

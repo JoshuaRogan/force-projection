@@ -277,6 +277,8 @@ If multiple players chose the same Order, resolve in initiative order for that s
 
 - Contract checks that say "by end of Quarter"
 - Discard down to hand limit (default 7)
+- **Program draw:** each player draws from the program deck **only** after **Q1** and **Q3** cleanup (i.e. when entering Q2 and Q4). No program draw after Q2 cleanup or after Q4 (year end).
+- **Hand limit:** if you are above the hand limit (default 7), you **choose** which programs to discard to the discard pile before the quarter advances (not automatic).
 
 ### Phase D -- Year End
 
@@ -540,7 +542,7 @@ This keeps pressure on the map but avoids elimination/attack mechanics.
 
 - **Default hand limit:** 7
 - **You draw:**
-  - 2 Program cards at start of each Quarter
+  - 2 Program cards after **Q1** and **Q3** cleanup (when entering Q2 and Q4)
   - Plus effects from Orders/programs
 - Discard freely only when an effect says so; otherwise discard at end of Quarter down to limit.
 

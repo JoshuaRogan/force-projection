@@ -26,21 +26,21 @@
   padding: 0 var(--space-md) 0 0;
   margin-right: var(--space-md);
   border-right: 1px solid var(--border-subtle);
-  gap: 1px;
+  gap: 3px;
 }
 
 .yearLabel {
   font-family: var(--font-mono);
-  font-size: 0.52rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.14em;
   color: var(--text-muted);
 }
 
 .yearValue {
   font-family: var(--font-display);
-  font-size: 1.0625rem;
+  font-size: 1.375rem;
   font-weight: 900;
   letter-spacing: 0.04em;
   color: var(--color-si);
@@ -48,9 +48,24 @@
 }
 
 .yearMax {
-  font-size: 0.625rem;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
   font-weight: 700;
   color: color-mix(in srgb, var(--color-si) 55%, var(--text-muted));
+}
+
+.yearBadgeLine {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  line-height: 1;
+}
+
+.yearSlash {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--color-si) 40%, var(--text-muted));
 }
 
 /* ─── Steps row ─────────────────────────────────────────────────────────────── */
@@ -67,6 +82,12 @@
   align-items: center;
   flex: 1;
   min-width: 0;
+}
+
+/* First phase has no leading connector; pin the node to this segment's trailing edge so
+   the track meets the next segment's connector (avoids a large dead zone to the right). */
+.stepWrapperFirst {
+  justify-content: flex-end;
 }
 
 /* ─── Connector track ───────────────────────────────────────────────────────── */
