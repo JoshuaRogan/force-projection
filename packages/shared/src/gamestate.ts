@@ -230,7 +230,7 @@ export type GameEvent =
   | { type: 'crisisImmunityUsed'; playerId: string; sourceCardId: string }
   | { type: 'yearEnd'; fiscalYear: number }
   | { type: 'gameEnd'; finalScores: Record<string, number> }
-  /** Program deck draw after Q1 or Q3 cleanup (entering Q2 or Q4). */
+  /** Program deck draw: after Q1 or Q3 cleanup (entering Q2 or Q4), or Major Exercise. */
   | {
       type: 'programsDrawn';
       playerId: string;

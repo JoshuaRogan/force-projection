@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, Suspense } from 'react';
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useGameController } from '@/components/game/useGameController';
 import { useServerGameController } from '@/components/game/useServerGameController';
@@ -15,6 +15,8 @@ import { DIRECTORATES } from '@fp/shared';
 import { ViewSwitcher, PersonalView, MapView } from '@/components/views';
 import type { ViewMode } from '@/components/views';
 import gameStyles from './game.module.css';
+
+const INACTIVITY_TIMEOUT_MS = 2 * 60 * 1000;
 
 export default function GamePage() {
   return (
@@ -68,7 +70,47 @@ function GamePageInner() {
 }
 
 function ServerGameBoard({ gameId, playerId }: { gameId: string; playerId: string }) {
-  const game = useServerGameController(gameId, playerId);
+  const [pollingActive, setPollingActive] = useState(true);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollingActiveRef = useRef(true);
+
+  const resetIdleTimer = useCallback(() => {
+    if (!pollingActiveRef.current) return;
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = setTimeout(() => {
+      pollingActiveRef.current = false;
+      setPollingActive(false);
+    }, INACTIVITY_TIMEOUT_MS);
+  }, []);
+
+  const resumePolling = useCallback(() => {
+    pollingActiveRef.current = true;
+    setPollingActive(true);
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = setTimeout(() => {
+      pollingActiveRef.current = false;
+      setPollingActive(false);
+    }, INACTIVITY_TIMEOUT_MS);
+  }, []);
+
+  useEffect(() => {
+    const events: Array<keyof WindowEventMap> = ['pointerdown', 'keydown', 'touchstart', 'focus'];
+    const onActivity = () => resetIdleTimer();
+
+    resetIdleTimer();
+    for (const eventName of events) {
+      window.addEventListener(eventName, onActivity);
+    }
+
+    return () => {
+      for (const eventName of events) {
+        window.removeEventListener(eventName, onActivity);
+      }
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [resetIdleTimer]);
+
+  const game = useServerGameController(gameId, playerId, pollingActive);
   if (!game.gameState) {
     return (
       <div className={gameStyles.shell}>
@@ -81,7 +123,24 @@ function ServerGameBoard({ gameId, playerId }: { gameId: string; playerId: strin
       </div>
     );
   }
-  return <GameBoardInner game={game} gameId={gameId} />;
+  return (
+    <>
+      <GameBoardInner game={game} gameId={gameId} />
+      {!pollingActive && (
+        <div className={gameStyles.inactiveOverlay} role="dialog" aria-modal="true" aria-labelledby="inactive-session-title">
+          <div className={gameStyles.inactiveModal}>
+            <h2 id="inactive-session-title" className={gameStyles.inactiveTitle}>Session paused</h2>
+            <p className={gameStyles.inactiveCopy}>
+              Polling stopped after inactivity to reduce backend requests.
+            </p>
+            <button type="button" className={gameStyles.inactiveResumeBtn} onClick={resumePolling}>
+              Resume session
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 function GameBoard({ seed }: { seed: number }) {

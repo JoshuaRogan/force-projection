@@ -46,7 +46,11 @@ interface GameController {
   acknowledgeCrisis: () => void;
 }
 
-export function useServerGameController(gameId: string, playerId: string): GameController {
+export function useServerGameController(
+  gameId: string,
+  playerId: string,
+  pollingEnabled: boolean = true,
+): GameController {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [recentEvents, setRecentEvents] = useState<GameEvent[]>([]);
   const [showingResolution, setShowingResolution] = useState(false);
@@ -95,15 +99,23 @@ export function useServerGameController(gameId: string, playerId: string): GameC
     } catch { /* network hiccup — retry next poll */ }
   }, [gameId, playerId, applyState]);
 
-  // Initial fetch + polling
+  // Initial fetch + polling (gated by inactivity/session state)
   useEffect(() => {
+    if (!pollingEnabled) {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+      return;
+    }
+
     fetchState();
     pollRef.current = setInterval(fetchState, POLL_INTERVAL_MS);
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
       if (resolutionTimerRef.current) clearTimeout(resolutionTimerRef.current);
     };
-  }, [fetchState]);
+  }, [fetchState, pollingEnabled]);
 
   // Generic action helper — POSTs to an endpoint and applies returned state
   const action = useCallback(async (endpoint: string, body: Record<string, unknown>) => {

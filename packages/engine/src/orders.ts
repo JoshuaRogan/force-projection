@@ -459,10 +459,19 @@ function resolveMajorExercise(state: GameState, playerId: string): void {
   // Fire sustain effects on active programs that trigger on Major Exercise
   fireSustainTrigger(state, playerId, 'majorExercise');
 
-  // Draw 1 card
+  // Draw 1 card (log programsDrawn so clients show the same reveal modal as quarterly draws)
   if (state.decks.programs.length > 0) {
     const drawn = state.decks.programs.splice(0, 1);
     p.hand.push(...drawn);
+    const enteringQuarter =
+      state.phase.type === 'quarter' ? state.phase.quarter : (1 as 1 | 2 | 3 | 4);
+    state.log.push({
+      type: 'programsDrawn',
+      playerId,
+      cardIds: drawn.map(c => c.id),
+      enteringQuarter,
+      fiscalYear: state.fiscalYear,
+    });
   }
 
   // Track sustain order for contract requirements
