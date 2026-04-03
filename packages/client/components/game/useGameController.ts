@@ -41,6 +41,7 @@ interface GameController {
   useTranscomAbility: (to: BudgetLine) => void;
   useSpacecyAbility: (bury: boolean) => void;
   endContractMarket: (chosenIds: string[]) => void;
+  submitContractChoice: (contractId: string) => void;
   getFinalScores: () => { winnerId: string; scores: Record<string, number> } | null;
   newGame: () => void;
   phaseLabel: string;
@@ -112,6 +113,10 @@ function needsHumanInput(state: GameState, humanId: string): boolean {
       }
       if (phase.step === 'crisisPulse') {
         return state.currentCrisis !== null;
+      }
+      if (phase.step === 'contractChoice') {
+        const pending = state.players[humanId].pendingContractDraw;
+        return pending !== null && pending.length > 0;
       }
       return false;
     }
@@ -216,6 +221,18 @@ export function useGameController(seed: number = 42): GameController {
             continue;
           case 'resolveOrders':
             continue;
+          case 'contractChoice':
+            // Bots choose their pending contracts; if human has a pending draw, stop
+            for (const [id, bot] of bots) {
+              const pending = engine.state.players[id]?.pendingContractDraw;
+              if (pending && pending.length > 0) {
+                try { engine.submitContractChoice(id, pending[0].id); } catch { /* ignore */ }
+              }
+            }
+            if (engine.allContractChoicesDone()) {
+              engine.endContractChoices();
+            }
+            continue;
           case 'cleanup':
             engine.endQuarter();
             continue;
@@ -300,16 +317,17 @@ export function useGameController(seed: number = 42): GameController {
   }, [engine, rerenderAndAdvance]);
 
   const doEndContractMarket = useCallback((chosenIds: string[]) => {
-    // Commit human choices first
-    for (const cid of chosenIds) {
-      engine.takeContract(humanId, cid);
-    }
-    // Then bots pick
+    // Submit human choices
+    engine.submitMarketChoices(humanId, chosenIds);
+    // Submit bot choices immediately
     for (const [id, bot] of bots) {
-      const cid = bot.chooseContract(engine.state);
-      if (cid) engine.takeContract(id, cid);
+      const contractId = bot.chooseContract(engine.state);
+      const botChoices = contractId ? [contractId] : [];
+      engine.submitMarketChoices(id, botChoices);
     }
-    engine.endContractMarket();
+    if (engine.allMarketChoicesSubmitted()) {
+      engine.endContractMarket();
+    }
     saveState(engine.state);
     rerenderAndAdvance();
   }, [engine, bots, rerenderAndAdvance]);
@@ -319,6 +337,17 @@ export function useGameController(seed: number = 42): GameController {
     if (engine.allOrdersIn()) {
       engine.revealAndResolve();
     }
+    saveState(engine.state);
+    rerenderAndAdvance();
+  }, [engine, rerenderAndAdvance]);
+
+  const doSubmitContractChoice = useCallback((contractId: string) => {
+    try {
+      engine.submitContractChoice(humanId, contractId);
+      if (engine.allContractChoicesDone()) {
+        engine.endContractChoices();
+      }
+    } catch { /* ignore invalid calls */ }
     saveState(engine.state);
     rerenderAndAdvance();
   }, [engine, rerenderAndAdvance]);
@@ -358,6 +387,7 @@ export function useGameController(seed: number = 42): GameController {
     submitVote,
     endContractMarket: doEndContractMarket,
     submitOrders: doSubmitOrders,
+    submitContractChoice: doSubmitContractChoice,
     useNavseaAbility: doUseNavseaAbility,
     useTranscomAbility: doUseTranscomAbility,
     useSpacecyAbility: doUseSpacecyAbility,
@@ -385,6 +415,7 @@ function getPhaseLabel(state: GameState): string {
         phase.step === 'crisisPulse' ? 'Crisis' :
         phase.step === 'planOrders' ? 'Plan Orders' :
         phase.step === 'resolveOrders' ? 'Resolving...' :
+        phase.step === 'contractChoice' ? 'Contracting' :
         'Cleanup'
       }`;
     case 'yearEnd': return `Year ${year} \u2014 Year End`;

@@ -5,6 +5,27 @@ const MAX_ACTIVE_GAMES = 10;
 const GAME_TTL_SECONDS = 48 * 60 * 60; // 48 hours
 const LOCK_TTL_SECONDS = 10;
 
+// --- Game metadata (slots, bot config) ---
+
+export interface SlotMeta {
+  playerId: string;
+  name: string;
+  isBot: boolean;
+  personality: string; // only used if isBot
+}
+
+export interface GameMeta {
+  slots: SlotMeta[];
+}
+
+export async function getGameMeta(gameId: string): Promise<GameMeta | null> {
+  return kv.get<GameMeta>(`game:${gameId}:meta`);
+}
+
+export async function setGameMeta(gameId: string, meta: GameMeta): Promise<void> {
+  await kv.set(`game:${gameId}:meta`, meta, { ex: GAME_TTL_SECONDS });
+}
+
 // --- Game state ---
 
 export async function getGameState(gameId: string): Promise<GameState | null> {
@@ -40,7 +61,7 @@ export async function addGameToIndex(gameId: string): Promise<boolean> {
 
 export async function setPendingSubmission(
   gameId: string,
-  kind: 'orders' | 'votes',
+  kind: 'orders' | 'votes' | 'contracts',
   playerId: string,
   data: unknown,
 ): Promise<void> {
@@ -49,7 +70,7 @@ export async function setPendingSubmission(
 
 export async function getPendingSubmission<T>(
   gameId: string,
-  kind: 'orders' | 'votes',
+  kind: 'orders' | 'votes' | 'contracts',
   playerId: string,
 ): Promise<T | null> {
   return kv.get<T>(`game:${gameId}:${kind}:${playerId}`);
@@ -57,7 +78,7 @@ export async function getPendingSubmission<T>(
 
 export async function getAllPendingSubmissions<T>(
   gameId: string,
-  kind: 'orders' | 'votes',
+  kind: 'orders' | 'votes' | 'contracts',
   playerIds: string[],
 ): Promise<Record<string, T>> {
   const result: Record<string, T> = {};
@@ -72,7 +93,7 @@ export async function getAllPendingSubmissions<T>(
 
 export async function clearPendingSubmissions(
   gameId: string,
-  kind: 'orders' | 'votes',
+  kind: 'orders' | 'votes' | 'contracts',
   playerIds: string[],
 ): Promise<void> {
   const keys = playerIds.map(pid => `game:${gameId}:${kind}:${pid}`);

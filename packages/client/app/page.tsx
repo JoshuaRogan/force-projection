@@ -54,7 +54,7 @@ export default function Home() {
         </p>
 
         <div className={styles.actions}>
-          <Link href="/game" className={styles.btnPrimary}>
+          <Link href="/lobby" className={styles.btnPrimary}>
             New Game
           </Link>
           <Link href="/tutorial" className={styles.btnSecondary}>

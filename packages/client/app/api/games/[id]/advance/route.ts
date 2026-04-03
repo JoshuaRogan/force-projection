@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GameEngine } from '@fp/engine';
-import { getGameState, setGameState } from '../../../lib/kv';
+import { getGameState, setGameState, getGameMeta } from '../../../lib/kv';
 import { sanitizeStateForPlayer } from '../../../lib/sanitize';
+import { runBotActions } from '../../../lib/botRunner';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 interface AdvancePayload {
   playerId: string;
-  action: 'endContractMarket' | 'endCrisisPulse';
+  action: 'endCrisisPulse';
 }
 
 /**
@@ -34,13 +35,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const engine = GameEngine.fromState(state);
 
   switch (action) {
-    case 'endContractMarket': {
-      if (state.phase.type !== 'contractMarket') {
-        return NextResponse.json({ error: 'Not in contract market phase' }, { status: 400 });
-      }
-      engine.endContractMarket();
-      break;
-    }
     case 'endCrisisPulse': {
       if (state.phase.type !== 'quarter' || state.phase.step !== 'crisisPulse') {
         return NextResponse.json({ error: 'Not in crisis pulse step' }, { status: 400 });
@@ -54,8 +48,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   await setGameState(id, engine.state);
 
+  // After advancing phase, bots may need to act (e.g. vote in congress, order in planOrders)
+  const meta = await getGameMeta(id);
+  if (meta) await runBotActions(id, meta);
+  const finalState = await getGameState(id) ?? engine.state;
+
   return NextResponse.json({
     status: 'ok',
-    state: sanitizeStateForPlayer(engine.state, playerId),
+    state: sanitizeStateForPlayer(finalState, playerId),
   });
 }

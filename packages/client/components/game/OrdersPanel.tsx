@@ -4,13 +4,14 @@ import { useState, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import type { GameState, OrderChoice, OrderId, TheaterId, ProgramCard, BudgetLine, SecondaryResource, OrderValidation } from '@fp/shared';
 import {
-  ORDERS, THEATER_NAMES, THEATER_IDS, BUDGET_LINES, BUDGET_LINE_NAMES, SECONDARY_RESOURCE_NAMES,
+  ORDERS, THEATER_NAMES, THEATER_IDS, BUDGET_LINES, BUDGET_LINE_NAMES,
   canAfford, validateOrder, getEffectiveBuildBaseCost, getEffectiveForwardOpsCost,
   getEffectiveActivationCost, getEffectivePipelineCost,
 } from '@fp/shared';
 import { ResourceIcon } from '../icons/ResourceIcon';
 import { resourceColor, resourceFullName } from '../ui/ResourceToken';
 import { colorizeDesc } from '../../utils/colorizeDesc';
+import { WaitingPanel } from './WaitingPanel';
 import styles from './GamePanel.module.css';
 
 const ORDER_CATEGORIES: Record<string, OrderId[]> = {
@@ -155,12 +156,14 @@ type Player = GameState['players'][string];
 export function OrdersPanel({
   gameState,
   humanPlayerId,
+  gameId,
   onSubmit,
   onUseNavseaAbility,
   onUseTranscomAbility,
 }: {
   gameState: GameState;
   humanPlayerId: string;
+  gameId?: string;
   onSubmit: (orders: [OrderChoice, OrderChoice]) => void;
   onUseNavseaAbility: (from: BudgetLine, to: BudgetLine) => void;
   onUseTranscomAbility: (to: BudgetLine) => void;
@@ -174,6 +177,7 @@ export function OrdersPanel({
   const [navseaTo, setNavseaTo] = useState<BudgetLine>('S');
   const [abilityError, setAbilityError] = useState<string | null>(null);
   const [transcomTo, setTranscomTo] = useState<BudgetLine>('A');
+  const [waiting, setWaiting] = useState(false);
   const clearHover = useCallback(() => setHoveredOrder(prev => prev === null ? prev : null), []);
   const player = gameState.players[humanPlayerId];
   const alreadySubmitted = player.selectedOrders !== null;
@@ -198,12 +202,10 @@ export function OrdersPanel({
     return result;
   }, [gameState, humanPlayerId]);
 
-  if (alreadySubmitted) {
-    return (
-      <div className={styles.panel}>
-        <p className={styles.mutedText}>Orders submitted. Waiting for resolution...</p>
-      </div>
-    );
+  if (waiting || alreadySubmitted) {
+    const submitted = alreadySubmitted ? player.selectedOrders! : [];
+    const lines = submitted.map(choice => ORDERS[choice.order].name);
+    return <WaitingPanel title="Orders Locked In" lines={lines} />;
   }
 
   const toggleOrder = (orderId: OrderId) => {
@@ -244,6 +246,7 @@ export function OrdersPanel({
 
   const handleSubmit = () => {
     if (!canSubmit) return;
+    setWaiting(true);
     onSubmit([orderParams[0], orderParams[1]]);
   };
 
@@ -462,6 +465,8 @@ export function OrdersPanel({
           orderId={selectedOrders[configuringIdx]}
           player={player}
           gameState={gameState}
+          gameId={gameId}
+          humanPlayerId={humanPlayerId}
           onConfirm={(choice) => setParamsForOrder(configuringIdx, choice)}
           onCancel={() => {
             // Deselect the order
@@ -517,12 +522,16 @@ function OrderParamPicker({
   orderId,
   player,
   gameState,
+  gameId,
+  humanPlayerId,
   onConfirm,
   onCancel,
 }: {
   orderId: OrderId;
   player: GameState['players'][string];
   gameState: GameState;
+  gameId?: string;
+  humanPlayerId?: string;
   onConfirm: (choice: OrderChoice) => void;
   onCancel: () => void;
 }) {

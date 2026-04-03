@@ -21,6 +21,11 @@ export function sanitizeStateForPlayer(state: GameState, playerId: string): Reco
 
       // Hide pending orders before reveal
       player.selectedOrders = player.selectedOrders ? 'submitted' : null;
+
+      // Hide other players' pending contract draws (secret until chosen)
+      player.pendingContractDraw = null;
+      player.marketOffer = [];
+      player.marketSelections = null;
     }
   }
 

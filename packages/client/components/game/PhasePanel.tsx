@@ -4,14 +4,17 @@ import type { GameState, GameEvent, OrderChoice, BudgetLine } from '@fp/shared';
 import { ORDERS, THEATER_NAMES } from '@fp/shared';
 import { CongressPanel } from './CongressPanel';
 import { ContractMarketPanel } from './ContractMarketPanel';
+import { ContractChoicePanel } from './ContractChoicePanel';
 import { OrdersPanel } from './OrdersPanel';
 import { GameOverPanel } from './GameOverPanel';
-import { CrisisCard } from '../cards';
+import { WaitingPanel } from './WaitingPanel';
+import { CrisisPulsePanel } from './CrisisPulsePanel';
 import styles from './GamePanel.module.css';
 
 interface PhasePanelProps {
   gameState: GameState;
   humanPlayerId: string;
+  gameId?: string;
   onVote: (amount: number, support: boolean) => void;
   onEndContractMarket: (chosenIds: string[]) => void;
   onSubmitOrders: (orders: [OrderChoice, OrderChoice]) => void;
@@ -24,6 +27,7 @@ interface PhasePanelProps {
   recentEvents: GameEvent[];
   onSkipResolution: () => void;
   onAcknowledgeCrisis: () => void;
+  onSubmitContractChoice: (contractId: string) => void;
 }
 
 const PHASE_HELP: Record<string, string> = {
@@ -77,7 +81,7 @@ function formatResolutionEvent(event: GameEvent, state: GameState): string | nul
 }
 
 export function PhasePanel(props: PhasePanelProps) {
-  const { gameState, humanPlayerId, showingResolution, recentEvents, onSkipResolution } = props;
+  const { gameState, humanPlayerId, gameId, showingResolution, recentEvents, onSkipResolution } = props;
   const phase = gameState.phase;
 
   // Show resolution summary between quarters
@@ -140,58 +144,22 @@ export function PhasePanel(props: PhasePanelProps) {
 
     case 'quarter':
       if (phase.step === 'crisisPulse' && gameState.currentCrisis) {
-        const human = gameState.players[humanPlayerId];
-        const canUseSpacecy = human.directorate === 'SPACECY' && !human.usedOncePerYear;
-        const canBury = human.resources.secondary.PC >= 1;
-        const peekResult = human.directorate === 'SPACECY' && human.usedOncePerYear
-          ? gameState.decks.crises[0]
-          : null;
         return (
-          <div className={styles.panel}>
-            <div className={styles.panelTitle}>Crisis This Quarter</div>
-            <p className={styles.panelSubtext}>
-              A crisis has emerged. Review the situation and prepare your response.
-            </p>
-            <div className={styles.wideCard}>
-              <CrisisCard card={gameState.currentCrisis} layout="horizontal" />
-            </div>
-            {human.directorate === 'SPACECY' && (
-              <div className={styles.orderSummary} style={{ marginBottom: 12 }}>
-                <div className={styles.orderSummaryItem}>
-                  <span className={styles.orderSummaryNum}>★</span>
-                  <span className={styles.orderSummaryName}>SPACECY once/year</span>
-                  <span className={styles.orderSummaryDetail}>Peek next crisis and optionally bury for 1 PC</span>
-                </div>
-                {canUseSpacecy ? (
-                  <div className={styles.paramActions} style={{ marginTop: 8 }}>
-                    <button
-                      onClick={() => props.onUseSpacecyAbility(false)}
-                      className={styles.orderConfigBtn}
-                    >
-                      Peek Next Crisis
-                    </button>
-                    <button
-                      onClick={() => props.onUseSpacecyAbility(true)}
-                      className={styles.orderConfigBtn}
-                      disabled={!canBury}
-                    >
-                      Peek + Bury (1 PC)
-                    </button>
-                  </div>
-                ) : (
-                  <p className={styles.mutedText}>SPACECY once/year ability used for this fiscal year.</p>
-                )}
-                {peekResult && (
-                  <div className={styles.wideCard} style={{ marginTop: 8 }}>
-                    <CrisisCard card={peekResult} layout="horizontal" />
-                  </div>
-                )}
-              </div>
-            )}
-            <button onClick={props.onAcknowledgeCrisis} className={styles.btnPrimary}>
-              Acknowledge &amp; Plan Orders
-            </button>
-          </div>
+          <CrisisPulsePanel
+            gameState={gameState}
+            humanPlayerId={humanPlayerId}
+            onAcknowledge={props.onAcknowledgeCrisis}
+            onUseSpacecyAbility={props.onUseSpacecyAbility}
+          />
+        );
+      }
+      if (phase.step === 'contractChoice') {
+        return (
+          <ContractChoicePanel
+            gameState={gameState}
+            humanPlayerId={humanPlayerId}
+            onSubmitChoice={props.onSubmitContractChoice}
+          />
         );
       }
       if (phase.step === 'planOrders') {
@@ -201,6 +169,7 @@ export function PhasePanel(props: PhasePanelProps) {
             <OrdersPanel
               gameState={gameState}
               humanPlayerId={humanPlayerId}
+              gameId={gameId}
               onSubmit={props.onSubmitOrders}
               onUseNavseaAbility={props.onUseNavseaAbility}
               onUseTranscomAbility={props.onUseTranscomAbility}

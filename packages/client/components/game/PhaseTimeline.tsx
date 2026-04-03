@@ -79,6 +79,7 @@ function getQuarterSubstep(phase: GamePhase): string | null {
     case 'crisisPulse': return 'Crisis';
     case 'planOrders': return 'Plan Orders';
     case 'resolveOrders': return 'Resolving';
+    case 'contractChoice': return 'Contracting';
     case 'cleanup': return 'Cleanup';
   }
 }

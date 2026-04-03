@@ -114,28 +114,23 @@ function resolveNegotiate(
   fireSustainTrigger(state, playerId, 'placeAlliance');
 }
 
-function resolveContracting(state: GameState, playerId: string): void {
+function resolveContracting(
+  state: GameState,
+  playerId: string,
+): void {
   const p = state.players[playerId];
 
   if (p.contracts.length >= state.config.maxActiveContracts) {
-    // Already at max — gain +1 SI instead
     p.si += 1;
     state.log.push({ type: 'siChange', playerId, delta: 1, reason: 'contracting_at_max' });
     return;
   }
 
-  // Draw 2 contracts, keep 1 (simplified: take first available from market, or draw from deck)
-  if (state.decks.contracts.length >= 2) {
-    const drawn = state.decks.contracts.splice(0, 2);
-    // For now, keep first, put second on bottom
-    p.contracts.push({ card: drawn[0], progress: {} });
-    state.decks.contracts.push(drawn[1]);
-    state.log.push({ type: 'contractTaken', playerId, contractId: drawn[0].id });
-  } else if (state.decks.contracts.length === 1) {
-    const drawn = state.decks.contracts.splice(0, 1);
-    p.contracts.push({ card: drawn[0], progress: {} });
-    state.log.push({ type: 'contractTaken', playerId, contractId: drawn[0].id });
-  }
+  // Draw up to 2 contracts from deck and store for player to choose after resolution
+  const available = state.decks.contracts.splice(0, 2);
+  if (available.length === 0) return;
+
+  p.pendingContractDraw = available;
 }
 
 // --- Procure Orders ---

@@ -1,0 +1,407 @@
+/* === LOBBY PAGE === */
+
+.root {
+  position: relative;
+  min-height: 100vh;
+  background: var(--bg-dark);
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(96, 165, 250, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96, 165, 250, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px, rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.domainStrip {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  height: 3px;
+  width: 100%;
+  flex-shrink: 0;
+}
+.domainStrip span { flex: 1; }
+
+/* ── System bar ── */
+.sysBar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 32px;
+  border-bottom: 1px solid rgba(96, 165, 250, 0.1);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.sysBarLeft, .sysBarRight { display: flex; align-items: center; gap: 20px; }
+.sysDot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--color-success);
+  animation: pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+.sysSep { color: rgba(96, 165, 250, 0.2); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
+}
+
+/* ── Main ── */
+.main {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 32px 80px;
+  gap: 0;
+}
+
+.classifBadge {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: var(--color-exp);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 3px 12px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  animation: fadeUp 0.4s ease both;
+  animation-delay: 0.05s;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  animation: fadeUp 0.4s ease both;
+  animation-delay: 0.1s;
+}
+
+.sub {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  margin-bottom: 48px;
+  animation: fadeUp 0.4s ease both;
+  animation-delay: 0.15s;
+}
+
+/* ── Slot cards ── */
+.slots {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 960px;
+  margin-bottom: 32px;
+  animation: fadeUp 0.5s ease both;
+  animation-delay: 0.2s;
+}
+
+.slotCard {
+  flex: 1 1 200px;
+  max-width: 240px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  transition: border-color 200ms ease;
+}
+
+.slotCard:has([class*="dirChipActive"]) {
+  border-color: color-mix(in srgb, var(--slot-color, var(--border-accent)) 60%, transparent);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--slot-color, transparent) 10%, transparent);
+}
+
+.slotHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slotNum {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+}
+
+.removeBtn {
+  background: none;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: rgba(239, 68, 68, 0.6);
+  font-size: 0.9rem;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: all 150ms ease;
+}
+.removeBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+/* ── Mode toggle ── */
+.modeToggle {
+  display: flex;
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.modeBtn {
+  flex: 1;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-transform: uppercase;
+}
+
+.modeBtnActive {
+  background: var(--color-air);
+  color: #0a0d12;
+}
+
+/* ── Directorate selector ── */
+.dirLabel {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: -8px;
+}
+
+.dirGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dirChip {
+  padding: 5px 10px;
+  background: none;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-align: left;
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-transform: uppercase;
+}
+
+.dirChip:hover:not(.dirChipDisabled) {
+  border-color: var(--border-accent);
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.03);
+}
+
+.dirChipActive {
+  border-color: var(--chip-color) !important;
+  color: var(--chip-color) !important;
+  background: color-mix(in srgb, var(--chip-color) 12%, transparent) !important;
+}
+
+.dirChipDisabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+/* ── Personality chips ── */
+.personalityGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.personalityChip {
+  padding: 4px 8px;
+  background: none;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-transform: uppercase;
+}
+
+.personalityChip:hover {
+  border-color: var(--border-accent);
+  color: var(--text-secondary);
+}
+
+.personalityChipActive {
+  border-color: var(--color-space);
+  color: var(--color-space);
+  background: rgba(167, 139, 250, 0.1);
+}
+
+/* ── Slot footer ── */
+.slotFooter {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  margin-top: -4px;
+  opacity: 0.8;
+}
+
+/* ── Add slot ── */
+.addSlot {
+  flex: 1 1 200px;
+  max-width: 240px;
+  min-height: 160px;
+  background: none;
+  border: 1px dashed var(--border-subtle);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 200ms ease;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+.addSlot:hover {
+  border-color: var(--color-air);
+  color: var(--color-air);
+  background: rgba(96, 165, 250, 0.04);
+}
+
+.addSlotPlus {
+  font-size: 1.5rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* ── Error ── */
+.error {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.06);
+  padding: 8px 20px;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+  animation: fadeUp 0.3s ease both;
+}
+
+/* ── Deploy row ── */
+.deployRow {
+  display: flex;
+  justify-content: center;
+  animation: fadeUp 0.4s ease both;
+  animation-delay: 0.3s;
+}
+
+.deployBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 48px;
+  background: var(--color-air);
+  color: #0a0d12;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+
+.deployBtn:hover:not(:disabled) {
+  background: #93c5fd;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(96, 165, 250, 0.35);
+}
+
+.deployBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Spinner ── */
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(0,0,0,0.3);
+  border-top-color: #0a0d12;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

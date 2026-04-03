@@ -80,26 +80,19 @@ export function runGame(config: RunConfig): SimulationResult {
             engine.submitVote(bot.playerId, vote.amount, vote.support);
           }
           engine.resolveVotes();
-
-          // Contract market
-          for (const bot of bots) {
-            const contractId = bot.chooseContract(engine.state);
-            if (contractId) {
-              engine.takeContract(bot.playerId, contractId);
-            }
-          }
-          engine.endContractMarket();
+          // resolveVotes transitions to contractMarket — fall through handled next loop
           break;
         }
 
         case 'contractMarket': {
           for (const bot of bots) {
             const contractId = bot.chooseContract(engine.state);
-            if (contractId) {
-              engine.takeContract(bot.playerId, contractId);
-            }
+            const choices = contractId ? [contractId] : [];
+            engine.submitMarketChoices(bot.playerId, choices);
           }
-          engine.endContractMarket();
+          if (engine.allMarketChoicesSubmitted()) {
+            engine.endContractMarket();
+          }
           break;
         }
 

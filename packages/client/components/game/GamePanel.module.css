@@ -77,6 +77,58 @@
   box-shadow: none;
 }
 
+.btnSecondary {
+  padding: 6px 16px;
+  background: color-mix(in srgb, var(--color-warning) 10%, var(--bg-elevated));
+  color: var(--color-warning);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 40%, transparent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: all var(--transition-fast);
+}
+
+.btnSecondary:hover {
+  background: color-mix(in srgb, var(--color-warning) 20%, var(--bg-elevated));
+  border-color: var(--color-warning);
+}
+
+.btnSecondary:disabled {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border-color: var(--border-subtle);
+  cursor: not-allowed;
+}
+
+.abilitySection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--color-warning) 6%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--color-warning) 25%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.abilitySectionLabel {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-warning);
+}
+
+.abilityButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .btnToggle {
   padding: 5px 14px;
   border: 1px solid var(--border-subtle);
@@ -221,6 +273,50 @@
   gap: var(--space-sm);
 }
 
+.contractEntry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.contractSelectBtn {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  width: 100%;
+}
+
+.contractSelectBtn:hover:not(:disabled) {
+  border-color: var(--color-card-contract);
+  color: var(--color-card-contract);
+  background: color-mix(in srgb, var(--color-card-contract) 10%, var(--bg-elevated));
+}
+
+.contractSelectBtnActive {
+  background: color-mix(in srgb, var(--color-success) 15%, var(--bg-elevated));
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.contractSelectBtnActive:hover {
+  background: color-mix(in srgb, var(--color-success) 20%, var(--bg-elevated));
+}
+
+.contractSelectBtnDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .contractClickable {
   cursor: pointer;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
@@ -287,6 +383,87 @@
   background: var(--bg-elevated);
   border-radius: var(--radius-sm);
   border: 1px dashed var(--border-subtle);
+}
+
+/* === Orders Waiting Panel === */
+
+.waitingPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+}
+
+.waitingSpinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--color-info) 20%, transparent);
+  border-top-color: var(--color-info);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.waitingTitle {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
+}
+
+.waitingOrders {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 220px;
+}
+
+.waitingOrder {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+}
+
+.waitingOrderNum {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 14px;
+  text-align: center;
+}
+
+.waitingOrderName {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.waitingSubtext {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  animation: breathe 2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
 /* === Orders Panel === */

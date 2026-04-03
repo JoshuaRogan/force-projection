@@ -16,6 +16,14 @@ describe('GameEngine', () => {
     return new GameEngine({ players, seed: 42, config: { fiscalYears: 1 } });
   }
 
+  /** Pass on contracts for all players, then end the market phase. */
+  function skipContractMarket(engine: GameEngine) {
+    for (const pid of engine.state.turnOrder) {
+      engine.submitMarketChoices(pid, []);
+    }
+    engine.endContractMarket();
+  }
+
   it('should create a game in setup phase', () => {
     const engine = createTestGame();
     assert.equal(engine.state.phase.type, 'setup');
@@ -51,14 +59,18 @@ describe('GameEngine', () => {
     engine.resolveVotes();
 
     assert.equal(engine.state.phase.type, 'contractMarket');
-    assert.ok(engine.state.contractMarket.length > 0, 'should have contracts available');
+    const offer = engine.state.players['p1'].marketOffer;
+    assert.ok(offer.length > 0, 'should have a private contract offer');
 
-    const contractId = engine.state.contractMarket[0].id;
-    const took = engine.takeContract('p1', contractId);
-    assert.ok(took, 'should successfully take contract');
-    assert.equal(engine.state.players['p1'].contracts.length, 1);
+    const contractId = offer[0].id;
+    const took = engine.submitMarketChoices('p1', [contractId]);
+    assert.ok(took, 'should successfully submit market choices');
+    // p2 passes (empty choices)
+    engine.submitMarketChoices('p2', []);
+    assert.ok(engine.allMarketChoicesSubmitted());
 
     engine.endContractMarket();
+    assert.equal(engine.state.players['p1'].contracts.length, 1);
     assert.equal(engine.state.phase.type, 'quarter');
   });
 
@@ -68,7 +80,7 @@ describe('GameEngine', () => {
     engine.submitVote('p1', 0, true);
     engine.submitVote('p2', 0, true);
     engine.resolveVotes();
-    engine.endContractMarket();
+    skipContractMarket(engine);
 
     // We're in Q1 crisisPulse
     assert.deepEqual(engine.state.phase, { type: 'quarter', quarter: 1, step: 'crisisPulse' });
@@ -107,7 +119,7 @@ describe('GameEngine', () => {
     engine.resolveVotes();
 
     // Contract market
-    engine.endContractMarket();
+    skipContractMarket(engine);
 
     // Play 4 quarters
     for (let q = 1; q <= 4; q++) {
@@ -148,7 +160,7 @@ describe('GameEngine', () => {
     engine.submitVote('p1', 0, true);
     engine.submitVote('p2', 0, true);
     engine.resolveVotes();
-    engine.endContractMarket();
+    skipContractMarket(engine);
     engine.endCrisisPulse();
 
     const p1 = engine.getPlayer('p1');
@@ -178,7 +190,7 @@ describe('GameEngine', () => {
     engine.submitVote('p1', 0, true);
     engine.submitVote('p2', 0, true);
     engine.resolveVotes();
-    engine.endContractMarket();
+    skipContractMarket(engine);
     engine.endCrisisPulse();
 
     const p1 = engine.getPlayer('p1');
@@ -206,7 +218,7 @@ describe('GameEngine', () => {
     engine.submitVote('p1', 0, true);
     engine.submitVote('p2', 0, true);
     engine.resolveVotes();
-    engine.endContractMarket();
+    skipContractMarket(engine);
 
     assert.deepEqual(engine.state.phase, { type: 'quarter', quarter: 1, step: 'crisisPulse' });
     const p1 = engine.getPlayer('p1');
@@ -236,7 +248,7 @@ describe('GameEngine', () => {
     engine.submitVote('p1', 0, true);
     engine.submitVote('p2', 0, true);
     engine.resolveVotes();
-    engine.endContractMarket();
+    skipContractMarket(engine);
 
     const p1 = engine.getPlayer('p1');
     p1.contracts.push({
@@ -281,7 +293,7 @@ describe('GameEngine', () => {
     engine.submitVote('p1', 0, true);
     engine.submitVote('p2', 0, true);
     engine.resolveVotes();
-    engine.endContractMarket();
+    skipContractMarket(engine);
 
     for (let q = 1; q <= 4; q++) {
       engine.endCrisisPulse();
@@ -311,7 +323,7 @@ describe('GameEngine', () => {
     engine.submitVote('p1', 0, true);
     engine.submitVote('p2', 0, true);
     engine.resolveVotes();
-    engine.endContractMarket();
+    skipContractMarket(engine);
     engine.endCrisisPulse();
 
     // P1 builds a base (needs 2U + 1 of any line)
@@ -344,7 +356,7 @@ describe('GameEngine', () => {
     engine.submitVote('p1', 0, true);
     engine.submitVote('p2', 0, true);
     engine.resolveVotes();
-    engine.endContractMarket();
+    skipContractMarket(engine);
     engine.endCrisisPulse();
 
     const p1 = engine.getPlayer('p1');
@@ -390,7 +402,7 @@ describe('GameEngine', () => {
     engine.submitVote('p1', 0, true);
     engine.submitVote('p2', 0, true);
     engine.resolveVotes();
-    engine.endContractMarket();
+    skipContractMarket(engine);
     engine.endCrisisPulse();
 
     const p1 = engine.getPlayer('p1');
@@ -438,7 +450,7 @@ describe('GameEngine', () => {
       engine.submitVote('p1', 1, true);
       engine.submitVote('p2', 0, false);
       engine.resolveVotes();
-      engine.endContractMarket();
+      skipContractMarket(engine);
 
       for (let q = 1; q <= 4; q++) {
         engine.endCrisisPulse();

@@ -64,6 +64,7 @@ export type QuarterStep =
   | 'crisisPulse'
   | 'planOrders'
   | 'resolveOrders'
+  | 'contractChoice'
   | 'cleanup';
 
 // === Portfolio (per-player program management) ===
@@ -121,6 +122,13 @@ export interface PlayerState {
 
   // Stations: which active slot is stationed where
   stationedPrograms: Array<{ activeSlot: number; theater: TheaterId }>;
+
+  // Pending contract draw from contracting order — awaiting player choice in contractChoice step
+  pendingContractDraw: ContractCard[] | null;
+
+  // Per-player contract market offer (simultaneous, private)
+  marketOffer: ContractCard[];          // private offer during contractMarket phase
+  marketSelections: string[] | null;    // null = not submitted, [] = pass, ['id1'] = chose these
 }
 
 // === National Posture (shared thresholds) ===

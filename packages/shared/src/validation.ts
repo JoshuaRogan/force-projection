@@ -103,9 +103,14 @@ export function validateOrder(
 
   switch (orderId) {
     case 'lobby':
-    case 'contracting':
     case 'logisticsSurge':
     case 'intelFocus':
+      return { canAfford: true };
+
+    case 'contracting':
+      if (state.phase.type === 'quarter' && state.phase.quarter === 4) {
+        return { canAfford: false };
+      }
       return { canAfford: true };
 
     case 'negotiate':

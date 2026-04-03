@@ -2,10 +2,11 @@ import type { GameState, OrderChoice, BudgetLine } from '@fp/shared';
 import { createGame, type CreateGameOptions } from './createGame.js';
 import {
   startFiscalYear, setupCongress, submitAgendaVote, resolveAgenda,
-  setupContractMarket, takeContract, endContractMarket,
+  setupContractMarket, submitMarketChoices, allMarketChoicesSubmitted, endContractMarket,
   setupCrisisPulse, endCrisisPulse, submitOrders, allOrdersSubmitted,
   revealOrders, endResolveOrders, quarterCleanup, processYearEnd,
   useNavseaReprogram, useTranscomConversion, useSpacecyCrisisPeek,
+  submitContractChoice, allContractChoicesDone, endContractChoices,
 } from './phases.js';
 import { resolveAllOrders } from './orders.js';
 import { computeEndgameScoring, determineWinner } from './scoring.js';
@@ -51,15 +52,36 @@ export class GameEngine {
 
   // === Contract Market Phase ===
 
-  takeContract(playerId: string, contractId: string): boolean {
+  submitMarketChoices(playerId: string, contractIds: string[]): boolean {
     this.assertPhase('contractMarket');
-    return takeContract(this.state, playerId, contractId);
+    return submitMarketChoices(this.state, playerId, contractIds);
+  }
+
+  allMarketChoicesSubmitted(): boolean {
+    return allMarketChoicesSubmitted(this.state);
   }
 
   endContractMarket(): void {
     this.assertPhase('contractMarket');
     endContractMarket(this.state);
     setupCrisisPulse(this.state);
+  }
+
+  /** Submit a contract choice during contractChoice step. */
+  submitContractChoice(playerId: string, contractId: string): boolean {
+    this.assertQuarterStep('contractChoice');
+    return submitContractChoice(this.state, playerId, contractId);
+  }
+
+  /** True when all players with pending draws have chosen. */
+  allContractChoicesDone(): boolean {
+    return allContractChoicesDone(this.state);
+  }
+
+  /** Advance from contractChoice to cleanup once all choices are in. */
+  endContractChoices(): void {
+    this.assertQuarterStep('contractChoice');
+    endContractChoices(this.state);
   }
 
   // === Quarter Phases ===

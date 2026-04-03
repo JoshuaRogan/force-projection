@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useGameController } from '@/components/game/useGameController';
+import { useServerGameController } from '@/components/game/useServerGameController';
 import { PlayerDashboard, HandTray } from '@/components/dashboard';
 import { TheaterBoard } from '@/components/theater';
 import { PhasePanel } from '@/components/game/PhasePanel';
@@ -14,6 +16,23 @@ import type { ViewMode } from '@/components/views';
 import gameStyles from './game.module.css';
 
 export default function GamePage() {
+  return (
+    <Suspense fallback={
+      <div className={gameStyles.shell}>
+        <header className={gameStyles.topBar}>
+          <span className={gameStyles.title}>Force Projection: Joint Command</span>
+        </header>
+      </div>
+    }>
+      <GamePageInner />
+    </Suspense>
+  );
+}
+
+function GamePageInner() {
+  const searchParams = useSearchParams();
+  const gameId = searchParams.get('gameId');
+  const playerId = searchParams.get('player');
   const seedRef = useRef<number | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -32,6 +51,14 @@ export default function GamePage() {
     );
   }
 
+  if (gameId && playerId) {
+    return (
+      <CardModalProvider>
+        <ServerGameBoard gameId={gameId} playerId={playerId} />
+      </CardModalProvider>
+    );
+  }
+
   return (
     <CardModalProvider>
       <GameBoard seed={seedRef.current!} />
@@ -39,8 +66,29 @@ export default function GamePage() {
   );
 }
 
+function ServerGameBoard({ gameId, playerId }: { gameId: string; playerId: string }) {
+  const game = useServerGameController(gameId, playerId);
+  if (!game.gameState) {
+    return (
+      <div className={gameStyles.shell}>
+        <header className={gameStyles.topBar}>
+          <span className={gameStyles.title}>Force Projection: Joint Command</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+            LOADING MISSION…
+          </span>
+        </header>
+      </div>
+    );
+  }
+  return <GameBoardInner game={game} gameId={gameId} />;
+}
+
 function GameBoard({ seed }: { seed: number }) {
   const game = useGameController(seed);
+  return <GameBoardInner game={game} />;
+}
+
+function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameController>; gameId?: string }) {
   const { showCard } = useCardModal();
   const [viewMode, setViewMode] = useState<ViewMode>('command');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -124,12 +172,14 @@ function GameBoard({ seed }: { seed: number }) {
                 <PhasePanel
                   gameState={gameState}
                   humanPlayerId={humanPlayerId}
+                  gameId={gameId}
                   onVote={game.submitVote}
                   onEndContractMarket={game.endContractMarket}
                   onSubmitOrders={game.submitOrders}
                   onUseNavseaAbility={game.useNavseaAbility}
                   onUseTranscomAbility={game.useTranscomAbility}
                   onUseSpacecyAbility={game.useSpacecyAbility}
+                  onSubmitContractChoice={game.submitContractChoice}
                   finalScores={game.getFinalScores()}
                   onNewGame={game.newGame}
                   showingResolution={game.showingResolution}
@@ -190,6 +240,7 @@ function GameBoard({ seed }: { seed: number }) {
         <PersonalView
           gameState={gameState}
           humanPlayerId={humanPlayerId}
+          gameId={gameId}
           humanPlayer={humanPlayer}
           events={game.events}
           recentEvents={game.recentEvents}
@@ -204,6 +255,7 @@ function GameBoard({ seed }: { seed: number }) {
           onNewGame={game.newGame}
           onSkipResolution={game.skipResolution}
           onAcknowledgeCrisis={game.acknowledgeCrisis}
+          onSubmitContractChoice={game.submitContractChoice}
         />
       )}
 

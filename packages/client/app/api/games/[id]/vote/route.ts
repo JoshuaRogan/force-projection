@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GameEngine } from '@fp/engine';
 import {
-  getGameState, setGameState,
+  getGameState, setGameState, getGameMeta,
   setPendingSubmission, getAllPendingSubmissions, clearPendingSubmissions,
   acquireResolutionLock, releaseResolutionLock,
 } from '../../../lib/kv';
 import { sanitizeStateForPlayer } from '../../../lib/sanitize';
+import { runBotActions } from '../../../lib/botRunner';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -37,6 +38,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   // Store this player's vote separately (atomic per player)
   await setPendingSubmission(id, 'votes', playerId, { amount, support });
+
+  // Trigger bot votes — they will submit and potentially resolve if all humans are in
+  const meta = await getGameMeta(id);
+  if (meta) await runBotActions(id, meta);
 
   // Check if all players have submitted
   const allVotes = await getAllPendingSubmissions<{ amount: number; support: boolean }>(
@@ -75,9 +80,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     await setGameState(id, engine.state);
     await clearPendingSubmissions(id, 'votes', state.turnOrder);
 
+    // Bot contract picks for the new contractMarket phase
+    if (meta) await runBotActions(id, meta);
+    const finalState = await getGameState(id) ?? engine.state;
+
     return NextResponse.json({
       status: 'resolved',
-      state: sanitizeStateForPlayer(engine.state, playerId),
+      state: sanitizeStateForPlayer(finalState, playerId),
     });
   } finally {
     await releaseResolutionLock(id);

@@ -10,6 +10,7 @@ import styles from './PersonalView.module.css';
 interface PersonalViewProps {
   gameState: GameState;
   humanPlayerId: string;
+  gameId?: string;
   humanPlayer: PlayerState;
   events: GameEvent[];
   recentEvents: GameEvent[];
@@ -24,11 +25,13 @@ interface PersonalViewProps {
   onNewGame: () => void;
   onSkipResolution: () => void;
   onAcknowledgeCrisis: () => void;
+  onSubmitContractChoice: (contractId: string) => void;
 }
 
 export function PersonalView({
   gameState,
   humanPlayerId,
+  gameId,
   humanPlayer,
   events,
   recentEvents,
@@ -43,6 +46,7 @@ export function PersonalView({
   onNewGame,
   onSkipResolution,
   onAcknowledgeCrisis,
+  onSubmitContractChoice,
 }: PersonalViewProps) {
   return (
     <div className={styles.layout}>
@@ -64,6 +68,7 @@ export function PersonalView({
             <PhasePanel
               gameState={gameState}
               humanPlayerId={humanPlayerId}
+              gameId={gameId}
               onVote={onVote}
               onEndContractMarket={onEndContractMarket}
               onSubmitOrders={onSubmitOrders}
@@ -76,6 +81,7 @@ export function PersonalView({
               recentEvents={recentEvents}
               onSkipResolution={onSkipResolution}
               onAcknowledgeCrisis={onAcknowledgeCrisis}
+              onSubmitContractChoice={onSubmitContractChoice}
             />
           </div>
           <div className={styles.feedWrapper}>

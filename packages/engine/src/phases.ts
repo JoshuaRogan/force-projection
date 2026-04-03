@@ -36,7 +36,8 @@ function stepOrdinal(step: QuarterStep): number {
     case 'crisisPulse': return 0;
     case 'planOrders': return 1;
     case 'resolveOrders': return 2;
-    case 'cleanup': return 3;
+    case 'contractChoice': return 3;
+    case 'cleanup': return 4;
   }
 }
 
@@ -170,34 +171,92 @@ export function resolveAgenda(state: GameState): void {
 // === Contract Market (Phase B) ===
 
 export function setupContractMarket(state: GameState): void {
-  // Fill market to 3 contracts
-  while (state.contractMarket.length < 3 && state.decks.contracts.length > 0) {
-    state.contractMarket.push(state.decks.contracts.shift()!);
+  for (const pid of state.turnOrder) {
+    const player = state.players[pid];
+    const drawn = state.decks.contracts.splice(0, 3);
+    player.marketOffer = drawn;
+    player.marketSelections = null;
   }
 }
 
-export function takeContract(state: GameState, playerId: string, contractId: string): boolean {
+export function submitMarketChoices(state: GameState, playerId: string, contractIds: string[]): boolean {
   const player = state.players[playerId];
-  if (player.contracts.length >= state.config.maxActiveContracts) return false;
+  if (player.marketSelections !== null) return false; // already submitted
 
-  const idx = state.contractMarket.findIndex(c => c.id === contractId);
-  if (idx === -1) return false;
-
-  const contract = state.contractMarket.splice(idx, 1)[0];
-  player.contracts.push({ card: contract, progress: {} });
-
-  state.log.push({ type: 'contractTaken', playerId, contractId });
-
-  // Apply immediate award effects
-  for (const effect of contract.immediateAward) {
-    resolveEffect(state, playerId, effect);
+  // Validate all chosen ids are in this player's offer
+  const offerIds = new Set(player.marketOffer.map(c => c.id));
+  for (const id of contractIds) {
+    if (!offerIds.has(id)) return false;
   }
 
+  // Cap to available slots
+  const available = state.config.maxActiveContracts - player.contracts.length;
+  player.marketSelections = contractIds.slice(0, available);
   return true;
 }
 
+export function allMarketChoicesSubmitted(state: GameState): boolean {
+  return state.turnOrder.every(pid => state.players[pid].marketSelections !== null);
+}
+
 export function endContractMarket(state: GameState): void {
+  // Resolve each player's selections
+  for (const pid of state.turnOrder) {
+    const player = state.players[pid];
+    const chosen = new Set(player.marketSelections ?? []);
+
+    for (const card of player.marketOffer) {
+      if (chosen.has(card.id) && player.contracts.length < state.config.maxActiveContracts) {
+        player.contracts.push({ card, progress: {} });
+        state.log.push({ type: 'contractTaken', playerId: pid, contractId: card.id });
+        for (const effect of card.immediateAward) {
+          resolveEffect(state, pid, effect);
+        }
+      } else {
+        // Return unchosen cards to the bottom of the deck
+        state.decks.contracts.push(card);
+      }
+    }
+
+    player.marketOffer = [];
+    player.marketSelections = null;
+  }
+
   state.phase = { type: 'quarter', quarter: 1, step: 'crisisPulse' };
+  log(state, state.phase);
+}
+
+/** Player picks which drawn contract to keep during contractChoice step. */
+export function submitContractChoice(state: GameState, playerId: string, contractId: string): boolean {
+  const p = state.players[playerId];
+  if (!p.pendingContractDraw || p.pendingContractDraw.length === 0) return false;
+
+  const idx = p.pendingContractDraw.findIndex(c => c.id === contractId);
+  if (idx === -1) return false;
+
+  const chosen = p.pendingContractDraw[idx];
+  const others = p.pendingContractDraw.filter((_, i) => i !== idx);
+
+  p.contracts.push({ card: chosen, progress: {} });
+  state.log.push({ type: 'contractTaken', playerId, contractId: chosen.id });
+
+  // Return unchosen cards to the bottom of the deck
+  state.decks.contracts.push(...others);
+
+  p.pendingContractDraw = null;
+  return true;
+}
+
+export function allContractChoicesDone(state: GameState): boolean {
+  return state.turnOrder.every(pid =>
+    !state.players[pid].pendingContractDraw ||
+    state.players[pid].pendingContractDraw!.length === 0
+  );
+}
+
+export function endContractChoices(state: GameState): void {
+  if (state.phase.type !== 'quarter' || state.phase.step !== 'contractChoice') return;
+  state.phase = { type: 'quarter', quarter: state.phase.quarter, step: 'cleanup' };
   log(state, state.phase);
 }
 
@@ -382,7 +441,17 @@ export function revealOrders(state: GameState): void {
 
 export function endResolveOrders(state: GameState): void {
   if (state.phase.type !== 'quarter') return;
-  state.phase = { type: 'quarter', quarter: state.phase.quarter, step: 'cleanup' };
+
+  const hasPendingChoices = state.turnOrder.some(pid =>
+    state.players[pid].pendingContractDraw !== null &&
+    (state.players[pid].pendingContractDraw?.length ?? 0) > 0
+  );
+
+  if (hasPendingChoices) {
+    state.phase = { type: 'quarter', quarter: state.phase.quarter, step: 'contractChoice' };
+  } else {
+    state.phase = { type: 'quarter', quarter: state.phase.quarter, step: 'cleanup' };
+  }
   log(state, state.phase);
 }
 

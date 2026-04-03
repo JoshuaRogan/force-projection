@@ -103,6 +103,9 @@ export function createGame(options: CreateGameOptions): GameState {
       sustainOrdersThisYear: [],
       logisticsSurgeThisQuarter: false,
       stationedPrograms: [],
+      pendingContractDraw: null,
+      marketOffer: [],
+      marketSelections: null,
     };
   }
 

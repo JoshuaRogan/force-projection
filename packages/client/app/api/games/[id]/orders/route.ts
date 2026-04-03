@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GameEngine } from '@fp/engine';
 import type { OrderChoice } from '@fp/shared';
 import {
-  getGameState, setGameState,
+  getGameState, setGameState, getGameMeta,
   setPendingSubmission, getAllPendingSubmissions, clearPendingSubmissions,
   acquireResolutionLock, releaseResolutionLock,
 } from '../../../lib/kv';
 import { sanitizeStateForPlayer } from '../../../lib/sanitize';
+import { runBotActions } from '../../../lib/botRunner';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -37,6 +38,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   // Store this player's orders separately (atomic per player)
   await setPendingSubmission(id, 'orders', playerId, orders);
+
+  // Trigger bot order submissions — may resolve if this was the last human
+  const meta = await getGameMeta(id);
+  if (meta) await runBotActions(id, meta);
 
   // Check if all players have submitted
   const allOrders = await getAllPendingSubmissions<[OrderChoice, OrderChoice]>(
@@ -69,18 +74,27 @@ export async function POST(request: NextRequest, context: RouteContext) {
       engine.submitOrders(pid, playerOrders);
     }
 
-    // Reveal, resolve, and advance to cleanup
+    // Reveal and resolve all orders
     engine.revealAndResolve();
 
-    // Auto-advance through cleanup to next crisis pulse (or year end)
-    engine.endQuarter();
+    // If contracting draws are pending, stop here for player choice
+    const needsContractChoice = engine.state.phase.type === 'quarter' &&
+      engine.state.phase.step === 'contractChoice';
+
+    if (!needsContractChoice) {
+      engine.endQuarter();
+    }
 
     await setGameState(id, engine.state);
     await clearPendingSubmissions(id, 'orders', state.turnOrder);
 
+    // Run bots for the next phase (congress votes, new quarter crisis, etc.)
+    if (meta) await runBotActions(id, meta);
+    const finalState = await getGameState(id) ?? engine.state;
+
     return NextResponse.json({
       status: 'resolved',
-      state: sanitizeStateForPlayer(engine.state, playerId),
+      state: sanitizeStateForPlayer(finalState, playerId),
     });
   } finally {
     await releaseResolutionLock(id);

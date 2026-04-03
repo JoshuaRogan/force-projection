@@ -83,17 +83,18 @@ export class Bot {
     return { amount, support };
   }
 
-  /** Choose whether to take a contract from the market */
+  /** Choose whether to take a contract from the player's private market offer */
   chooseContract(state: GameState): string | null {
     const player = state.players[this.playerId];
     if (player.contracts.length >= state.config.maxActiveContracts) return null;
-    if (state.contractMarket.length === 0) return null;
 
-    // Score each available contract
+    const offer = player.marketOffer ?? [];
+    if (offer.length === 0) return null;
+
     let bestId: string | null = null;
     let bestScore = 0;
 
-    for (const contract of state.contractMarket) {
+    for (const contract of offer) {
       const score = this.scoreContract(state, player, contract);
       if (score > bestScore) {
         bestScore = score;
@@ -101,7 +102,6 @@ export class Bot {
       }
     }
 
-    // Only take if score is positive
     return bestScore > 0.5 ? bestId : null;
   }
 
