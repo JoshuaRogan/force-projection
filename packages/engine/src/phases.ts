@@ -231,6 +231,15 @@ export function submitContractChoice(state: GameState, playerId: string, contrac
   const p = state.players[playerId];
   if (!p.pendingContractDraw || p.pendingContractDraw.length === 0) return false;
 
+  // Already at max active contracts: cannot take another — same outcome as resolveContracting at max (+1 SI, return draws).
+  if (p.contracts.length >= state.config.maxActiveContracts) {
+    state.decks.contracts.push(...p.pendingContractDraw);
+    p.pendingContractDraw = null;
+    p.si += 1;
+    state.log.push({ type: 'siChange', playerId, delta: 1, reason: 'contracting_at_max' });
+    return true;
+  }
+
   const idx = p.pendingContractDraw.findIndex(c => c.id === contractId);
   if (idx === -1) return false;
 

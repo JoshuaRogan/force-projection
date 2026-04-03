@@ -22,6 +22,8 @@ export function ContractChoicePanel({
   const player = gameState.players[humanPlayerId];
   const pending = player.pendingContractDraw;
   const alreadyChose = !pending || pending.length === 0;
+  const maxContracts = gameState.config.maxActiveContracts;
+  const atMaxContracts = player.contracts.length >= maxContracts;
 
   if (waiting || alreadyChose) {
     const chosenName = pending?.find(c => c.id === selectedId)?.name;
@@ -31,6 +33,28 @@ export function ContractChoicePanel({
         lines={chosenName ? [chosenName] : undefined}
         subtitle="Waiting for other players\u2026"
       />
+    );
+  }
+
+  // At max active contracts the order resolves to +1 SI, not a new contract — offer that explicitly if a draw is pending.
+  if (atMaxContracts) {
+    return (
+      <div className={styles.panel}>
+        <div className={styles.panelTitle}>Contracting — at contract limit</div>
+        <p className={styles.panelSubtext}>
+          You already have {maxContracts} active contracts. The Contracting order grants +1 SI instead of taking a new
+          contract. Drawn cards are returned to the bottom of the deck.
+        </p>
+        <button
+          className={styles.btnPrimary}
+          onClick={() => {
+            setWaiting(true);
+            onSubmitChoice(pending[0]!.id);
+          }}
+        >
+          Gain +1 SI
+        </button>
+      </div>
     );
   }
 
