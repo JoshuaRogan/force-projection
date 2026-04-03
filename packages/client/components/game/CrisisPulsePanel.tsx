@@ -37,7 +37,9 @@ export function CrisisPulsePanel({
   return (
     <div className={styles.panel}>
       <div className={styles.panelTitle}>Crisis Pulse</div>
-      <CrisisCard card={crisis} />
+      <div className={styles.horizontalCard}>
+        <CrisisCard card={crisis} layout="horizontal" />
+      </div>
 
       {/* Step 1: offer peek before they've used the ability */}
       {canPeek && (
@@ -56,7 +58,9 @@ export function CrisisPulsePanel({
       {peeked && (
         <div className={styles.abilitySection}>
           <div className={styles.abilitySectionLabel}>Next Crisis</div>
-          <CrisisCard card={peeked} />
+          <div className={styles.horizontalCard}>
+            <CrisisCard card={peeked} layout="horizontal" />
+          </div>
           <div className={styles.abilityButtons}>
             <button
               className={styles.btnSecondary}

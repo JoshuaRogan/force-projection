@@ -63,6 +63,7 @@ export function ContractMarketPanel({
                 <div
                   className={[
                     styles.contractClickable,
+                    styles.horizontalCard,
                     isSelected ? styles.contractSelected : '',
                   ].filter(Boolean).join(' ')}
                   onClick={() => showCard({ type: 'contract', card })}
@@ -72,7 +73,7 @@ export function ContractMarketPanel({
                   <div className={styles.contractClickHint}>
                     {isSelected ? '✓ Selected' : 'Click for details'}
                   </div>
-                  <ContractCard card={card} fulfillment={checkRequirements(card, player)} />
+                  <ContractCard card={card} layout="horizontal" fulfillment={checkRequirements(card, player)} />
                 </div>
                 <button
                   className={[
