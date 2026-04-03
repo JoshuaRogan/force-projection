@@ -129,6 +129,9 @@ export interface PlayerState {
   // Per-player contract market offer (simultaneous, private)
   marketOffer: ContractCard[];          // private offer during contractMarket phase
   marketSelections: string[] | null;    // null = not submitted, [] = pass, ['id1'] = chose these
+
+  // SPACECY peek: next crisis card revealed to this player
+  peekedCrisis: CrisisCard | null;
 }
 
 // === National Posture (shared thresholds) ===

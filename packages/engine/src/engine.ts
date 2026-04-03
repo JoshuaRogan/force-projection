@@ -5,7 +5,7 @@ import {
   setupContractMarket, submitMarketChoices, allMarketChoicesSubmitted, endContractMarket,
   setupCrisisPulse, endCrisisPulse, submitOrders, allOrdersSubmitted,
   revealOrders, endResolveOrders, quarterCleanup, processYearEnd,
-  useNavseaReprogram, useTranscomConversion, useSpacecyCrisisPeek,
+  useNavseaReprogram, useTranscomConversion, useSpacecyCrisisPeek, buryPeekedCrisis,
   submitContractChoice, allContractChoicesDone, endContractChoices,
 } from './phases.js';
 import { resolveAllOrders } from './orders.js';
@@ -114,13 +114,18 @@ export class GameEngine {
     }
   }
 
-  /** SPACECY once/year: peek next crisis and optionally bury it. */
-  useSpacecyAbility(playerId: string, bury: boolean): void {
+  /** SPACECY once/year: peek at the next crisis card. */
+  useSpacecyAbility(playerId: string): void {
     this.assertQuarterStep('crisisPulse');
-    const ok = useSpacecyCrisisPeek(this.state, playerId, bury);
-    if (!ok) {
-      throw new Error('SPACECY crisis peek is not available');
-    }
+    const ok = useSpacecyCrisisPeek(this.state, playerId);
+    if (!ok) throw new Error('SPACECY crisis peek is not available');
+  }
+
+  /** SPACECY follow-up: after peeking, pay 1 PC to bury the next crisis. */
+  buryPeekedCrisis(playerId: string): void {
+    this.assertQuarterStep('crisisPulse');
+    const ok = buryPeekedCrisis(this.state, playerId);
+    if (!ok) throw new Error('Cannot bury: no peeked crisis or insufficient PC');
   }
 
   /** Check if all players have submitted orders */

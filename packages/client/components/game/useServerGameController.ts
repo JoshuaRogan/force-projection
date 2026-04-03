@@ -31,7 +31,8 @@ interface GameController {
   submitOrders: (orders: [OrderChoice, OrderChoice]) => void;
   useNavseaAbility: (from: BudgetLine, to: BudgetLine) => void;
   useTranscomAbility: (to: BudgetLine) => void;
-  useSpacecyAbility: (bury: boolean) => void;
+  useSpacecyAbility: () => void;
+  buryPeekedCrisis: () => void;
   endContractMarket: (chosenIds: string[]) => void;
   submitContractChoice: (contractId: string) => void;
   getFinalScores: () => { winnerId: string; scores: Record<string, number> } | null;
@@ -145,8 +146,12 @@ export function useServerGameController(gameId: string, playerId: string): GameC
     action('ability', { ability: 'transcom', to });
   }, [action]);
 
-  const useSpacecyAbility = useCallback((bury: boolean) => {
-    action('ability', { ability: 'spacecy', bury });
+  const useSpacecyAbility = useCallback(() => {
+    action('ability', { ability: 'spacecy' });
+  }, [action]);
+
+  const buryPeekedCrisis = useCallback(() => {
+    action('ability', { ability: 'spacecy-bury' });
   }, [action]);
 
   const getFinalScores = useCallback(() => {
@@ -171,7 +176,7 @@ export function useServerGameController(gameId: string, playerId: string): GameC
       gameState: null as unknown as GameState,
       humanPlayerId: playerId,
       submitVote, submitOrders, endContractMarket, acknowledgeCrisis,
-      useNavseaAbility, useTranscomAbility, useSpacecyAbility,
+      useNavseaAbility, useTranscomAbility, useSpacecyAbility, buryPeekedCrisis,
       submitContractChoice,
       getFinalScores, newGame, skipResolution,
       phaseLabel: 'Loading…',
@@ -189,6 +194,7 @@ export function useServerGameController(gameId: string, playerId: string): GameC
     useNavseaAbility,
     useTranscomAbility,
     useSpacecyAbility,
+    buryPeekedCrisis,
     submitContractChoice,
     getFinalScores,
     newGame,

@@ -39,7 +39,8 @@ interface GameController {
   submitOrders: (orders: [OrderChoice, OrderChoice]) => void;
   useNavseaAbility: (from: BudgetLine, to: BudgetLine) => void;
   useTranscomAbility: (to: BudgetLine) => void;
-  useSpacecyAbility: (bury: boolean) => void;
+  useSpacecyAbility: () => void;
+  buryPeekedCrisis: () => void;
   endContractMarket: (chosenIds: string[]) => void;
   submitContractChoice: (contractId: string) => void;
   getFinalScores: () => { winnerId: string; scores: Record<string, number> } | null;
@@ -364,8 +365,14 @@ export function useGameController(seed: number = 42): GameController {
     rerender();
   }, [engine, rerender]);
 
-  const doUseSpacecyAbility = useCallback((bury: boolean) => {
-    engine.useSpacecyAbility(humanId, bury);
+  const doUseSpacecyAbility = useCallback(() => {
+    engine.useSpacecyAbility(humanId);
+    saveState(engine.state);
+    rerender();
+  }, [engine, rerender]);
+
+  const doBuryPeekedCrisis = useCallback(() => {
+    engine.buryPeekedCrisis(humanId);
     saveState(engine.state);
     rerender();
   }, [engine, rerender]);
@@ -391,6 +398,7 @@ export function useGameController(seed: number = 42): GameController {
     useNavseaAbility: doUseNavseaAbility,
     useTranscomAbility: doUseTranscomAbility,
     useSpacecyAbility: doUseSpacecyAbility,
+    buryPeekedCrisis: doBuryPeekedCrisis,
     getFinalScores,
     newGame,
     phaseLabel: getPhaseLabel(engine.state),

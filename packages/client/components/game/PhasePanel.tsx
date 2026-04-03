@@ -20,7 +20,8 @@ interface PhasePanelProps {
   onSubmitOrders: (orders: [OrderChoice, OrderChoice]) => void;
   onUseNavseaAbility: (from: BudgetLine, to: BudgetLine) => void;
   onUseTranscomAbility: (to: BudgetLine) => void;
-  onUseSpacecyAbility: (bury: boolean) => void;
+  onUseSpacecyAbility: () => void;
+  onBuryPeekedCrisis: () => void;
   finalScores: { winnerId: string; scores: Record<string, number> } | null;
   onNewGame: () => void;
   showingResolution: boolean;
@@ -150,6 +151,7 @@ export function PhasePanel(props: PhasePanelProps) {
             humanPlayerId={humanPlayerId}
             onAcknowledge={props.onAcknowledgeCrisis}
             onUseSpacecyAbility={props.onUseSpacecyAbility}
+            onBuryPeekedCrisis={props.onBuryPeekedCrisis}
           />
         );
       }

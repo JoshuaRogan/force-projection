@@ -11,11 +11,13 @@ export function CrisisPulsePanel({
   humanPlayerId,
   onAcknowledge,
   onUseSpacecyAbility,
+  onBuryPeekedCrisis,
 }: {
   gameState: GameState;
   humanPlayerId: string;
   onAcknowledge: () => void;
-  onUseSpacecyAbility: (bury: boolean) => void;
+  onUseSpacecyAbility: () => void;
+  onBuryPeekedCrisis: () => void;
 }) {
   const [waiting, setWaiting] = useState(false);
 
@@ -28,34 +30,45 @@ export function CrisisPulsePanel({
 
   const player = gameState.players[humanPlayerId];
   const isSpacecy = player?.directorate === 'SPACECY';
-  const canUseAbility = isSpacecy && !player.usedOncePerYear;
-  const canBury = canUseAbility && player.resources.secondary.PC >= 1;
+  const canPeek = isSpacecy && !player.usedOncePerYear;
+  const peeked = player?.peekedCrisis ?? null;
+  const canBury = peeked !== null && player.resources.secondary.PC >= 1;
 
   return (
     <div className={styles.panel}>
       <div className={styles.panelTitle}>Crisis Pulse</div>
       <CrisisCard card={crisis} />
 
-      {canUseAbility && (
+      {/* Step 1: offer peek before they've used the ability */}
+      {canPeek && (
         <div className={styles.abilitySection}>
-          <div className={styles.abilitySectionLabel}>SPACECY Ability (once per year)</div>
+          <div className={styles.abilitySectionLabel}>SPACECY Ability — once per year</div>
           <p className={styles.panelSubtext}>
-            Peek at the next crisis. Pay 1 PC to bury it and draw a new one.
+            Peek at the next crisis card in the deck.
           </p>
+          <button className={styles.btnSecondary} onClick={onUseSpacecyAbility}>
+            Peek Next Crisis
+          </button>
+        </div>
+      )}
+
+      {/* Step 2: after peeking, show the card and offer the bury */}
+      {peeked && (
+        <div className={styles.abilitySection}>
+          <div className={styles.abilitySectionLabel}>Next Crisis</div>
+          <CrisisCard card={peeked} />
           <div className={styles.abilityButtons}>
             <button
               className={styles.btnSecondary}
-              onClick={() => onUseSpacecyAbility(false)}
-            >
-              Peek Only
-            </button>
-            <button
-              className={styles.btnSecondary}
               disabled={!canBury}
-              onClick={() => canBury && onUseSpacecyAbility(true)}
+              onClick={onBuryPeekedCrisis}
+              title={canBury ? undefined : 'Requires 1 PC'}
             >
-              Bury (1 PC)
+              Bury It (1 PC)
             </button>
+            <span className={styles.panelSubtext} style={{ alignSelf: 'center' }}>
+              or just Acknowledge below to keep it
+            </span>
           </div>
         </div>
       )}

@@ -106,6 +106,7 @@ export function createGame(options: CreateGameOptions): GameState {
       pendingContractDraw: null,
       marketOffer: [],
       marketSelections: null,
+      peekedCrisis: null,
     };
   }
 

@@ -26,6 +26,7 @@ export function sanitizeStateForPlayer(state: GameState, playerId: string): Reco
       player.pendingContractDraw = null;
       player.marketOffer = [];
       player.marketSelections = null;
+      player.peekedCrisis = null;
     }
   }
 

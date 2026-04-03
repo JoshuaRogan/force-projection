@@ -179,6 +179,7 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
                   onUseNavseaAbility={game.useNavseaAbility}
                   onUseTranscomAbility={game.useTranscomAbility}
                   onUseSpacecyAbility={game.useSpacecyAbility}
+                  onBuryPeekedCrisis={game.buryPeekedCrisis}
                   onSubmitContractChoice={game.submitContractChoice}
                   finalScores={game.getFinalScores()}
                   onNewGame={game.newGame}
@@ -251,6 +252,7 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
           onUseNavseaAbility={game.useNavseaAbility}
           onUseTranscomAbility={game.useTranscomAbility}
           onUseSpacecyAbility={game.useSpacecyAbility}
+          onBuryPeekedCrisis={game.buryPeekedCrisis}
           getFinalScores={game.getFinalScores}
           onNewGame={game.newGame}
           onSkipResolution={game.skipResolution}

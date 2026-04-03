@@ -306,11 +306,10 @@ export function useTranscomConversion(
   return true;
 }
 
-/** SPACECY once-per-year action: peek next crisis, optionally bury it by paying 1 PC. */
+/** SPACECY once-per-year action: peek at the next crisis card. */
 export function useSpacecyCrisisPeek(
   state: GameState,
   playerId: string,
-  bury: boolean,
 ): boolean {
   const player = state.players[playerId];
   if (!player) return false;
@@ -318,18 +317,29 @@ export function useSpacecyCrisisPeek(
   if (player.usedOncePerYear) return false;
   if (state.phase.type !== 'quarter' || state.phase.step !== 'crisisPulse') return false;
   if (state.decks.crises.length === 0) return false;
-  if (bury && player.resources.secondary.PC < 1) return false;
 
+  player.peekedCrisis = state.decks.crises[0];
   state.log.push({ type: 'crisisPeek', playerId, cardId: state.decks.crises[0].id });
-
-  if (bury) {
-    player.resources.secondary.PC -= 1;
-    state.log.push({ type: 'resourceChange', playerId, resource: 'PC', delta: -1 });
-    const buried = state.decks.crises.shift()!;
-    state.decks.crises.push(buried);
-  }
-
   player.usedOncePerYear = true;
+  return true;
+}
+
+/** SPACECY follow-up: after peeking, pay 1 PC to bury the next crisis and draw a new one. */
+export function buryPeekedCrisis(
+  state: GameState,
+  playerId: string,
+): boolean {
+  const player = state.players[playerId];
+  if (!player?.peekedCrisis) return false;
+  if (state.phase.type !== 'quarter' || state.phase.step !== 'crisisPulse') return false;
+  if (player.resources.secondary.PC < 1) return false;
+  if (state.decks.crises.length === 0) return false;
+
+  player.resources.secondary.PC -= 1;
+  state.log.push({ type: 'resourceChange', playerId, resource: 'PC', delta: -1 });
+  const buried = state.decks.crises.shift()!;
+  state.decks.crises.push(buried);
+  player.peekedCrisis = null;
   return true;
 }
 
@@ -408,6 +418,10 @@ export function setupCrisisPulse(state: GameState): void {
 
 export function endCrisisPulse(state: GameState): void {
   if (state.phase.type !== 'quarter') return;
+  // Clear any peeked crisis cards
+  for (const player of Object.values(state.players)) {
+    player.peekedCrisis = null;
+  }
   state.phase = { type: 'quarter', quarter: state.phase.quarter, step: 'planOrders' };
   log(state, state.phase);
 }

@@ -20,7 +20,8 @@ interface PersonalViewProps {
   onSubmitOrders: (orders: [OrderChoice, OrderChoice]) => void;
   onUseNavseaAbility: (from: BudgetLine, to: BudgetLine) => void;
   onUseTranscomAbility: (to: BudgetLine) => void;
-  onUseSpacecyAbility: (bury: boolean) => void;
+  onUseSpacecyAbility: () => void;
+  onBuryPeekedCrisis: () => void;
   getFinalScores: () => { winnerId: string; scores: Record<string, number> } | null;
   onNewGame: () => void;
   onSkipResolution: () => void;
@@ -42,6 +43,7 @@ export function PersonalView({
   onUseNavseaAbility,
   onUseTranscomAbility,
   onUseSpacecyAbility,
+  onBuryPeekedCrisis,
   getFinalScores,
   onNewGame,
   onSkipResolution,
@@ -75,6 +77,7 @@ export function PersonalView({
               onUseNavseaAbility={onUseNavseaAbility}
               onUseTranscomAbility={onUseTranscomAbility}
               onUseSpacecyAbility={onUseSpacecyAbility}
+              onBuryPeekedCrisis={onBuryPeekedCrisis}
               finalScores={getFinalScores()}
               onNewGame={onNewGame}
               showingResolution={showingResolution}

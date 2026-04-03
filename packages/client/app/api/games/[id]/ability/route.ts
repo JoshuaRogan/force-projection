@@ -9,7 +9,8 @@ type RouteContext = { params: Promise<{ id: string }> };
 type AbilityPayload =
   | { playerId: string; ability: 'navsea'; from: BudgetLine; to: BudgetLine }
   | { playerId: string; ability: 'transcom'; to: BudgetLine }
-  | { playerId: string; ability: 'spacecy'; bury: boolean };
+  | { playerId: string; ability: 'spacecy' }
+  | { playerId: string; ability: 'spacecy-bury' };
 
 // POST /api/games/[id]/ability — use a once-per-year directorate ability
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -39,11 +40,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         engine.useTranscomAbility(playerId, to);
         break;
       }
-      case 'spacecy': {
-        const { bury } = body as Extract<AbilityPayload, { ability: 'spacecy' }>;
-        engine.useSpacecyAbility(playerId, bury);
+      case 'spacecy':
+        engine.useSpacecyAbility(playerId);
         break;
-      }
+      case 'spacecy-bury':
+        engine.buryPeekedCrisis(playerId);
+        break;
       default:
         return NextResponse.json({ error: `Unknown ability: ${ability}` }, { status: 400 });
     }
