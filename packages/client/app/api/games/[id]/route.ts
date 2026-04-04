@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGameState, deleteGame } from '../../lib/kv';
-import { sanitizeStateForPlayer } from '../../lib/sanitize';
+import { sanitizeStateForPlayer, sanitizeStateForSpectator } from '../../lib/sanitize';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -12,6 +12,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const state = await getGameState(id);
   if (!state) {
     return NextResponse.json({ error: 'Game not found' }, { status: 404 });
+  }
+
+  const spectatorParam = request.nextUrl.searchParams.get('spectator');
+  if (spectatorParam === '1' || spectatorParam === 'true') {
+    return NextResponse.json(sanitizeStateForSpectator(state));
   }
 
   if (!playerId || !state.players[playerId]) {

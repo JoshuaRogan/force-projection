@@ -57,6 +57,9 @@ export default function Home() {
           <Link href="/lobby" className={styles.btnPrimary}>
             New Game
           </Link>
+          <Link href="/games" className={styles.btnSecondary}>
+            Find game
+          </Link>
           <Link href="/tutorial" className={styles.btnSecondary}>
             How to Play
           </Link>

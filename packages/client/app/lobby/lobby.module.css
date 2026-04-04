@@ -57,6 +57,17 @@
   text-transform: uppercase;
 }
 .sysBarLeft, .sysBarRight { display: flex; align-items: center; gap: 20px; }
+
+.sysBarLink {
+  font-size: inherit;
+  color: var(--color-exp);
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.sysBarLink:hover {
+  text-decoration: underline;
+  color: var(--text-primary);
+}
 .sysDot {
   display: inline-block;
   width: 6px; height: 6px;

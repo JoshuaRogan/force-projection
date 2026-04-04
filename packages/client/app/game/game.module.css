@@ -159,6 +159,12 @@
   outline-offset: 2px;
 }
 
+.opponentChipBtnFollowing {
+  border-color: color-mix(in srgb, var(--color-exp) 55%, var(--border-subtle));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-exp) 35%, transparent);
+  background: color-mix(in srgb, var(--color-exp) 8%, var(--bg-elevated));
+}
+
 /* Public player stats (opponent) modal */
 .opponentStatsOverlay {
   position: fixed;
@@ -313,6 +319,65 @@
   background: color-mix(in srgb, var(--color-si) 18%, var(--bg-elevated));
   border-color: var(--color-si);
   color: var(--text-primary);
+}
+
+.spectatorBadge {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--color-exp) 45%, transparent);
+  background: color-mix(in srgb, var(--color-exp) 12%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-exp);
+}
+
+.spectatorSeatWrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spectatorSeatLabel {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.spectatorSeatSelect {
+  min-width: 0;
+  max-width: 200px;
+  padding: 4px 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.spectatorSeatSelect:focus-visible {
+  outline: 2px solid var(--color-exp);
+  outline-offset: 2px;
+}
+
+.spectatorHandHint {
+  margin: 0;
+  padding: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
 }
 
 /* New game button */

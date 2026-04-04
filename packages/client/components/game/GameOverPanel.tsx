@@ -7,10 +7,12 @@ export function GameOverPanel({
   gameState,
   finalScores,
   onNewGame,
+  primaryActionLabel = 'New Game',
 }: {
   gameState: GameState;
   finalScores: { winnerId: string; scores: Record<string, number> } | null;
   onNewGame: () => void;
+  primaryActionLabel?: string;
 }) {
   if (!finalScores) {
     return <div className={styles.panel}><p className={styles.mutedText}>Computing final scores...</p></div>;
@@ -48,8 +50,8 @@ export function GameOverPanel({
         </tbody>
       </table>
 
-      <button onClick={onNewGame} className={styles.btnPrimary}>
-        New Game
+      <button type="button" onClick={onNewGame} className={styles.btnPrimary}>
+        {primaryActionLabel}
       </button>
     </div>
   );

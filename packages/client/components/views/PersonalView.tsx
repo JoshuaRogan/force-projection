@@ -27,6 +27,8 @@ interface PersonalViewProps {
   onAcknowledgeCrisis: () => void;
   onSubmitContractChoice: (contractId: string) => void;
   onSubmitHandDiscard: (cardIds: string[]) => void;
+  spectator?: boolean;
+  readOnlyPhaseCaption?: string;
 }
 
 export function PersonalView({
@@ -49,10 +51,13 @@ export function PersonalView({
   onAcknowledgeCrisis,
   onSubmitContractChoice,
   onSubmitHandDiscard,
+  spectator = false,
+  readOnlyPhaseCaption,
 }: PersonalViewProps) {
   const phase = gameState.phase;
   const me = gameState.players[humanPlayerId];
   const hidePhasePanelChrome =
+    !spectator &&
     phase.type === 'quarter' &&
     phase.step === 'planOrders' &&
     !showingResolution &&
@@ -73,6 +78,7 @@ export function PersonalView({
             player={humanPlayer}
             gameState={gameState}
             portfolioSidebarMode="mothballed-only"
+            visibility={spectator ? 'public' : 'self'}
           />
         </aside>
 
@@ -101,6 +107,8 @@ export function PersonalView({
                 onSubmitContractChoice={onSubmitContractChoice}
                 onSubmitHandDiscard={onSubmitHandDiscard}
                 hideOrdersPanel
+                spectator={spectator}
+                readOnlyPhaseCaption={readOnlyPhaseCaption}
               />
             </div>
           )}
@@ -108,7 +116,11 @@ export function PersonalView({
       </div>
 
       <footer className={styles.handArea}>
-        <HandTray hand={humanPlayer.hand} />
+        {spectator ? (
+          <p className={styles.spectatorHandNote}>Spectator — hands hidden</p>
+        ) : (
+          <HandTray hand={humanPlayer.hand} />
+        )}
       </footer>
     </div>
   );

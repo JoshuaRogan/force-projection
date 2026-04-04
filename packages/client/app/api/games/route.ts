@@ -22,6 +22,7 @@ export async function GET() {
         id,
         phase: state.phase,
         fiscalYear: state.fiscalYear,
+        finished: state.phase.type === 'gameEnd',
         players: state.turnOrder.map((pid) => ({
           id: pid,
           name: state.players[pid].name,

@@ -46,11 +46,15 @@ interface GameController {
   acknowledgeCrisis: () => void;
 }
 
-export function useServerGameController(
-  gameId: string,
-  playerId: string,
-  pollingEnabled: boolean = true,
-): GameController {
+export type ServerGameControllerOptions =
+  | { gameId: string; playerId: string; pollingEnabled?: boolean }
+  | { gameId: string; spectator: true; pollingEnabled?: boolean };
+
+export function useServerGameController(options: ServerGameControllerOptions): GameController {
+  const gameId = options.gameId;
+  const pollingEnabled = options.pollingEnabled ?? true;
+  const isSpectator = 'spectator' in options && options.spectator === true;
+  const playerId = 'playerId' in options ? options.playerId : '';
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [recentEvents, setRecentEvents] = useState<GameEvent[]>([]);
   const [showingResolution, setShowingResolution] = useState(false);
@@ -92,12 +96,15 @@ export function useServerGameController(
 
   const fetchState = useCallback(async () => {
     try {
-      const res = await fetch(`/api/games/${gameId}?player=${playerId}`);
+      const url = isSpectator
+        ? `/api/games/${gameId}?spectator=1`
+        : `/api/games/${gameId}?player=${encodeURIComponent(playerId)}`;
+      const res = await fetch(url);
       if (!res.ok) return;
       const raw = await res.json();
       applyState(raw);
     } catch { /* network hiccup — retry next poll */ }
-  }, [gameId, playerId, applyState]);
+  }, [gameId, playerId, applyState, isSpectator]);
 
   // Initial fetch + polling (gated by inactivity/session state)
   useEffect(() => {
@@ -119,6 +126,7 @@ export function useServerGameController(
 
   // Generic action helper — POSTs to an endpoint and applies returned state
   const action = useCallback(async (endpoint: string, body: Record<string, unknown>) => {
+    if (isSpectator) return;
     try {
       const res = await fetch(`/api/games/${gameId}/${endpoint}`, {
         method: 'POST',
@@ -129,7 +137,7 @@ export function useServerGameController(
       const data = await res.json();
       if (data.state) applyState(data.state);
     } catch { /* ignore */ }
-  }, [gameId, playerId, applyState]);
+  }, [gameId, playerId, applyState, isSpectator]);
 
   const submitVote = useCallback((amount: number, support: boolean) => {
     action('vote', { amount, support });
@@ -184,14 +192,19 @@ export function useServerGameController(
   }, []);
 
   const newGame = useCallback(() => {
-    window.location.href = '/lobby';
-  }, []);
+    window.location.href = isSpectator ? '/games' : '/lobby';
+  }, [isSpectator]);
+
+  const humanPlayerId =
+    isSpectator && gameState
+      ? (gameState.turnOrder[0] ?? Object.keys(gameState.players)[0] ?? playerId)
+      : playerId;
 
   // Loading state — return a minimal stub so the game page can show a spinner
   if (!gameState) {
     return {
       gameState: null as unknown as GameState,
-      humanPlayerId: playerId,
+      humanPlayerId: isSpectator ? '' : playerId,
       submitVote, submitOrders, endContractMarket, acknowledgeCrisis,
       useNavseaAbility, useTranscomAbility, useSpacecyAbility, buryPeekedCrisis,
       submitContractChoice, submitHandDiscard,
@@ -203,7 +216,7 @@ export function useServerGameController(
 
   return {
     gameState,
-    humanPlayerId: playerId,
+    humanPlayerId,
     submitVote,
     submitOrders,
     endContractMarket,

@@ -33,6 +33,10 @@ interface PhasePanelProps {
   onSubmitHandDiscard: (cardIds: string[]) => void;
   /** Personal view: no order picker; use Strategic view to submit orders. */
   hideOrdersPanel?: boolean;
+  /** Read-only: no actions (spectator stream). */
+  spectator?: boolean;
+  /** Shown in spectator panel (e.g. current phase line). */
+  readOnlyPhaseCaption?: string;
 }
 
 const PHASE_HELP: Record<string, string> = {
@@ -127,6 +131,22 @@ export function PhasePanel(props: PhasePanelProps) {
     <div className={styles.phaseHelp}>{helpText}</div>
   ) : null;
 
+  if (props.spectator && phase.type !== 'gameEnd') {
+    return (
+      <div className={styles.panel}>
+        <div className={styles.spectatorNote}>
+          <strong>Spectator</strong>
+          <p className={styles.mutedText}>
+            Hands, vote commitments, and secret choices stay hidden. Follow the map, event log, and roster.
+          </p>
+          {props.readOnlyPhaseCaption && (
+            <p className={styles.spectatorPhaseLine}>{props.readOnlyPhaseCaption}</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   switch (phase.type) {
     case 'congress':
       return (
@@ -215,7 +235,12 @@ export function PhasePanel(props: PhasePanelProps) {
       return (
         <>
           {helpElement}
-          <GameOverPanel gameState={gameState} finalScores={props.finalScores} onNewGame={props.onNewGame} />
+          <GameOverPanel
+            gameState={gameState}
+            finalScores={props.finalScores}
+            onNewGame={props.onNewGame}
+            primaryActionLabel={props.spectator ? 'Back to operations' : undefined}
+          />
         </>
       );
 

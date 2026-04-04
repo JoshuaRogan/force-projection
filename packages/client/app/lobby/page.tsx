@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { DirectorateId } from '@fp/shared';
 import styles from './lobby.module.css';
@@ -105,6 +106,10 @@ export default function LobbyPage() {
           <span>MISSION SETUP</span>
         </div>
         <div className={styles.sysBarRight}>
+          <Link href="/games" className={styles.sysBarLink}>
+            Find game / rejoin
+          </Link>
+          <span className={styles.sysSep}>|</span>
           <span>CLEARANCE: COMMANDER</span>
           <span className={styles.sysSep}>|</span>
           <span>FPJC-REFORGED</span>

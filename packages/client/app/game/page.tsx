@@ -54,6 +54,17 @@ function GamePageInner() {
     );
   }
 
+  const spectator =
+    searchParams.get('spectator') === '1' || searchParams.get('spectator') === 'true';
+
+  if (gameId && spectator) {
+    return (
+      <CardModalProvider>
+        <ServerSpectatorBoard gameId={gameId} />
+      </CardModalProvider>
+    );
+  }
+
   if (gameId && playerId) {
     return (
       <CardModalProvider>
@@ -66,6 +77,80 @@ function GamePageInner() {
     <CardModalProvider>
       <GameBoard seed={seedRef.current!} />
     </CardModalProvider>
+  );
+}
+
+function ServerSpectatorBoard({ gameId }: { gameId: string }) {
+  const [pollingActive, setPollingActive] = useState(true);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollingActiveRef = useRef(true);
+
+  const resetIdleTimer = useCallback(() => {
+    if (!pollingActiveRef.current) return;
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = setTimeout(() => {
+      pollingActiveRef.current = false;
+      setPollingActive(false);
+    }, INACTIVITY_TIMEOUT_MS);
+  }, []);
+
+  const resumePolling = useCallback(() => {
+    pollingActiveRef.current = true;
+    setPollingActive(true);
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = setTimeout(() => {
+      pollingActiveRef.current = false;
+      setPollingActive(false);
+    }, INACTIVITY_TIMEOUT_MS);
+  }, []);
+
+  useEffect(() => {
+    const events: Array<keyof WindowEventMap> = ['pointerdown', 'keydown', 'touchstart', 'focus'];
+    const onActivity = () => resetIdleTimer();
+
+    resetIdleTimer();
+    for (const eventName of events) {
+      window.addEventListener(eventName, onActivity);
+    }
+
+    return () => {
+      for (const eventName of events) {
+        window.removeEventListener(eventName, onActivity);
+      }
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [resetIdleTimer]);
+
+  const game = useServerGameController({ gameId, spectator: true, pollingEnabled: pollingActive });
+  if (!game.gameState) {
+    return (
+      <div className={gameStyles.shell}>
+        <header className={gameStyles.topBar}>
+          <span className={gameStyles.title}>Force Projection: Joint Command</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+            LOADING SPECTATOR FEED…
+          </span>
+        </header>
+      </div>
+    );
+  }
+  return (
+    <>
+      <GameBoardInner game={game} gameId={gameId} spectator />
+      {!pollingActive && (
+        <div className={gameStyles.inactiveOverlay} role="dialog" aria-modal="true" aria-labelledby="inactive-session-title">
+          <div className={gameStyles.inactiveModal}>
+            <h2 id="inactive-session-title" className={gameStyles.inactiveTitle}>Session paused</h2>
+            <p className={gameStyles.inactiveCopy}>
+              Polling stopped after inactivity to reduce backend requests.
+            </p>
+            <button type="button" className={gameStyles.inactiveResumeBtn} onClick={resumePolling}>
+              Resume session
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -110,7 +195,7 @@ function ServerGameBoard({ gameId, playerId }: { gameId: string; playerId: strin
     };
   }, [resetIdleTimer]);
 
-  const game = useServerGameController(gameId, playerId, pollingActive);
+  const game = useServerGameController({ gameId, playerId, pollingEnabled: pollingActive });
   if (!game.gameState) {
     return (
       <div className={gameStyles.shell}>
@@ -148,37 +233,89 @@ function GameBoard({ seed }: { seed: number }) {
   return <GameBoardInner game={game} />;
 }
 
-function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameController>; gameId?: string }) {
+function GameBoardInner({
+  game,
+  gameId,
+  spectator = false,
+}: {
+  game: ReturnType<typeof useGameController>;
+  gameId?: string;
+  spectator?: boolean;
+}) {
   const { showCard } = useCardModal();
   const [viewMode, setViewMode] = useState<ViewMode>('command');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [handOpen, setHandOpen] = useState(true);
   const [opponentProfileId, setOpponentProfileId] = useState<string | null>(null);
+  const [spectatorSeatId, setSpectatorSeatId] = useState<string | null>(null);
   const shownIntroRef = useRef(false);
 
   const { gameState, humanPlayerId } = game;
-  const humanPlayer = gameState.players[humanPlayerId];
 
-  // Show directorate info on game start
   useEffect(() => {
+    if (!spectator || spectatorSeatId == null) return;
+    if (!gameState.players[spectatorSeatId]) {
+      setSpectatorSeatId(null);
+    }
+  }, [spectator, spectatorSeatId, gameState.players]);
+
+  const seatPlayerId =
+    spectator && spectatorSeatId != null && gameState.players[spectatorSeatId]
+      ? spectatorSeatId
+      : humanPlayerId;
+
+  const viewedPlayer = gameState.players[seatPlayerId];
+
+  // Show directorate info on game start (players only)
+  useEffect(() => {
+    if (spectator) return;
     if (!shownIntroRef.current) {
       shownIntroRef.current = true;
-      const dir = DIRECTORATES[humanPlayer.directorate];
+      const dir = DIRECTORATES[viewedPlayer.directorate];
       if (dir) showCard({ type: 'directorate', directorate: dir, intro: true });
     }
-  }, [humanPlayer.directorate, showCard]);
+  }, [viewedPlayer.directorate, showCard, spectator]);
   const agenda = gameState.currentAgenda?.agenda;
   const crisis = gameState.currentCrisis;
-  const handCount = humanPlayer.hand.length;
+  const handCount = viewedPlayer.hand.length;
 
   return (
     <div className={gameStyles.shell}>
-      <ProgramDrawReveal gameState={gameState} humanPlayerId={humanPlayerId} />
+      {!spectator && <ProgramDrawReveal gameState={gameState} humanPlayerId={humanPlayerId} />}
       {/* Top bar: always present across all views */}
       <header className={gameStyles.topBar}>
         <span className={gameStyles.title}>Force Projection</span>
 
         <ViewSwitcher current={viewMode} onChange={setViewMode} />
+
+        {spectator && (
+          <>
+            <span
+              className={gameStyles.spectatorBadge}
+              title="Read-only: no hands or secret information"
+            >
+              Spectator
+            </span>
+            <label className={gameStyles.spectatorSeatWrap}>
+              <span className={gameStyles.spectatorSeatLabel}>Following</span>
+              <select
+                className={gameStyles.spectatorSeatSelect}
+                value={seatPlayerId}
+                onChange={(e) => setSpectatorSeatId(e.target.value)}
+                aria-label="Spectator: commander to follow in the board and panels"
+              >
+                {gameState.turnOrder.map((pid) => {
+                  const p = gameState.players[pid];
+                  return (
+                    <option key={pid} value={pid}>
+                      {p.name} ({p.directorate})
+                    </option>
+                  );
+                })}
+              </select>
+            </label>
+          </>
+        )}
 
         {/* Active card indicators — click to open modal */}
         {agenda && (
@@ -204,17 +341,28 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
         <div style={{ flex: 1 }} />
 
         <div className={gameStyles.topBarRight}>
-          {gameState.turnOrder
-            .filter(pid => pid !== humanPlayerId)
+          {(spectator ? gameState.turnOrder : gameState.turnOrder.filter(pid => pid !== humanPlayerId))
             .map(pid => {
               const p = gameState.players[pid];
               return (
                 <button
                   key={pid}
                   type="button"
-                  className={gameStyles.opponentChipBtn}
-                  onClick={() => setOpponentProfileId(pid)}
-                  title={`View public stats: ${p.name}`}
+                  className={`${gameStyles.opponentChipBtn}${
+                    spectator && pid === seatPlayerId ? ` ${gameStyles.opponentChipBtnFollowing}` : ''
+                  }`}
+                  onClick={(e) => {
+                    if (spectator && !e.altKey) {
+                      setSpectatorSeatId(pid);
+                      return;
+                    }
+                    setOpponentProfileId(pid);
+                  }}
+                  title={
+                    spectator
+                      ? `${p.name} — click to follow. Alt+click: public record.`
+                      : `View public stats: ${p.name}`
+                  }
                 >
                   <span>{p.name}</span>
                   <span className={gameStyles.opponentDir}>{p.directorate}</span>
@@ -222,7 +370,9 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
                 </button>
               );
             })}
-          <button onClick={game.newGame} className={gameStyles.newGameBtn}>New Game</button>
+          <button type="button" onClick={game.newGame} className={gameStyles.newGameBtn}>
+            {spectator ? 'Operations' : 'New Game'}
+          </button>
         </div>
       </header>
 
@@ -239,7 +389,7 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
               <div className={gameStyles.phasePanel}>
                 <PhasePanel
                   gameState={gameState}
-                  humanPlayerId={humanPlayerId}
+                  humanPlayerId={seatPlayerId}
                   gameId={gameId}
                   onVote={game.submitVote}
                   onEndContractMarket={game.endContractMarket}
@@ -256,10 +406,12 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
                   recentEvents={game.recentEvents}
                   onSkipResolution={game.skipResolution}
                   onAcknowledgeCrisis={game.acknowledgeCrisis}
+                  spectator={spectator}
+                  readOnlyPhaseCaption={game.phaseLabel}
                 />
               </div>
               <div className={gameStyles.theaterStrip}>
-                <TheaterBoard gameState={gameState} humanPlayerId={humanPlayerId} />
+                <TheaterBoard gameState={gameState} humanPlayerId={seatPlayerId} />
               </div>
             </div>
 
@@ -268,7 +420,7 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
               <button
                 className={gameStyles.sidebarToggle}
                 onClick={() => setSidebarOpen(o => !o)}
-                title={sidebarOpen ? 'Hide panel' : 'Show your stats'}
+                title={sidebarOpen ? 'Hide panel' : spectator ? 'Show followed commander' : 'Show your stats'}
               >
                 <span className={gameStyles.sidebarToggleIcon}>
                   {sidebarOpen ? '◀' : '▶'}
@@ -276,7 +428,11 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
               </button>
               <aside className={`${gameStyles.sidebar} ${sidebarOpen ? '' : gameStyles.sidebarClosed}`}>
                 <div className={gameStyles.playerDashboardArea}>
-                  <PlayerDashboard player={humanPlayer} gameState={gameState} />
+                  <PlayerDashboard
+                    player={viewedPlayer}
+                    gameState={gameState}
+                    visibility={spectator ? 'public' : 'self'}
+                  />
                 </div>
                 <div className={gameStyles.eventFeedWrapper}>
                   <EventFeed events={game.events} gameState={gameState} />
@@ -290,17 +446,24 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
             id="game-hand-panel"
             className={`${gameStyles.handDock} ${handOpen ? '' : gameStyles.handDockCollapsed}`}
             role="region"
-            aria-label="Your hand"
+            aria-label={
+              spectator
+                ? `Followed commander ${viewedPlayer.name} — hand not shown`
+                : 'Your hand'
+            }
           >
             <button
               type="button"
               className={gameStyles.handDockBar}
-              onClick={() => setHandOpen(o => !o)}
+              onClick={() => !spectator && setHandOpen(o => !o)}
               aria-expanded={handOpen}
               aria-controls="game-hand-panel-body"
+              disabled={spectator}
             >
               <span className={gameStyles.handDockBarLabel}>
-                Hand ({handCount} card{handCount !== 1 ? 's' : ''})
+                {spectator
+                  ? 'Spectator — hands hidden'
+                  : `Hand (${handCount} card${handCount !== 1 ? 's' : ''})`}
               </span>
               <span
                 className={`${gameStyles.handDockBarChevron} ${handOpen ? gameStyles.handDockBarChevronOpen : ''}`}
@@ -312,9 +475,15 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
             <div
               id="game-hand-panel-body"
               className={gameStyles.handDockBody}
-              aria-hidden={!handOpen}
+              aria-hidden={!handOpen || spectator}
             >
-              <HandTray hand={humanPlayer.hand} />
+              {spectator ? (
+                <p className={gameStyles.spectatorHandHint}>
+                  Program hands are not shown in spectator mode.
+                </p>
+              ) : (
+                <HandTray hand={viewedPlayer.hand} />
+              )}
             </div>
           </div>
         </div>
@@ -324,9 +493,9 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
       {viewMode === 'personal' && (
         <PersonalView
           gameState={gameState}
-          humanPlayerId={humanPlayerId}
+          humanPlayerId={seatPlayerId}
           gameId={gameId}
-          humanPlayer={humanPlayer}
+          humanPlayer={viewedPlayer}
           recentEvents={game.recentEvents}
           showingResolution={game.showingResolution}
           onVote={game.submitVote}
@@ -342,6 +511,8 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
           onAcknowledgeCrisis={game.acknowledgeCrisis}
           onSubmitContractChoice={game.submitContractChoice}
           onSubmitHandDiscard={game.submitHandDiscard}
+          spectator={spectator}
+          readOnlyPhaseCaption={game.phaseLabel}
         />
       )}
 
@@ -349,7 +520,7 @@ function GameBoardInner({ game, gameId }: { game: ReturnType<typeof useGameContr
       {viewMode === 'strategic' && (
         <MapView
           gameState={gameState}
-          humanPlayerId={humanPlayerId}
+          humanPlayerId={seatPlayerId}
           events={game.events}
         />
       )}

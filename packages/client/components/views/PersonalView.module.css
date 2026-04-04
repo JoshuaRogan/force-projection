@@ -76,6 +76,15 @@
   box-shadow: var(--shadow-md);
 }
 
+.spectatorHandNote {
+  margin: 0;
+  padding: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
 .handArea {
   flex-shrink: 0;
 }
