@@ -391,3 +391,30 @@
   line-height: 1;
   white-space: nowrap;
 }
+
+@media (max-width: 760px) {
+  .spaceCyberBar {
+    padding: 6px 8px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .spaceCyberHint {
+    margin-left: 0;
+    width: 100%;
+    font-size: 0.5rem;
+  }
+
+  .spaceCyberBadges {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .detailPanel {
+    width: min(92vw, 360px);
+  }
+
+  .tooltip {
+    min-width: min(220px, 85vw);
+  }
+}

@@ -416,3 +416,66 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@media (max-width: 980px) {
+  .sysBar {
+    padding: 10px 14px;
+    gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sysBarLeft,
+  .sysBarRight {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .main {
+    padding: 28px 16px 44px;
+  }
+
+  .slots {
+    gap: 10px;
+  }
+
+  .slotCard,
+  .addSlot {
+    flex: 1 1 260px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .heading {
+    text-align: center;
+    font-size: clamp(1.9rem, 9vw, 2.6rem);
+  }
+
+  .sub {
+    text-align: center;
+    margin-bottom: 26px;
+  }
+
+  .slots {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .slotCard,
+  .addSlot {
+    width: 100%;
+    min-height: 0;
+  }
+
+  .deployRow {
+    width: 100%;
+  }
+
+  .deployBtn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 16px;
+    font-size: 1rem;
+  }
+}

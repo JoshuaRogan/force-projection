@@ -11,6 +11,7 @@ import { ProgramDrawReveal } from '@/components/game/ProgramDrawReveal';
 import { PhaseTimeline } from '@/components/game/PhaseTimeline';
 import { EventFeed } from '@/components/game/EventFeed';
 import { CardModalProvider, useCardModal } from '@/components/cards';
+import type { OrderChoice } from '@fp/shared';
 import { DIRECTORATES } from '@fp/shared';
 import { ViewSwitcher, PersonalView, MapView } from '@/components/views';
 import type { ViewMode } from '@/components/views';
@@ -249,6 +250,8 @@ function GameBoardInner({
   const [opponentProfileId, setOpponentProfileId] = useState<string | null>(null);
   const [spectatorSeatId, setSpectatorSeatId] = useState<string | null>(null);
   const shownIntroRef = useRef(false);
+  const commandMainRef = useRef<HTMLDivElement | null>(null);
+  const phasePanelRef = useRef<HTMLDivElement | null>(null);
 
   const { gameState, humanPlayerId } = game;
 
@@ -278,6 +281,48 @@ function GameBoardInner({
   const agenda = gameState.currentAgenda?.agenda;
   const crisis = gameState.currentCrisis;
   const handCount = viewedPlayer.hand.length;
+
+  const scrollCommandToActivity = useCallback(() => {
+    if (viewMode !== 'command') return;
+    commandMainRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    phasePanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [viewMode]);
+
+  useEffect(() => {
+    if (viewMode !== 'command') return;
+    if (!game.showingResolution) return;
+    scrollCommandToActivity();
+  }, [viewMode, game.showingResolution, scrollCommandToActivity]);
+
+  const handleSubmitOrders = useCallback((orders: [OrderChoice, OrderChoice]) => {
+    game.submitOrders(orders);
+    scrollCommandToActivity();
+  }, [game, scrollCommandToActivity]);
+
+  const handleSubmitVote = useCallback((amount: number, support: boolean) => {
+    game.submitVote(amount, support);
+    scrollCommandToActivity();
+  }, [game, scrollCommandToActivity]);
+
+  const handleEndContractMarket = useCallback((chosenIds: string[]) => {
+    game.endContractMarket(chosenIds);
+    scrollCommandToActivity();
+  }, [game, scrollCommandToActivity]);
+
+  const handleAcknowledgeCrisis = useCallback(() => {
+    game.acknowledgeCrisis();
+    scrollCommandToActivity();
+  }, [game, scrollCommandToActivity]);
+
+  const handleSubmitContractChoice = useCallback((contractId: string) => {
+    game.submitContractChoice(contractId);
+    scrollCommandToActivity();
+  }, [game, scrollCommandToActivity]);
+
+  const handleSubmitHandDiscard = useCallback((cardIds: string[]) => {
+    game.submitHandDiscard(cardIds);
+    scrollCommandToActivity();
+  }, [game, scrollCommandToActivity]);
 
   return (
     <div className={gameStyles.shell}>
@@ -383,29 +428,29 @@ function GameBoardInner({
             <PhaseTimeline gameState={gameState} />
           </div>
 
-          <div className={gameStyles.commandMain}>
+          <div ref={commandMainRef} className={gameStyles.commandMain}>
             {/* Center: orders (primary) + theater strip (secondary) */}
             <div className={gameStyles.commandCenter}>
-              <div className={gameStyles.phasePanel}>
+              <div ref={phasePanelRef} className={gameStyles.phasePanel}>
                 <PhasePanel
                   gameState={gameState}
                   humanPlayerId={seatPlayerId}
                   gameId={gameId}
-                  onVote={game.submitVote}
-                  onEndContractMarket={game.endContractMarket}
-                  onSubmitOrders={game.submitOrders}
+                  onVote={handleSubmitVote}
+                  onEndContractMarket={handleEndContractMarket}
+                  onSubmitOrders={handleSubmitOrders}
                   onUseNavseaAbility={game.useNavseaAbility}
                   onUseTranscomAbility={game.useTranscomAbility}
                   onUseSpacecyAbility={game.useSpacecyAbility}
                   onBuryPeekedCrisis={game.buryPeekedCrisis}
-                  onSubmitContractChoice={game.submitContractChoice}
-                  onSubmitHandDiscard={game.submitHandDiscard}
+                  onSubmitContractChoice={handleSubmitContractChoice}
+                  onSubmitHandDiscard={handleSubmitHandDiscard}
                   finalScores={game.getFinalScores()}
                   onNewGame={game.newGame}
                   showingResolution={game.showingResolution}
                   recentEvents={game.recentEvents}
                   onSkipResolution={game.skipResolution}
-                  onAcknowledgeCrisis={game.acknowledgeCrisis}
+                  onAcknowledgeCrisis={handleAcknowledgeCrisis}
                   spectator={spectator}
                   readOnlyPhaseCaption={game.phaseLabel}
                 />

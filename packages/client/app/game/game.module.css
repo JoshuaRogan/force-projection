@@ -755,3 +755,159 @@
   flex-direction: column;
   gap: var(--space-sm);
 }
+
+@media (max-width: 1100px) {
+  .shell {
+    padding: var(--space-xs);
+  }
+
+  .topBar {
+    padding: 8px 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .title {
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+  }
+
+  .topBarRight {
+    width: 100%;
+    margin-left: 0;
+    padding-bottom: 2px;
+  }
+
+  .activeCardBtn {
+    max-width: 180px;
+  }
+
+  .commandMain {
+    gap: 6px;
+  }
+
+  .sidebar {
+    width: 280px;
+  }
+}
+
+@media (max-width: 900px) {
+  .shell {
+    height: 100dvh;
+  }
+
+  .title::before {
+    display: none;
+  }
+
+  .topBar {
+    border-radius: var(--radius-sm);
+  }
+
+  .spectatorSeatWrap {
+    max-width: 100%;
+  }
+
+  .spectatorSeatSelect {
+    max-width: min(100%, 240px);
+  }
+
+  .commandBody {
+    --hand-dock-bar-height: 42px;
+    padding-bottom: var(--hand-dock-bar-height);
+  }
+
+  .commandMain {
+    flex-direction: column;
+    overflow-y: auto;
+    padding-bottom: 6px;
+  }
+
+  .phasePanel {
+    min-height: 48vh;
+  }
+
+  .sidebarWrapper {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .sidebarToggle {
+    display: none;
+  }
+
+  .sidebar,
+  .sidebarClosed {
+    width: 100%;
+    opacity: 1;
+  }
+
+  .playerDashboardArea {
+    max-height: 42vh;
+  }
+
+  .eventFeedWrapper {
+    min-height: 190px;
+    max-height: 36vh;
+  }
+
+  .handDock {
+    max-height: min(58vh, calc(100dvh - 88px));
+  }
+
+  .handDock.handDockCollapsed {
+    max-height: var(--hand-dock-bar-height);
+  }
+
+  .handDockBar {
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .shell {
+    gap: 6px;
+  }
+
+  .topBar {
+    align-items: stretch;
+  }
+
+  .title {
+    font-size: 0.92rem;
+  }
+
+  .activeCardBtn {
+    max-width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .activeCardName {
+    font-size: 0.66rem;
+  }
+
+  .opponentChipBtn {
+    font-size: 0.68rem;
+    padding: 4px 7px;
+  }
+
+  .opponentDir,
+  .opponentSI {
+    font-size: 0.58rem;
+  }
+
+  .newGameBtn {
+    padding: 4px 10px;
+    font-size: 0.58rem;
+  }
+
+  .phasePanel {
+    min-height: 44vh;
+  }
+
+  .handDockBarLabel {
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+  }
+}

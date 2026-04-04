@@ -35,7 +35,7 @@ function hydrateStateProse(state: GameState): GameState {
 }
 
 /** How long to show the resolution summary before auto-advancing (ms) */
-const RESOLUTION_DISPLAY_MS = 3000;
+const RESOLUTION_DISPLAY_MS = 5000;
 
 interface GameController {
   gameState: GameState;

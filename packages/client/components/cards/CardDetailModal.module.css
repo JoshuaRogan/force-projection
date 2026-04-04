@@ -386,3 +386,31 @@
   color: var(--text-muted);
   font-family: 'IBM Plex Mono', monospace;
 }
+
+@media (max-width: 640px) {
+  .modal {
+    width: min(100vw - 1rem, 480px);
+    max-height: calc(100dvh - 1rem);
+    overflow: auto;
+  }
+
+  .nameOverlay {
+    padding: 0 var(--space-md) var(--space-md);
+  }
+
+  .cardName {
+    font-size: 1.7rem;
+  }
+
+  .body {
+    padding: var(--space-md);
+  }
+
+  .footer {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .costGrid {
+    grid-template-columns: 1fr;
+  }
+}

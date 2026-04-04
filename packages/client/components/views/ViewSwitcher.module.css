@@ -47,3 +47,20 @@
 .modeBtn.active .index {
   opacity: 0.7;
 }
+
+@media (max-width: 640px) {
+  .switcher {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .modeBtn {
+    padding: 4px 8px;
+    font-size: 0.54rem;
+    letter-spacing: 0.08em;
+  }
+
+  .index {
+    display: none;
+  }
+}

@@ -9,7 +9,7 @@ import styles from './GamePanel.module.css';
 export function WaitingPanel({
   title,
   lines,
-  subtitle = 'Waiting for other players\u2026',
+  subtitle = 'Waiting for other players…',
 }: {
   title: string;
   lines?: string[];

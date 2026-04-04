@@ -31,7 +31,7 @@ export function ContractChoicePanel({
       <WaitingPanel
         title="Contract Chosen"
         lines={chosenName ? [chosenName] : undefined}
-        subtitle="Waiting for other players\u2026"
+        subtitle="Waiting for other players…"
       />
     );
   }

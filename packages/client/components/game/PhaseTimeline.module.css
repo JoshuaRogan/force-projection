@@ -238,3 +238,42 @@
   margin-top: 1px;
   white-space: nowrap;
 }
+
+@media (max-width: 700px) {
+  .timeline {
+    min-height: 50px;
+    padding: 0 8px;
+  }
+
+  .yearBadge {
+    padding-right: 6px;
+    margin-right: 6px;
+  }
+
+  .yearLabel {
+    font-size: 0.55rem;
+  }
+
+  .yearValue {
+    font-size: 1.1rem;
+  }
+
+  .step {
+    padding: 8px 2px;
+  }
+
+  .stepLabel {
+    font-size: 0.52rem;
+    letter-spacing: 0.05em;
+  }
+
+  .stepActive .stepLabel {
+    font-size: 0.58rem;
+  }
+
+  .substepLabel {
+    font-size: 0.48rem;
+    letter-spacing: 0.06em;
+    padding: 1px 3px;
+  }
+}

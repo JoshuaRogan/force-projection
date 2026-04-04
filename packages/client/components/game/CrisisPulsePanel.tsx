@@ -25,7 +25,7 @@ export function CrisisPulsePanel({
   if (!crisis) return null;
 
   if (waiting) {
-    return <WaitingPanel title="Crisis Acknowledged" subtitle="Planning orders\u2026" />;
+    return <WaitingPanel title="Crisis Acknowledged" subtitle="Planning orders…" />;
   }
 
   const player = gameState.players[humanPlayerId];

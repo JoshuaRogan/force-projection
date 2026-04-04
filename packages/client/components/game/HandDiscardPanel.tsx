@@ -49,7 +49,7 @@ export function HandDiscardPanel({
     return (
       <WaitingPanel
         title={excess === 0 ? 'Hand OK' : 'Discards submitted'}
-        subtitle="Waiting for other players\u2026"
+        subtitle="Waiting for other players…"
       />
     );
   }

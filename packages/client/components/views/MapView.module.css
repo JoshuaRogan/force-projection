@@ -479,3 +479,32 @@
   display: flex;
   flex-direction: column;
 }
+
+@media (max-width: 1040px) {
+  .body {
+    grid-template-columns: 1fr;
+  }
+
+  .infoPanel {
+    max-height: 42vh;
+    padding-right: 0;
+  }
+
+  .mapCanvas {
+    min-height: 52vh;
+  }
+}
+
+@media (max-width: 640px) {
+  .phaseName {
+    font-size: 0.92rem;
+  }
+
+  .sectionLabel {
+    font-size: 0.56rem;
+  }
+
+  .scoreName {
+    font-size: 0.74rem;
+  }
+}

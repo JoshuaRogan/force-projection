@@ -5,6 +5,7 @@ import type { GameState, GameEvent, OrderChoice, BudgetLine } from '@fp/shared';
 import { GameEngine } from '@fp/engine';
 
 const POLL_INTERVAL_MS = 2500;
+const RESOLUTION_DISPLAY_MS = 5000;
 
 // The server strips deck arrays and replaces with counts.
 // Reconstruct fake arrays of the right length so components that call
@@ -84,7 +85,7 @@ export function useServerGameController(options: ServerGameControllerOptions): G
             showingResolutionRef.current = false;
             setShowingResolution(false);
             setRecentEvents([]);
-          }, 3000);
+          }, RESOLUTION_DISPLAY_MS);
         } else {
           setRecentEvents(newEvents);
         }
