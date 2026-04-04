@@ -30,7 +30,7 @@ interface PhasePanelProps {
   onSkipResolution: () => void;
   onAcknowledgeCrisis: () => void;
   onSubmitContractChoice: (contractId: string) => void;
-  onSubmitHandDiscard: (cardIds: string[]) => void;
+  onSubmitHandDiscard: (cardIds: string[]) => Promise<boolean>;
   /** Personal view: no order picker; use Strategic view to submit orders. */
   hideOrdersPanel?: boolean;
   /** Read-only: no actions (spectator stream). */

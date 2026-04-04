@@ -4,6 +4,10 @@ import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useGameController } from '@/components/game/useGameController';
 import { useServerGameController } from '@/components/game/useServerGameController';
+
+type BoardGameController =
+  | ReturnType<typeof useGameController>
+  | ReturnType<typeof useServerGameController>;
 import { PlayerDashboard, HandTray } from '@/components/dashboard';
 import { TheaterBoard } from '@/components/theater';
 import { PhasePanel } from '@/components/game/PhasePanel';
@@ -239,7 +243,7 @@ function GameBoardInner({
   gameId,
   spectator = false,
 }: {
-  game: ReturnType<typeof useGameController>;
+  game: BoardGameController;
   gameId?: string;
   spectator?: boolean;
 }) {
@@ -320,8 +324,9 @@ function GameBoardInner({
   }, [game, scrollCommandToActivity]);
 
   const handleSubmitHandDiscard = useCallback((cardIds: string[]) => {
-    game.submitHandDiscard(cardIds);
+    const p = game.submitHandDiscard(cardIds);
     scrollCommandToActivity();
+    return p;
   }, [game, scrollCommandToActivity]);
 
   return (

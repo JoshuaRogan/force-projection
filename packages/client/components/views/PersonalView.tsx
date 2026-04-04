@@ -26,7 +26,7 @@ interface PersonalViewProps {
   onSkipResolution: () => void;
   onAcknowledgeCrisis: () => void;
   onSubmitContractChoice: (contractId: string) => void;
-  onSubmitHandDiscard: (cardIds: string[]) => void;
+  onSubmitHandDiscard: (cardIds: string[]) => Promise<boolean>;
   spectator?: boolean;
   readOnlyPhaseCaption?: string;
 }

@@ -250,5 +250,11 @@ async function runBotHandDiscards(
   }
 
   await setGameState(gameId, engine.state);
-  await runBotActions(gameId, meta);
+  // Do not recurse while still in handDiscard: humans may still need to discard, and
+  // all bots may already be at limit — recursion would loop forever and hang the request.
+  const stillHandDiscard =
+    engine.state.phase.type === 'quarter' && engine.state.phase.step === 'handDiscard';
+  if (!stillHandDiscard) {
+    await runBotActions(gameId, meta);
+  }
 }

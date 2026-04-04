@@ -19,7 +19,7 @@ export function HandDiscardPanel({
 }: {
   gameState: GameState;
   humanPlayerId: string;
-  onSubmitDiscard: (cardIds: string[]) => void;
+  onSubmitDiscard: (cardIds: string[]) => Promise<boolean>;
 }) {
   const { showCard } = useCardModal();
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -100,10 +100,15 @@ export function HandDiscardPanel({
         type="button"
         className={styles.btnPrimary}
         disabled={!canConfirm}
-        onClick={() => {
+        onClick={async () => {
           if (!canConfirm) return;
           setWaiting(true);
-          onSubmitDiscard([...selected]);
+          try {
+            const ok = await onSubmitDiscard([...selected]);
+            if (!ok) setWaiting(false);
+          } catch {
+            setWaiting(false);
+          }
         }}
       >
         Confirm discard

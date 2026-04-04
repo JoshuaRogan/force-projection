@@ -36,7 +36,7 @@ interface GameController {
   buryPeekedCrisis: () => void;
   endContractMarket: (chosenIds: string[]) => void;
   submitContractChoice: (contractId: string) => void;
-  submitHandDiscard: (cardIds: string[]) => void;
+  submitHandDiscard: (cardIds: string[]) => Promise<boolean>;
   getFinalScores: () => { winnerId: string; scores: Record<string, number> } | null;
   newGame: () => void;
   phaseLabel: string;
@@ -126,18 +126,21 @@ export function useServerGameController(options: ServerGameControllerOptions): G
   }, [fetchState, pollingEnabled]);
 
   // Generic action helper — POSTs to an endpoint and applies returned state
-  const action = useCallback(async (endpoint: string, body: Record<string, unknown>) => {
-    if (isSpectator) return;
+  const action = useCallback(async (endpoint: string, body: Record<string, unknown>): Promise<boolean> => {
+    if (isSpectator) return false;
     try {
       const res = await fetch(`/api/games/${gameId}/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerId, ...body }),
       });
-      if (!res.ok) return;
+      if (!res.ok) return false;
       const data = await res.json();
       if (data.state) applyState(data.state);
-    } catch { /* ignore */ }
+      return true;
+    } catch {
+      return false;
+    }
   }, [gameId, playerId, applyState, isSpectator]);
 
   const submitVote = useCallback((amount: number, support: boolean) => {
@@ -161,7 +164,7 @@ export function useServerGameController(options: ServerGameControllerOptions): G
   }, [action]);
 
   const submitHandDiscard = useCallback((cardIds: string[]) => {
-    action('hand-discard', { cardIds });
+    return action('hand-discard', { cardIds });
   }, [action]);
 
   const useNavseaAbility = useCallback((from: BudgetLine, to: BudgetLine) => {

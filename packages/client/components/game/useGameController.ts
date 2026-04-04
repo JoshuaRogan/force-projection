@@ -48,7 +48,7 @@ interface GameController {
   buryPeekedCrisis: () => void;
   endContractMarket: (chosenIds: string[]) => void;
   submitContractChoice: (contractId: string) => void;
-  submitHandDiscard: (cardIds: string[]) => void;
+  submitHandDiscard: (cardIds: string[]) => Promise<boolean>;
   getFinalScores: () => { winnerId: string; scores: Record<string, number> } | null;
   newGame: () => void;
   phaseLabel: string;
@@ -380,15 +380,18 @@ export function useGameController(seed: number = 42): GameController {
     rerenderAndAdvance();
   }, [engine, rerenderAndAdvance]);
 
-  const doSubmitHandDiscard = useCallback((cardIds: string[]) => {
+  const doSubmitHandDiscard = useCallback((cardIds: string[]): boolean => {
     try {
       const ok = engine.submitHandDiscard(humanId, cardIds);
       if (ok && engine.allHandDiscardsDone()) {
         engine.endHandDiscard();
       }
-    } catch { /* ignore */ }
-    saveState(engine.state);
-    rerenderAndAdvance();
+      saveState(engine.state);
+      rerenderAndAdvance();
+      return ok;
+    } catch {
+      return false;
+    }
   }, [engine, rerenderAndAdvance]);
 
   const doUseNavseaAbility = useCallback((from: BudgetLine, to: BudgetLine) => {
@@ -433,7 +436,7 @@ export function useGameController(seed: number = 42): GameController {
     endContractMarket: doEndContractMarket,
     submitOrders: doSubmitOrders,
     submitContractChoice: doSubmitContractChoice,
-    submitHandDiscard: doSubmitHandDiscard,
+    submitHandDiscard: (cardIds: string[]) => Promise.resolve(doSubmitHandDiscard(cardIds)),
     useNavseaAbility: doUseNavseaAbility,
     useTranscomAbility: doUseTranscomAbility,
     useSpacecyAbility: doUseSpacecyAbility,
