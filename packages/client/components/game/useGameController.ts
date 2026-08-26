@@ -4,14 +4,15 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import type { GameState, GameEvent, OrderChoice, DirectorateId, BudgetLine } from '@fp/shared';
 import { DIRECTORATE_IDS, PROGRAM_CARDS, CONTRACT_CARDS, AGENDA_CARDS, CRISIS_CARDS } from '@fp/shared';
 import { GameEngine, SeededRNG } from '@fp/engine';
+import { Bot, PERSONALITIES } from '@fp/simulation';
+import { loadLobbySetup, LOCAL_GAME_STORAGE_KEY, type LocalSetupSlot } from '@/lib/localGameSetup';
 
 function handDiscardExcessForPlayer(state: GameState, playerId: string): number {
   const p = state.players[playerId];
   return Math.max(0, p.hand.length - state.config.handLimit);
 }
-import { Bot, PERSONALITIES } from '@fp/simulation';
 
-const STORAGE_KEY = 'fp-game-state';
+const STORAGE_KEY = LOCAL_GAME_STORAGE_KEY;
 
 // Lookup map to re-attach prose to cards deserialized from localStorage
 // (prose is not re-saved if state was stored before prose was generated)
@@ -86,18 +87,44 @@ function clearState(): void {
   } catch { /* ignore */ }
 }
 
-function createBots(state: GameState, humanId: string): Map<string, Bot> {
+function createBots(
+  state: GameState,
+  humanId: string,
+  personalities: Record<string, string> = {},
+): Map<string, Bot> {
   const bots = new Map<string, Bot>();
   for (const pid of state.turnOrder) {
     if (pid === humanId) continue;
-    const playerIdx = parseInt(pid.replace('p', ''), 10);
+    const playerIdx = parseInt(pid.replace('p', ''), 10) || 0;
+    const key = personalities[pid] ?? 'balanced';
     bots.set(pid, new Bot(
       pid,
-      PERSONALITIES['balanced'],
+      PERSONALITIES[key] ?? PERSONALITIES.balanced,
       new SeededRNG(state.seed + playerIdx * 7919),
     ));
   }
   return bots;
+}
+
+function startFromSetup(seed: number, slots: LocalSetupSlot[]): { engine: GameEngine; personalities: Record<string, string> } {
+  const ordered = [...slots.filter(s => !s.isBot), ...slots.filter(s => s.isBot)];
+  const players = ordered.map((slot, i) => ({
+    id: `p${i}`,
+    name: slot.isBot ? `Bot ${i}` : 'You',
+    directorate: slot.directorate,
+  }));
+  const personalities: Record<string, string> = {};
+  ordered.forEach((slot, i) => {
+    if (slot.isBot) personalities[`p${i}`] = slot.personality;
+  });
+
+  const engine = new GameEngine({
+    players,
+    seed,
+    config: { fiscalYears: 4, playerCount: players.length },
+  });
+  engine.start();
+  return { engine, personalities };
 }
 
 /**
@@ -137,7 +164,7 @@ function needsHumanInput(state: GameState, humanId: string): boolean {
   }
 }
 
-export function useGameController(seed: number = 42): GameController {
+export function useGameController(seed: number = 42, opts?: { fromLobby?: boolean }): GameController {
   const engineRef = useRef<GameEngine | null>(null);
   const botsRef = useRef<Map<string, Bot>>(new Map());
   const humanId = 'p0';
@@ -148,27 +175,43 @@ export function useGameController(seed: number = 42): GameController {
 
     if (saved) {
       engineRef.current = GameEngine.fromState(saved);
-      botsRef.current = createBots(saved, humanId);
+      const setup = loadLobbySetup();
+      const personalities: Record<string, string> = {};
+      if (setup) {
+        const ordered = [...setup.filter(s => !s.isBot), ...setup.filter(s => s.isBot)];
+        ordered.forEach((slot, i) => {
+          if (slot.isBot) personalities[`p${i}`] = slot.personality;
+        });
+      }
+      botsRef.current = createBots(saved, humanId, personalities);
     } else {
-      const rng = new SeededRNG(seed);
-      const directorates = rng.pick(DIRECTORATE_IDS, 4) as DirectorateId[];
+      const setup = opts?.fromLobby ? loadLobbySetup() : null;
+      if (setup) {
+        const started = startFromSetup(seed, setup);
+        engineRef.current = started.engine;
+        botsRef.current = createBots(started.engine.state, humanId, started.personalities);
+        saveState(started.engine.state);
+      } else {
+        const rng = new SeededRNG(seed);
+        const directorates = rng.pick(DIRECTORATE_IDS, 4) as DirectorateId[];
 
-      const players = directorates.map((dir, i) => ({
-        id: `p${i}`,
-        name: i === 0 ? 'You' : `Bot ${i}`,
-        directorate: dir,
-      }));
+        const players = directorates.map((dir, i) => ({
+          id: `p${i}`,
+          name: i === 0 ? 'You' : `Bot ${i}`,
+          directorate: dir,
+        }));
 
-      const engine = new GameEngine({
-        players,
-        seed,
-        config: { fiscalYears: 4, playerCount: 4 },
-      });
+        const engine = new GameEngine({
+          players,
+          seed,
+          config: { fiscalYears: 4, playerCount: 4 },
+        });
 
-      engine.start();
-      engineRef.current = engine;
-      botsRef.current = createBots(engine.state, humanId);
-      saveState(engine.state);
+        engine.start();
+        engineRef.current = engine;
+        botsRef.current = createBots(engine.state, humanId);
+        saveState(engine.state);
+      }
     }
   }
 

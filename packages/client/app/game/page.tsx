@@ -78,9 +78,11 @@ function GamePageInner() {
     );
   }
 
+  const fromLobby = searchParams.get('local') === '1';
+
   return (
     <CardModalProvider>
-      <GameBoard seed={seedRef.current!} />
+      <GameBoard seed={seedRef.current!} fromLobby={fromLobby} />
     </CardModalProvider>
   );
 }
@@ -233,8 +235,8 @@ function ServerGameBoard({ gameId, playerId }: { gameId: string; playerId: strin
   );
 }
 
-function GameBoard({ seed }: { seed: number }) {
-  const game = useGameController(seed);
+function GameBoard({ seed, fromLobby }: { seed: number; fromLobby?: boolean }) {
+  const game = useGameController(seed, { fromLobby });
   return <GameBoardInner game={game} />;
 }
 

@@ -3,6 +3,7 @@ import { GameEngine } from '@fp/engine';
 import type { DirectorateId } from '@fp/shared';
 import { listGameIds, getGameState, setGameState, addGameToIndex, setGameMeta, type SlotMeta } from '../lib/kv';
 import { runBotActions } from '../lib/botRunner';
+import { toErrorResponse } from '../lib/errors';
 
 export interface SlotInput {
   directorate: DirectorateId;
@@ -13,87 +14,103 @@ export interface SlotInput {
 
 // GET /api/games — list active games with summary info
 export async function GET() {
-  const ids = await listGameIds();
-  const summaries = await Promise.all(
-    ids.map(async (id) => {
-      const state = await getGameState(id);
-      if (!state) return null;
-      return {
-        id,
-        phase: state.phase,
-        fiscalYear: state.fiscalYear,
-        finished: state.phase.type === 'gameEnd',
-        players: state.turnOrder.map((pid) => ({
-          id: pid,
-          name: state.players[pid].name,
-          directorate: state.players[pid].directorate,
-          si: state.players[pid].si,
-        })),
-      };
-    }),
-  );
-  return NextResponse.json(summaries.filter(Boolean));
+  try {
+    const ids = await listGameIds();
+    const summaries = await Promise.all(
+      ids.map(async (id) => {
+        try {
+          const state = await getGameState(id);
+          if (!state) return null;
+          return {
+            id,
+            phase: state.phase,
+            fiscalYear: state.fiscalYear,
+            finished: state.phase.type === 'gameEnd',
+            players: state.turnOrder.map((pid) => {
+              const player = state.players[pid];
+              return {
+                id: pid,
+                name: player?.name ?? 'Unknown',
+                directorate: player?.directorate ?? '',
+                si: player?.si ?? 0,
+              };
+            }),
+          };
+        } catch (err) {
+          console.error(`Failed to summarize game ${id}`, err);
+          return null;
+        }
+      }),
+    );
+    return NextResponse.json(summaries.filter(Boolean));
+  } catch (err) {
+    return toErrorResponse(err, 'Failed to list games');
+  }
 }
 
 // POST /api/games — create a new game
 // Body: { slots: SlotInput[] }
 export async function POST(request: NextRequest) {
-  const body = await request.json() as { slots: SlotInput[]; config?: { fiscalYears?: number } };
+  try {
+    const body = await request.json() as { slots: SlotInput[]; config?: { fiscalYears?: number } };
 
-  if (!body.slots || body.slots.length < 2 || body.slots.length > 4) {
-    return NextResponse.json({ error: 'Need 2-4 slots' }, { status: 400 });
-  }
+    if (!body.slots || body.slots.length < 2 || body.slots.length > 4) {
+      return NextResponse.json({ error: 'Need 2-4 slots' }, { status: 400 });
+    }
 
-  const directorates = body.slots.map((s) => s.directorate);
-  if (new Set(directorates).size !== directorates.length) {
-    return NextResponse.json({ error: 'Duplicate directorates not allowed' }, { status: 400 });
-  }
+    const directorates = body.slots.map((s) => s.directorate);
+    if (new Set(directorates).size !== directorates.length) {
+      return NextResponse.json({ error: 'Duplicate directorates not allowed' }, { status: 400 });
+    }
 
-  const gameId = crypto.randomUUID().slice(0, 8);
-  const added = await addGameToIndex(gameId);
-  if (!added) {
+    const gameId = crypto.randomUUID().slice(0, 8);
+    const added = await addGameToIndex(gameId);
+    if (!added) {
+      return NextResponse.json(
+        { error: 'Server full — maximum 10 active games.' },
+        { status: 503 },
+      );
+    }
+
+    // Assign a stable player ID to every slot up front
+    const slots: SlotMeta[] = body.slots.map((slot, i) => ({
+      playerId: `${gameId}-p${i}`,
+      name: slot.isBot ? (slot.name ?? `Bot ${i + 1}`) : (slot.name ?? `Player ${i + 1}`),
+      isBot: slot.isBot,
+      personality: slot.personality ?? 'balanced',
+    }));
+
+    const players = slots.map((s) => ({
+      id: s.playerId,
+      name: s.name,
+      directorate: body.slots[slots.indexOf(s)].directorate,
+    }));
+
+    const engine = new GameEngine({ players, config: body.config });
+    engine.start();
+
+    await Promise.all([
+      setGameState(gameId, engine.state),
+      setGameMeta(gameId, { slots }),
+    ]);
+
+    // Fire bot actions for congress phase (bots may vote immediately)
+    await runBotActions(gameId, { slots });
+
+    // Return all slot IDs so the creator knows which one to use
     return NextResponse.json(
-      { error: 'Server full — maximum 10 active games.' },
-      { status: 503 },
+      {
+        gameId,
+        slots: slots.map((s) => ({
+          playerId: s.playerId,
+          name: s.name,
+          isBot: s.isBot,
+          directorate: players.find((p) => p.id === s.playerId)!.directorate,
+        })),
+      },
+      { status: 201 },
     );
+  } catch (err) {
+    return toErrorResponse(err, 'Failed to create game');
   }
-
-  // Assign a stable player ID to every slot up front
-  const slots: SlotMeta[] = body.slots.map((slot, i) => ({
-    playerId: `${gameId}-p${i}`,
-    name: slot.isBot ? (slot.name ?? `Bot ${i + 1}`) : (slot.name ?? `Player ${i + 1}`),
-    isBot: slot.isBot,
-    personality: slot.personality ?? 'balanced',
-  }));
-
-  const players = slots.map((s) => ({
-    id: s.playerId,
-    name: s.name,
-    directorate: body.slots[slots.indexOf(s)].directorate,
-  }));
-
-  const engine = new GameEngine({ players, config: body.config });
-  engine.start();
-
-  await Promise.all([
-    setGameState(gameId, engine.state),
-    setGameMeta(gameId, { slots }),
-  ]);
-
-  // Fire bot actions for congress phase (bots may vote immediately)
-  await runBotActions(gameId, { slots });
-
-  // Return all slot IDs so the creator knows which one to use
-  return NextResponse.json(
-    {
-      gameId,
-      slots: slots.map((s) => ({
-        playerId: s.playerId,
-        name: s.name,
-        isBot: s.isBot,
-        directorate: players.find((p) => p.id === s.playerId)!.directorate,
-      })),
-    },
-    { status: 201 },
-  );
 }

@@ -366,6 +366,9 @@
 .deployRow {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   animation: fadeUp 0.4s ease both;
   animation-delay: 0.3s;
 }
@@ -397,6 +400,42 @@
 .deployBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.localBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  background: transparent;
+  color: var(--color-air);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+.localBtn:hover:not(:disabled) {
+  background: rgba(96, 165, 250, 0.08);
+}
+
+.localBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.deployHint {
+  margin-top: 14px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 /* ── Spinner ── */

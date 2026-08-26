@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { DirectorateId } from '@fp/shared';
+import { saveLobbySetup, type LocalSetupSlot } from '@/lib/localGameSetup';
 import styles from './lobby.module.css';
 
 interface SlotConfig {
@@ -26,10 +27,11 @@ export default function LobbyPage() {
   const router = useRouter();
   const [slots, setSlots] = useState<SlotConfig[]>([
     { directorate: null, isBot: false, personality: 'balanced' },
-    { directorate: null, isBot: false, personality: 'balanced' },
+    { directorate: null, isBot: true, personality: 'balanced' },
   ]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [allowLocalFallback, setAllowLocalFallback] = useState(false);
 
   const usedDirectorates = slots.map(s => s.directorate).filter(Boolean) as DirectorateId[];
 
@@ -47,8 +49,38 @@ export default function LobbyPage() {
     setSlots(prev => prev.filter((_, idx) => idx !== i));
   }
 
+  async function readApiError(res: Response, fallback: string): Promise<string> {
+    const text = await res.text();
+    if (!text) return fallback;
+    try {
+      const data = JSON.parse(text) as { error?: string };
+      return data.error ?? fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  function toLocalSlots(source: SlotConfig[], forceOthersBots = false): LocalSetupSlot[] {
+    let seenHuman = false;
+    return source.map(s => {
+      const isBot = forceOthersBots && seenHuman ? true : s.isBot;
+      if (!isBot) seenHuman = true;
+      return {
+        directorate: s.directorate as DirectorateId,
+        isBot,
+        personality: s.personality,
+      };
+    });
+  }
+
+  function startLocal(source: SlotConfig[], forceOthersBots = false) {
+    saveLobbySetup(toLocalSlots(source, forceOthersBots));
+    router.push('/game?local=1');
+  }
+
   async function deploy() {
     setError(null);
+    setAllowLocalFallback(false);
 
     if (slots.some(s => !s.directorate)) {
       setError('All slots must have a directorate selected.');
@@ -56,6 +88,12 @@ export default function LobbyPage() {
     }
     if (slots.every(s => s.isBot)) {
       setError('At least one human player is required.');
+      return;
+    }
+
+    const humanCount = slots.filter(s => !s.isBot).length;
+    if (humanCount === 1) {
+      startLocal(slots);
       return;
     }
 
@@ -72,8 +110,8 @@ export default function LobbyPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        setError(data.error ?? 'Deployment failed.');
+        setError(await readApiError(res, 'Deployment failed.'));
+        setAllowLocalFallback(true);
         return;
       }
 
@@ -81,7 +119,8 @@ export default function LobbyPage() {
       const firstHuman = data.slots.find((s: { isBot: boolean; playerId: string }) => !s.isBot);
       router.push(`/join/${data.gameId}?mine=${firstHuman.playerId}`);
     } catch {
-      setError('Network error — check your connection.');
+      setError('Multiplayer server is unavailable.');
+      setAllowLocalFallback(true);
     } finally {
       setLoading(false);
     }
@@ -214,7 +253,21 @@ export default function LobbyPage() {
               <>▶ DEPLOY OPERATION</>
             )}
           </button>
+          {allowLocalFallback && (
+            <button
+              className={styles.localBtn}
+              onClick={() => startLocal(slots, true)}
+              disabled={loading || slots.some(s => !s.directorate)}
+            >
+              Play locally vs bots
+            </button>
+          )}
         </div>
+        <p className={styles.deployHint}>
+          {slots.filter(s => !s.isBot).length <= 1
+            ? 'One human slot starts on this device — no server required.'
+            : 'Two or more humans create an online game others can join.'}
+        </p>
       </main>
     </div>
   );

@@ -82,7 +82,17 @@ export default function GamesHubPage() {
   const loadGames = useCallback(() => {
     setError(null);
     fetch('/api/games')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('Failed to list games'))))
+      .then(async (r) => {
+        if (r.ok) return r.json();
+        const text = await r.text();
+        try {
+          const data = JSON.parse(text) as { error?: string };
+          throw new Error(data.error || 'Failed to list games');
+        } catch (err) {
+          if (err instanceof SyntaxError) throw new Error('Failed to list games');
+          throw err;
+        }
+      })
       .then((data: unknown) => {
         const list = Array.isArray(data) ? data : [];
         const normalized = list
@@ -91,7 +101,10 @@ export default function GamesHubPage() {
         const sorted = [...normalized].sort((a, b) => Number(a.finished) - Number(b.finished));
         setGames(sorted);
       })
-      .catch(() => setError('Could not load operations. Is the server configured (KV)?'));
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : 'Could not load operations.';
+        setError(message);
+      });
   }, []);
 
   useEffect(() => {
