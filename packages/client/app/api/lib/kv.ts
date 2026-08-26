@@ -26,17 +26,18 @@ function firstEnv(...keys: string[]): string | undefined {
 
 function getClient(): VercelKV {
   if (cached) return cached;
-  // Standard Vercel/Upstash names, plus grant-prefixed copies
-  // (e.g. KV_REST_API_TOKEN_KV_REST_API_URL from a Ulysses/Vercel secret grant).
+  // Grant-prefixed copies first: the unprefixed KV_* names on Vercel still
+  // point at a retired store, while the new Upstash credentials arrive as
+  // KV_REST_API_TOKEN_KV_REST_API_URL / _TOKEN.
   const url = firstEnv(
+    'KV_REST_API_TOKEN_KV_REST_API_URL',
     'KV_REST_API_URL',
     'UPSTASH_REDIS_REST_URL',
-    'KV_REST_API_TOKEN_KV_REST_API_URL',
   );
   const token = firstEnv(
+    'KV_REST_API_TOKEN_KV_REST_API_TOKEN',
     'KV_REST_API_TOKEN',
     'UPSTASH_REDIS_REST_TOKEN',
-    'KV_REST_API_TOKEN_KV_REST_API_TOKEN',
   );
   if (!url || !token) {
     throw new GameStoreError(
